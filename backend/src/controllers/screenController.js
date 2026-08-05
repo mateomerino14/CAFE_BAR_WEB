@@ -1,0 +1,10 @@
+import { getScreensTree } from '../services/screenService.js';
+
+export const getScreensTreeHandler = async (req, res) => {
+  try {
+    const tree = await getScreensTree();
+    return res.json(tree);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al obtener las pantallas' });
+  }
+};
