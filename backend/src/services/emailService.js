@@ -1,4 +1,6 @@
 import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 const BRAND_BLUE = '#2563eb';
@@ -68,8 +70,35 @@ export const sendBackupEmailViaBrevo = async (correoDestino, attachmentBuffer) =
   });
 };
 
+/*
 const generatePdfBuffer = async (htmlContent) => {
   const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  try {
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    const pdfBytes = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '15mm', bottom: '15mm', left: '10mm', right: '10mm' }
+    });
+    return Buffer.from(pdfBytes);
+  } finally {
+    await browser.close();
+  }
+};
+*/
+const generatePdfBuffer = async (htmlContent) => {
+  const isRender = Boolean(process.env.RENDER);
+
+  const browser = isRender
+    ? await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless
+      })
+    : await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+
   try {
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
