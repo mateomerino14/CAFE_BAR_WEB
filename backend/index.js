@@ -21,7 +21,22 @@ import reportsRoutes from './src/routes/reportsRoutes.js';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://cafe-bar-web.vercel.app'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  }
+}));
+
 app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Servidor del Café Bar corriendo correctamente y conectado a Supabase' });
