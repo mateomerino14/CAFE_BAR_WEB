@@ -328,7 +328,11 @@ CREATE TABLE IF NOT EXISTS password_reset_codes (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-
+-- Configuracion de agente de impresion
+CREATE TABLE IF NOT EXISTS print_agent_config (
+    id   BIGSERIAL PRIMARY KEY,
+    url  VARCHAR(200)
+);
 -- =====================================================================
 -- AJUSTES 
 -- =====================================================================

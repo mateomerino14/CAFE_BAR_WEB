@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Modal } from '../atoms/Modal';
 import { Button } from '../atoms/Button';
-import { printPlainText } from '../../features/pos/utils/printWindow';
+import { Toast } from '../atoms/Toast';
+import { printPlainText, downloadPlainTextAsPdf, isMobileDevice, tryPrintViaAgent } from '../../features/pos/utils/printWindow';
 
 const styles = {
   preview: 'flex max-h-[60vh] justify-center overflow-auto rounded-lg bg-slate-50 p-3',
@@ -8,10 +10,35 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const PrintModal = ({ onClose, title, text, onPrinted }) => {
-  const handlePrint = () => {
-    printPlainText(title, text);
-    onPrinted();
+export const PrintModal = ({ onClose, title, text, tipo, onPrinted, onCompletedWithoutCounting }) => {
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const isMobile = isMobileDevice();
+
+  const handlePrintDirect = async () => {
+    setError('');
+    setSending(true);
+    const result = await tryPrintViaAgent(tipo, text);
+    setSending(false);
+
+    if (result.success) {
+      onPrinted();
+      onClose();
+      return;
+    }
+
+    if (isMobile) {
+      setError('No se pudo conectar con el servicio de impresión. Verifica el WiFi del local.');
+    } else {
+      printPlainText(title, text);
+      onPrinted();
+      onClose();
+    }
+  };
+
+  const handleDownloadPdf = () => {
+    downloadPlainTextAsPdf(title, text);
+    onCompletedWithoutCounting();
     onClose();
   };
 
@@ -20,10 +47,17 @@ export const PrintModal = ({ onClose, title, text, onPrinted }) => {
       <div className={styles.preview}>
         <pre className={styles.pre}>{text}</pre>
       </div>
+
       <div className={styles.actions}>
-        <Button type="button" onClick={handlePrint}>IMPRIMIR</Button>
+        <Button type="button" onClick={handlePrintDirect} disabled={sending}>
+          {sending ? 'IMPRIMIENDO...' : 'IMPRIMIR'}
+        </Button>
+        {isMobile && (
+          <Button type="button" variant="warning" onClick={handleDownloadPdf}>DESCARGAR PDF</Button>
+        )}
         <Button type="button" variant="danger" onClick={onClose}>CANCELAR</Button>
       </div>
+      {error && <Toast>{error}</Toast>}
     </Modal>
   );
 };

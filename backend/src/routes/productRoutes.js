@@ -18,6 +18,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión de productos del sistema */
 router.post('/', authenticate, authorize('REGISTRAR_PRODUCTO'), upload.any(), createProductHandler);
 router.get('/names', authenticate, listProductNamesHandler);
 router.get('/names/all', authenticate, authorize('BAJA_PRODUCTO'), listAllProductNamesHandler);

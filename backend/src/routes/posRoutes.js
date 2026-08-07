@@ -20,6 +20,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión del punto de venta y registro de pedidos */
 router.get('/sections', authenticate, authorize('REGISTRAR_PEDIDO'), listSectionsWithTablesHandler);
 router.get('/next-sale-number', authenticate, authorize('REGISTRAR_PEDIDO'), getNextSaleNumberHandler);
 router.post('/orders', authenticate, authorize('REGISTRAR_PEDIDO'), createOrderHandler);

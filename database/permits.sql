@@ -34,3 +34,4 @@ ALTER TABLE directorio                         ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE cuenta                             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enlace                             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE password_reset_codes               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE print_agent_config                 ENABLE ROW LEVEL SECURITY;

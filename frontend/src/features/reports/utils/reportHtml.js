@@ -109,9 +109,40 @@ export const buildSummaryByDateReportHtml = (rows, granTotal, periodo) => {
 };
 
 export const buildTopProductsReportHtml = (rows, periodo) => {
-  const headers = ['Producto', 'Cantidad Vendida', 'Total Ventas'];
-  const body = rows.map((r) => [r.producto, r.cantidad, `Bs ${r.total.toFixed(2)}`]);
-  return wrapDocument('Productos Más Vendidos', `<p class="periodo">Período: ${periodo}</p>${buildTable(headers, body)}`);
+  const headers = ['Tipo', 'Nombre', 'Cantidad', 'Ingreso', 'Costo', 'Ganancia'];
+  const body = rows.map((r) => [
+    r.tipo === 'promocion' ? 'Promoción' : 'Producto',
+    r.nombre,
+    r.cantidad,
+    `Bs ${r.ingreso.toFixed(2)}`,
+    `Bs ${r.costo.toFixed(2)}`,
+    `Bs ${r.ganancia.toFixed(2)}`
+  ]);
+
+  const promoDetailBlocks = rows
+    .filter((r) => r.tipo === 'promocion' && r.productosConsumidos?.length > 0)
+    .map((r) => {
+      const itemsHtml = r.productosConsumidos
+        .map((pc) => `<tr><td>${escapeHtml(pc.nombre)}</td><td>${escapeHtml(pc.cantidad)}</td></tr>`)
+        .join('');
+      return `
+        <div class="venta-detalle">
+          <h3>${escapeHtml(r.nombre)}</h3>
+          <table class="items-table">
+            <thead><tr><th>Producto</th><th>Cantidad consumida</th></tr></thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
+        </div>
+      `;
+    })
+    .join('');
+
+  return wrapDocument(
+    'Productos y Promociones (Ganancia)',
+    `<p class="periodo">Período: ${periodo}</p>
+     ${buildTable(headers, body)}
+     ${promoDetailBlocks ? `<h2>Productos consumidos por promoción</h2>${promoDetailBlocks}` : ''}`
+  );
 };
 
 export const buildEmployeePieReportHtml = (cajeroRows, meseroRows, periodo) => {

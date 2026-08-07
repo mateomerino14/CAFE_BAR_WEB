@@ -17,6 +17,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión de empleados del sistema */
 router.get('/login-list', loginListHandler);
 router.post('/', authenticate, authorize('REGISTRAR_EMPLEADOS'), upload.single('photo'), createEmployeeHandler);
 router.get('/names', authenticate, listEmployeeNamesHandler);

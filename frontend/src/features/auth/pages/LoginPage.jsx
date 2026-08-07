@@ -14,7 +14,7 @@ import loginLogo from '../../../assets/login-logo.jpg';
 
 const styles = {
   wrapper: `flex min-h-screen flex-col ${colors.background}`,
-  content: 'flex flex-1 flex-col items-center justify-center gap-3 p-3 sm:gap-4 sm:p-6',
+  content: 'flex flex-1 flex-col items-center gap-3 p-3 pt-6 sm:justify-center sm:gap-4 sm:p-6',
   title: `${typography.title} text-xl sm:text-2xl ${colors.textPrimary}`,
   form: 'flex w-full max-w-md flex-col items-center gap-4',
   forgotLink: 'self-end text-sm font-semibold text-blue-600 hover:underline',

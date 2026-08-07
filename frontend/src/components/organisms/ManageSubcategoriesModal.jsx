@@ -12,12 +12,15 @@ const styles = {
   eyebrow: 'text-xs font-semibold uppercase tracking-wide text-white/80',
   title: 'text-lg font-bold text-white sm:text-xl',
   divider: 'my-5 border-t border-slate-200',
-  closeAction: 'mt-4'
+  actionsRow: 'mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between',
+  loading: 'rounded-xl bg-slate-50 p-6 text-center text-sm font-semibold text-blue-500',
+  empty: 'rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-400'
 };
 
 export const ManageSubcategoriesModal = ({ category, onClose }) => {
   const {
     subcategories,
+    loading,
     handleToggle,
     editingSubcategory,
     openEdit,
@@ -35,9 +38,14 @@ export const ManageSubcategoriesModal = ({ category, onClose }) => {
         <p className={styles.eyebrow}>Subcategorías de</p>
         <h2 className={styles.title}>{category.nombre_categoria}</h2>
       </div>
-      <SubcategoryManageList subcategories={subcategories} onEdit={openEdit} onToggle={handleToggle} />
+      {loading && <p className={styles.loading}>Cargando subcategorías...</p>}
+      {!loading && subcategories.length === 0 && (
+        <p className={styles.empty}>Esta categoría todavía no tiene subcategorías registradas</p>
+      )}
+      {!loading && subcategories.length > 0 && (
+        <SubcategoryManageList subcategories={subcategories} onEdit={openEdit} onToggle={handleToggle} />
+      )}
       <div className={styles.divider} />
-      {!showAdd && <Button type="button" onClick={() => setShowAdd(true)}>AÑADIR SUBCATEGORÍA</Button>}
       {showAdd && (
         <AddSubcategoryForm
           categoryId={category.id_categoria}
@@ -47,7 +55,10 @@ export const ManageSubcategoriesModal = ({ category, onClose }) => {
           }}
         />
       )}
-      <Button type="button" variant="danger" className={styles.closeAction} onClick={onClose}>CERRAR</Button>
+      <div className={styles.actionsRow}>
+        <Button type="button" variant="danger" onClick={onClose}>CERRAR</Button>
+        {!showAdd && <Button type="button" onClick={() => setShowAdd(true)}>AÑADIR SUBCATEGORÍA</Button>}
+      </div>
       {editingSubcategory && (
         <SubcategoryEditModal subcategory={editingSubcategory} onClose={closeEdit} onSaved={handleEdited} />
       )}

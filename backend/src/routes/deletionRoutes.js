@@ -5,6 +5,7 @@ import { listDeletionDataHandler, getDependencyTreeHandler, executeDeletionHandl
 
 const router = Router();
 
+/* Rutas para la gestión de eliminación y análisis de dependencias de datos */
 router.get('/deletion-data', authenticate, authorize('CONFIGURACION'), listDeletionDataHandler);
 router.post('/deletion-tree', authenticate, authorize('CONFIGURACION'), getDependencyTreeHandler);
 router.post('/execute', authenticate, authorize('CONFIGURACION'), executeDeletionHandler);

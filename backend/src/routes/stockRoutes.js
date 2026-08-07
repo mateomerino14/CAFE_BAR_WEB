@@ -12,6 +12,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión de ingredientes e inventario del sistema */
 router.get('/options', authenticate, listStockOptionsHandler);
 router.post('/', authenticate, authorize('REGISTRAR_INGREDIENTES'), createStockHandler);
 router.get('/names', authenticate, authorize('MODIFICAR_INGREDIENTES'), listStockNamesHandler);

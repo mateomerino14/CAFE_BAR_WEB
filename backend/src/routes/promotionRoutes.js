@@ -17,6 +17,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión de promociones del sistema */
 router.post('/', authenticate, authorize('REGISTRAR_PROMOCIONES'), upload.any(), createPromotionHandler);
 router.get('/names', authenticate, listPromotionNamesHandler);
 router.get('/names/all', authenticate, authorize('BAJA_PROMOCIONES'), listAllPromotionNamesHandler);

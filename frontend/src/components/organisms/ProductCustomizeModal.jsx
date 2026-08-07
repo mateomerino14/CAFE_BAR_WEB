@@ -30,14 +30,15 @@ const styles = {
   groupInfo: 'min-w-0 flex-1',
   groupMeta: 'text-xs text-slate-500',
   removeGroupBtn: 'shrink-0 text-xs font-bold text-red-600 hover:underline',
-  remaining: 'mt-2 text-sm font-semibold text-orange-600'
+  remaining: 'mt-2 text-sm font-semibold text-orange-600',
+  loading: 'mt-4 rounded-lg bg-slate-50 p-6 text-center text-sm font-semibold text-blue-500'
 };
 
 export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
   const {
     cantidadTotal, setCantidadTotal,
     tipoConsumo, setTipoConsumo,
-    ingredients,
+    ingredients, loading,
     subGroupsMode, setSubGroupsMode,
     groups, addGroup, removeGroup,
     draftCantidad, setDraftCantidad,
@@ -92,7 +93,7 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
           <button type="button" className={`${styles.typeButton} ${tipoConsumo === 'Local' ? styles.typeActive : styles.typeInactive}`} onClick={() => setTipoConsumo('Local')}>Local</button>
           <button type="button" className={`${styles.typeButton} ${tipoConsumo === 'Para llevar' ? styles.typeActive : styles.typeInactive}`} onClick={() => setTipoConsumo('Para llevar')}>Para llevar</button>
         </div>
-        {ingredients.length > 0 && Number(cantidadTotal) > 1 && (
+        {!loading && ingredients.length > 0 && Number(cantidadTotal) > 1 && (
           <Checkbox
             label="Dividir en grupos con distinta personalización"
             checked={subGroupsMode}
@@ -101,7 +102,9 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
         )}
       </div>
 
-      {ingredients.length > 0 && (
+      {loading && <p className={styles.loading}>Cargando ingredientes...</p>}
+
+      {!loading && ingredients.length > 0 && (
         <div className={styles.section}>
           {subGroupsMode && (
             <FormField label={`CANTIDAD DEL GRUPO (restan ${restante})`}>
@@ -189,13 +192,16 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
         </div>
       )}
 
-      <div className={styles.total}>Total: Bs {(subGroupsMode ? groupsTotal : simpleTotal).toFixed(2)}</div>
+      {!loading && (
+        <>
+          <div className={styles.total}>Total: Bs {(subGroupsMode ? groupsTotal : simpleTotal).toFixed(2)}</div>
+          <div className={styles.actions}>
+            <Button type="button" onClick={handleConfirm}>AGREGAR AL PEDIDO</Button>
+            <Button type="button" variant="danger" onClick={onClose}>CANCELAR</Button>
+          </div>
+        </>
+      )}
       {error && <Toast>{error}</Toast>}
-
-      <div className={styles.actions}>
-        <Button type="button" onClick={handleConfirm}>AGREGAR AL PEDIDO</Button>
-        <Button type="button" variant="danger" onClick={onClose}>CANCELAR</Button>
-      </div>
     </Modal>
   );
 };

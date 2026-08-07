@@ -12,6 +12,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión de cargos y permisos de acceso */
 router.post('/', authenticate, authorize('REGISTRAR_CARGOS'), createRoleHandler);
 router.get('/names', authenticate, authorize('REGISTRAR_CARGOS'), listRoleNamesHandler);
 router.get('/options', authenticate, listRoleOptionsHandler);

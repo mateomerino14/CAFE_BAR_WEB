@@ -255,3 +255,18 @@ export const listCajeroNames = async () => {
 
   return Array.from(nombres).sort();
 };
+
+export const getPrintAgentUrl = async () => {
+  const { data } = await supabase.from('print_agent_config').select('url').limit(1).maybeSingle();
+  return data?.url || '';
+};
+
+export const updatePrintAgentUrl = async (url) => {
+  const { data: existing } = await supabase.from('print_agent_config').select('id').limit(1).maybeSingle();
+
+  if (existing) {
+    await supabase.from('print_agent_config').update({ url }).eq('id', existing.id);
+  } else {
+    await supabase.from('print_agent_config').insert({ url });
+  }
+};

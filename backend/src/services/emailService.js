@@ -87,6 +87,8 @@ const generatePdfBuffer = async (htmlContent) => {
   }
 };
 */
+
+
 const generatePdfBuffer = async (htmlContent) => {
   const isRender = Boolean(process.env.RENDER);
 
@@ -111,7 +113,7 @@ const generatePdfBuffer = async (htmlContent) => {
   } finally {
     await browser.close();
   }
-};
+}
 
 export const sendReportPdfEmail = async (correoDestino, titulo, htmlContent) => {
   const pdfBuffer = await generatePdfBuffer(htmlContent);

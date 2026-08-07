@@ -14,7 +14,7 @@ const SUBREPORTES = [
   { value: 'detallado', label: 'Ventas Detalladas' },
   { value: 'resumen_fechas', label: 'Resumen por Fechas' },
   { value: 'resumen_empleado', label: 'Resumen por Empleado' },
-  { value: 'productos_vendidos', label: 'Productos Más Vendidos' }
+  { value: 'productos_vendidos', label: 'Productos y Promociones (Ganancia)' }
 ];
 
 export const ReportFilters = ({

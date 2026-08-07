@@ -4,6 +4,7 @@ import { getSubcategories, setSubcategoryAvailability } from '../services/catego
 
 export const useManageSubcategories = (categoryId) => {
   const [subcategories, setSubcategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [editingSubcategory, setEditingSubcategory] = useState(null);
@@ -11,11 +12,17 @@ export const useManageSubcategories = (categoryId) => {
   useAutoDismiss(error, () => setError(''));
 
   const fetchSubcategories = async () => {
-    const data = await getSubcategories(categoryId);
-    setSubcategories(data);
+    setLoading(true);
+    try {
+      const data = await getSubcategories(categoryId);
+      setSubcategories(data);
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => {
     fetchSubcategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId]);
   const handleToggle = async (subcategory) => {
     try {
@@ -41,5 +48,5 @@ export const useManageSubcategories = (categoryId) => {
     fetchSubcategories();
   };
 
-  return { subcategories, handleToggle, editingSubcategory, openEdit, closeEdit, handleAdded, handleEdited, success, error };
+  return { subcategories, loading, handleToggle, editingSubcategory, openEdit, closeEdit, handleAdded, handleEdited, success, error };
 };

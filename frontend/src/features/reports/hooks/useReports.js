@@ -14,7 +14,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 const TITULOS = {
   detallado: 'Ventas Detalladas',
   resumen_fechas: 'Resumen por Fechas',
-  productos_vendidos: 'Productos Más Vendidos',
+  productos_vendidos: 'Productos y Promociones (Ganancia)',
   resumen_empleado: 'Resumen por Empleado'
 };
 

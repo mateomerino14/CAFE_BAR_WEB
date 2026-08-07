@@ -11,12 +11,27 @@ export const useRegisterCategory = () => {
   const [subcategoryName, setSubcategoryName] = useState('');
   const { file: subcategoryPhoto, preview: subcategoryPreview, handleFileChange: handleSubcategoryPhotoChange, reset: resetSubcategoryPhoto } = useFileWithPreview();
   const [subcategories, setSubcategories] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   useAutoDismiss(error, () => setError(''));
   useAutoDismiss(success, () => setSuccess(''));
+
+  const isEditing = editingId !== null;
+
+  const handleStartEdit = (item) => {
+    setEditingId(item.id);
+    setSubcategoryName(item.nombre);
+    resetSubcategoryPhoto();
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setSubcategoryName('');
+    resetSubcategoryPhoto();
+  };
 
   const handleAddSubcategory = (event) => {
     event.preventDefault();
@@ -26,18 +41,36 @@ export const useRegisterCategory = () => {
       setError('El campo de subcategoría no puede estar vacío');
       return;
     }
-    const alreadyExists = subcategories.some((item) => item.nombre.toLowerCase() === name.toLowerCase());
+    const alreadyExists = subcategories.some(
+      (item) => item.nombre.toLowerCase() === name.toLowerCase() && item.id !== editingId
+    );
     if (alreadyExists) {
       setError('La subcategoría ya está registrada');
       return;
     }
-    setSubcategories((prev) => [...prev, { id: nextId++, nombre: name, photo: subcategoryPhoto, preview: subcategoryPreview }]);
+
+    if (isEditing) {
+      setSubcategories((prev) => prev.map((item) => {
+        if (item.id !== editingId) return item;
+        return {
+          ...item,
+          nombre: name,
+          photo: subcategoryPhoto || item.photo,
+          preview: subcategoryPreview || item.preview
+        };
+      }));
+      setEditingId(null);
+    } else {
+      setSubcategories((prev) => [...prev, { id: nextId++, nombre: name, photo: subcategoryPhoto, preview: subcategoryPreview }]);
+    }
+
     setSubcategoryName('');
     resetSubcategoryPhoto();
   };
 
   const handleRemoveSubcategory = (id) => {
     setSubcategories((prev) => prev.filter((item) => item.id !== id));
+    if (editingId === id) handleCancelEdit();
   };
 
   const handleSubmit = async (event) => {
@@ -66,6 +99,7 @@ export const useRegisterCategory = () => {
       setCategoryName('');
       resetCategoryPhoto();
       setSubcategories([]);
+      handleCancelEdit();
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo registrar la categoría');
     } finally {
@@ -83,8 +117,12 @@ export const useRegisterCategory = () => {
     subcategoryPreview,
     handleSubcategoryPhotoChange,
     subcategories,
+    editingId,
+    isEditing,
     handleAddSubcategory,
     handleRemoveSubcategory,
+    handleStartEdit,
+    handleCancelEdit,
     error,
     success,
     loading,

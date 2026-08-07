@@ -5,6 +5,7 @@ import { createSectionHandler, listSectionsHandler, getSectionTableCountHandler,
 
 const router = Router();
 
+/* Rutas para la gestión de secciones y mesas del sistema */
 router.post('/', authenticate, authorize('ADMIN_SECCIONES'), createSectionHandler);
 router.get('/', authenticate, authorize('ADMIN_SECCIONES'), listSectionsHandler);
 router.get('/:id/tables-count', authenticate, authorize('ADMIN_SECCIONES'), getSectionTableCountHandler);

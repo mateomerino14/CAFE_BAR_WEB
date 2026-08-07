@@ -5,6 +5,7 @@ let nextGroupId = 1;
 
 export const usePromotionCustomization = (promotion) => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeProductIndex, setActiveProductIndex] = useState(0);
 
   const [groupsByProduct, setGroupsByProduct] = useState({});
@@ -13,14 +14,18 @@ export const usePromotionCustomization = (promotion) => {
   const [draftExtrasByProduct, setDraftExtrasByProduct] = useState({});
 
   useEffect(() => {
-    getPromotionProductsIngredients(promotion.id_prom).then((data) => {
-      setProducts(data);
-      const initialDraftCantidad = {};
-      data.forEach((p) => {
-        initialDraftCantidad[p.idProd] = String(p.cantidadPromo);
-      });
-      setDraftCantidadByProduct(initialDraftCantidad);
-    }).catch(() => setProducts([]));
+    setLoading(true);
+    getPromotionProductsIngredients(promotion.id_prom)
+      .then((data) => {
+        setProducts(data);
+        const initialDraftCantidad = {};
+        data.forEach((p) => {
+          initialDraftCantidad[p.idProd] = String(p.cantidadPromo);
+        });
+        setDraftCantidadByProduct(initialDraftCantidad);
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
   }, [promotion]);
 
   const activeProduct = products[activeProductIndex];
@@ -95,37 +100,38 @@ export const usePromotionCustomization = (promotion) => {
   };
 
   const buildAllProductCustomizations = (bundleCantidad = 1) => {
-  return products
-    .map((product) => {
-      const groups = groupsByProduct[product.idProd] || [];
-      if (groups.length === 0) return null;
+    return products
+      .map((product) => {
+        const groups = groupsByProduct[product.idProd] || [];
+        if (groups.length === 0) return null;
 
-      const totalUnits = product.cantidadPromo * bundleCantidad;
-      const restante = totalUnits - getAssigned(product.idProd);
-      const finalGroups = restante > 0
-        ? [...groups, { id: 'auto', cantidad: restante, exclusiones: [], extras: [] }]
-        : groups;
+        const totalUnits = product.cantidadPromo * bundleCantidad;
+        const restante = totalUnits - getAssigned(product.idProd);
+        const finalGroups = restante > 0
+          ? [...groups, { id: 'auto', cantidad: restante, exclusiones: [], extras: [] }]
+          : groups;
 
-      return { idProd: product.idProd, nombre: product.nombre, unitGroups: finalGroups };
-    })
-    .filter(Boolean);
-};
+        return { idProd: product.idProd, nombre: product.nombre, unitGroups: finalGroups };
+      })
+      .filter(Boolean);
+  };
+
   const totalExtraCost = Object.values(groupsByProduct).reduce((sum, groups) => {
-  return sum + groups.reduce((s, g) => {
-    const groupExtraCost = (g.extras || []).reduce((es, e) => es + Number(e.precioExtra) * Number(e.cantidadExtra), 0);
-    return s + groupExtraCost * g.cantidad;
+    return sum + groups.reduce((s, g) => {
+      const groupExtraCost = (g.extras || []).reduce((es, e) => es + Number(e.precioExtra) * Number(e.cantidadExtra), 0);
+      return s + groupExtraCost * g.cantidad;
+    }, 0);
   }, 0);
-}, 0);
 
-return {
-  products,
-  activeProductIndex, setActiveProductIndex,
-  activeProduct,
-  groupsByProduct, addUnitGroup, removeUnitGroup, getRestante, getAssigned,
-  draftCantidadByProduct, setDraftCantidad,
-  draftExcludedByProduct, toggleExclusion,
-  draftExtrasByProduct, setExtraQuantity,
-  buildAllProductCustomizations,
-  totalExtraCost
-};
+  return {
+    products, loading,
+    activeProductIndex, setActiveProductIndex,
+    activeProduct,
+    groupsByProduct, addUnitGroup, removeUnitGroup, getRestante, getAssigned,
+    draftCantidadByProduct, setDraftCantidad,
+    draftExcludedByProduct, toggleExclusion,
+    draftExtrasByProduct, setExtraQuantity,
+    buildAllProductCustomizations,
+    totalExtraCost
+  };
 };

@@ -245,23 +245,101 @@ export const getTopProductsReport = async (fechaInicio, fechaFin) => {
 
   const { data: detalles } = await supabase
     .from('detalles_venta')
-    .select('cantidad_prod_det, subtotal, id_prod, id_prom, producto:producto(nom_prod), promocion:promocion(nom_prom)')
+    .select('id_prod, id_prom, cantidad_prod_det, subtotal, producto:producto(nom_prod, costo_fabricacion), promocion:promocion(nom_prom)')
     .gte('fecha_reg_detalle_venta', start)
     .lt('fecha_reg_detalle_venta', end)
     .eq('estado_detalle_venta', 'Finalizado');
 
-  const grouped = new Map();
-  for (const d of detalles || []) {
-    const nombre = d.producto?.nom_prod || d.promocion?.nom_prom || 'N/A';
-    if (!grouped.has(nombre)) grouped.set(nombre, { producto: nombre, cantidad: 0, total: 0 });
-    const entry = grouped.get(nombre);
+  const productRows = (detalles || []).filter((d) => d.id_prod);
+  const promoRows = (detalles || []).filter((d) => d.id_prom);
+
+  const productMap = new Map();
+  for (const d of productRows) {
+    if (!productMap.has(d.id_prod)) {
+      productMap.set(d.id_prod, {
+        nombre: d.producto?.nom_prod || 'N/A',
+        cantidad: 0,
+        ingreso: 0,
+        costoUnitario: Number(d.producto?.costo_fabricacion || 0)
+      });
+    }
+    const entry = productMap.get(d.id_prod);
     entry.cantidad += d.cantidad_prod_det;
-    entry.total += Number(d.subtotal);
+    entry.ingreso += Number(d.subtotal);
   }
 
-  return Array.from(grouped.values())
-    .sort((a, b) => b.cantidad - a.cantidad)
-    .slice(0, 50);
+  const { data: allProducts } = await supabase.from('producto').select('id_prod, nom_prod, costo_fabricacion');
+  for (const p of allProducts || []) {
+    if (!productMap.has(p.id_prod)) {
+      productMap.set(p.id_prod, {
+        nombre: p.nom_prod,
+        cantidad: 0,
+        ingreso: 0,
+        costoUnitario: Number(p.costo_fabricacion || 0)
+      });
+    }
+  }
+
+  const productosResult = Array.from(productMap.values()).map((p) => {
+    const costo = p.costoUnitario * p.cantidad;
+    return {
+      tipo: 'producto',
+      nombre: p.nombre,
+      cantidad: p.cantidad,
+      ingreso: p.ingreso,
+      costo,
+      ganancia: p.ingreso - costo
+    };
+  });
+
+  const promoMap = new Map();
+  for (const d of promoRows) {
+    if (!promoMap.has(d.id_prom)) {
+      promoMap.set(d.id_prom, { nombre: d.promocion?.nom_prom || 'N/A', cantidad: 0, ingreso: 0 });
+    }
+    const entry = promoMap.get(d.id_prom);
+    entry.cantidad += d.cantidad_prod_det;
+    entry.ingreso += Number(d.subtotal);
+  }
+
+  const promoIds = Array.from(promoMap.keys());
+  const { data: promoProductsRows } = promoIds.length
+    ? await supabase
+        .from('promocion_prod')
+        .select('id_prom, id_prod, cantidad_prod_prom, producto:producto(nom_prod, costo_fabricacion)')
+        .in('id_prom', promoIds)
+    : { data: [] };
+
+  const promoProductsByPromo = new Map();
+  for (const pp of promoProductsRows || []) {
+    if (!promoProductsByPromo.has(pp.id_prom)) promoProductsByPromo.set(pp.id_prom, []);
+    promoProductsByPromo.get(pp.id_prom).push(pp);
+  }
+
+  const promocionesResult = Array.from(promoMap.entries()).map(([idProm, p]) => {
+    const componentes = promoProductsByPromo.get(idProm) || [];
+    const costo = componentes.reduce((sum, c) => {
+      const costoUnitario = Number(c.producto?.costo_fabricacion || 0);
+      return sum + costoUnitario * c.cantidad_prod_prom * p.cantidad;
+    }, 0);
+
+    const productosConsumidos = componentes.map((c) => ({
+      nombre: c.producto?.nom_prod || 'N/A',
+      cantidad: c.cantidad_prod_prom * p.cantidad
+    }));
+
+    return {
+      tipo: 'promocion',
+      nombre: p.nombre,
+      cantidad: p.cantidad,
+      ingreso: p.ingreso,
+      costo,
+      ganancia: p.ingreso - costo,
+      productosConsumidos
+    };
+  });
+
+  return [...productosResult, ...promocionesResult].sort((a, b) => b.cantidad - a.cantidad);
 };
 
 export const getEmployeeChartReport = async (fechaInicio, fechaFin, tipo) => {

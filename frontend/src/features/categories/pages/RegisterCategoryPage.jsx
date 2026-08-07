@@ -13,7 +13,8 @@ const styles = {
   card: 'flex flex-col items-center gap-4 rounded-xl bg-white p-6 shadow-sm',
   cardTitle: 'text-sm font-bold uppercase tracking-wide text-blue-600',
   subcardTitle: 'text-sm font-bold uppercase tracking-wide text-orange-500',
-  subForm: 'flex w-full flex-col items-center gap-3'
+  subForm: 'flex w-full flex-col items-center gap-3',
+  subFormActions: 'flex flex-wrap justify-center gap-2'
 };
 
 export const RegisterCategoryPage = () => {
@@ -27,8 +28,12 @@ export const RegisterCategoryPage = () => {
     subcategoryPreview,
     handleSubcategoryPhotoChange,
     subcategories,
+    editingId,
+    isEditing,
     handleAddSubcategory,
     handleRemoveSubcategory,
+    handleStartEdit,
+    handleCancelEdit,
     error,
     success,
     loading,
@@ -48,17 +53,20 @@ export const RegisterCategoryPage = () => {
               </FormField>
             </div>
             <div className={styles.card}>
-              <span className={styles.subcardTitle}>Subcategoría</span>
+              <span className={styles.subcardTitle}>{isEditing ? 'Editando subcategoría' : 'Subcategoría'}</span>
               <ImagePicker src={subcategoryPreview} alt="Imagen de subcategoría" onFileChange={handleSubcategoryPhotoChange} />
               <div className={styles.subForm}>
                 <FormField label="NOMBRE">
                   <TextInput value={subcategoryName} onChange={(event) => setSubcategoryName(event.target.value)} placeholder="Nombre de la subcategoría" maxLength={50} />
                 </FormField>
-                <Button type="button" onClick={handleAddSubcategory}>AÑADIR</Button>
+                <div className={styles.subFormActions}>
+                  <Button type="button" onClick={handleAddSubcategory}>{isEditing ? 'GUARDAR CAMBIOS' : 'AÑADIR'}</Button>
+                  {isEditing && <Button type="button" variant="danger" onClick={handleCancelEdit}>CANCELAR EDICIÓN</Button>}
+                </div>
               </div>
             </div>
           </div>
-          <SubcategoryStagingList items={subcategories} onRemove={handleRemoveSubcategory} />
+          <SubcategoryStagingList items={subcategories} onRemove={handleRemoveSubcategory} onEdit={handleStartEdit} editingId={editingId} />
           <Button type="submit" disabled={loading}>{loading ? 'REGISTRANDO...' : 'REGISTRAR'}</Button>
         </form>
       </MainLayout>

@@ -1,15 +1,17 @@
 import { verifyToken } from '../utils/token.js';
 
+/* Middleware para validar el token JWT del usuario y permitir el acceso */
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No autorizado' });
+    return res.status(401).json({message: 'No autorizado'});
   }
   const token = authHeader.split(' ')[1];
   try {
     req.user = verifyToken(token);
     next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Sesión inválida o expirada' });
+  } 
+  catch (error) {
+    return res.status(401).json({message: 'Sesión inválida o expirada'});
   }
 };

@@ -35,3 +35,14 @@ export const getCajeroNames = async () => {
   const { data } = await api.get('/config/daily-sales/cajeros');
   return data;
 };
+
+
+export const getPrintAgentUrl = async () => {
+  const { data } = await api.get('/config/print-agent-url');
+  return data.url;
+};
+
+export const updatePrintAgentUrl = async (url) => {
+  const { data } = await api.put('/config/print-agent-url', { url });
+  return data;
+};

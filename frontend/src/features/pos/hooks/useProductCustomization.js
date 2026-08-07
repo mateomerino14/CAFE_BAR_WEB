@@ -7,6 +7,7 @@ export const useProductCustomization = (product) => {
   const [cantidadTotal, setCantidadTotal] = useState('1');
   const [tipoConsumo, setTipoConsumo] = useState('Local');
   const [ingredients, setIngredients] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [subGroupsMode, setSubGroupsMode] = useState(false);
   const [groups, setGroups] = useState([]);
 
@@ -15,7 +16,11 @@ export const useProductCustomization = (product) => {
   const [draftExtraQuantities, setDraftExtraQuantities] = useState({});
 
   useEffect(() => {
-    getProductIngredients(product.id_prod).then(setIngredients).catch(() => setIngredients([]));
+    setLoading(true);
+    getProductIngredients(product.id_prod)
+      .then(setIngredients)
+      .catch(() => setIngredients([]))
+      .finally(() => setLoading(false));
   }, [product]);
 
   const toggleExclusion = (idIng) => {
@@ -46,7 +51,6 @@ export const useProductCustomization = (product) => {
   const addGroup = () => {
     const cantidadGrupo = Number(draftCantidad) || 0;
     if (cantidadGrupo <= 0 || cantidadGrupo > restante) return false;
-
     setGroups((prev) => [
       ...prev,
       {
@@ -77,7 +81,7 @@ export const useProductCustomization = (product) => {
   return {
     cantidadTotal, setCantidadTotal,
     tipoConsumo, setTipoConsumo,
-    ingredients,
+    ingredients, loading,
     subGroupsMode, setSubGroupsMode,
     groups, addGroup, removeGroup,
     draftCantidad, setDraftCantidad,

@@ -25,7 +25,6 @@ const styles = {
   subTabInactive: 'border-slate-200 bg-white text-slate-500',
   ingredientRow: 'flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0',
   ingredientList: 'max-h-40 overflow-y-auto',
-  extraInput: 'w-16',
   total: 'mt-4 rounded-lg bg-blue-50 p-3 text-center text-sm font-bold text-blue-700',
   actions: 'mt-4 flex flex-col gap-2',
   groupsList: 'mt-3 flex flex-col divide-y divide-slate-100 rounded-lg border border-slate-200',
@@ -34,21 +33,22 @@ const styles = {
   groupMeta: 'text-xs text-slate-500',
   removeGroupBtn: 'shrink-0 text-xs font-bold text-red-600 hover:underline',
   remaining: 'mt-2 text-sm font-semibold text-orange-600',
-  hint: 'mt-2 text-xs text-slate-400'
+  hint: 'mt-2 text-xs text-slate-400',
+  loading: 'mt-4 rounded-lg bg-slate-50 p-6 text-center text-sm font-semibold text-blue-500'
 };
 
 export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
   const {
-  products,
-  activeProductIndex, setActiveProductIndex,
-  activeProduct,
-  groupsByProduct, addUnitGroup, removeUnitGroup, getRestante, getAssigned,
-  draftCantidadByProduct, setDraftCantidad,
-  draftExcludedByProduct, toggleExclusion,
-  draftExtrasByProduct, setExtraQuantity,
-  buildAllProductCustomizations,
-  totalExtraCost
-} = usePromotionCustomization(promotion);
+    products, loading,
+    activeProductIndex, setActiveProductIndex,
+    activeProduct,
+    groupsByProduct, addUnitGroup, removeUnitGroup, getRestante, getAssigned,
+    draftCantidadByProduct, setDraftCantidad,
+    draftExcludedByProduct, toggleExclusion,
+    draftExtrasByProduct, setExtraQuantity,
+    buildAllProductCustomizations,
+    totalExtraCost
+  } = usePromotionCustomization(promotion);
 
   const [cantidad, setCantidad] = useState('1');
   const [tipoConsumo, setTipoConsumo] = useState('Local');
@@ -82,7 +82,7 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
   };
 
   return (
-    <Modal onClose={onClose} size={canCustomize ? 'xl' : 'sm'}>
+    <Modal onClose={onClose} size={!loading && canCustomize ? 'xl' : 'sm'}>
       <h2 className={styles.title}>{promotion.nom_prom}</h2>
 
       <div className={styles.section}>
@@ -95,9 +95,9 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
         </div>
       </div>
 
-      
+      {loading && <p className={styles.loading}>Cargando productos de la promoción...</p>}
 
-      {canCustomize && (
+      {!loading && canCustomize && (
         <div className={styles.section}>
           <div className={styles.productTabsRow}>
             {products.map((product, index) => (
@@ -150,17 +150,17 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
                   </div>
                 ))}
                 {tab === 'extras' && activeProduct.ingredients.map((ing) => (
-  <div key={ing.id_ing} className={styles.ingredientRow}>
-    <span>{ing.nom_ing} (Bs {Number(ing.precio_extra || 0).toFixed(2)} c/u)</span>
-    <TextInput
-      value={(draftExtrasByProduct[activeProduct.idProd] || {})[ing.id_ing] || ''}
-      onChange={(event) => setExtraQuantity(activeProduct.idProd, ing.id_ing, event.target.value.replace(/\D/g, ''))}
-      placeholder="0"
-      maxLength={3}
-      style={{ width: '3.5rem', textAlign: 'center' }}
-    />
-  </div>
-))}
+                  <div key={ing.id_ing} className={styles.ingredientRow}>
+                    <span>{ing.nom_ing} (Bs {Number(ing.precio_extra || 0).toFixed(2)} c/u)</span>
+                    <TextInput
+                      value={(draftExtrasByProduct[activeProduct.idProd] || {})[ing.id_ing] || ''}
+                      onChange={(event) => setExtraQuantity(activeProduct.idProd, ing.id_ing, event.target.value.replace(/\D/g, ''))}
+                      placeholder="0"
+                      maxLength={3}
+                      style={{ width: '3.5rem', textAlign: 'center' }}
+                    />
+                  </div>
+                ))}
               </div>
 
               <Button type="button" variant="warning" size="sm" onClick={handleAddGroup}>AÑADIR GRUPO PARA ESTE PRODUCTO</Button>
@@ -191,12 +191,15 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
         </div>
       )}
 
-      <div className={styles.total}>Total: Bs {total.toFixed(2)}</div>
-
-      <div className={styles.actions}>
-        <Button type="button" onClick={handleConfirm}>AGREGAR AL PEDIDO</Button>
-        <Button type="button" variant="danger" onClick={onClose}>CANCELAR</Button>
-      </div>
+      {!loading && (
+        <>
+          <div className={styles.total}>Total: Bs {total.toFixed(2)}</div>
+          <div className={styles.actions}>
+            <Button type="button" onClick={handleConfirm}>AGREGAR AL PEDIDO</Button>
+            <Button type="button" variant="danger" onClick={onClose}>CANCELAR</Button>
+          </div>
+        </>
+      )}
       {error && <Toast>{error}</Toast>}
     </Modal>
   );

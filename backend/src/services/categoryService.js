@@ -1,40 +1,38 @@
 import { supabase } from '../config/supabaseClient.js';
 import { uploadPhoto } from '../utils/storage.js';
 
+/*Verifica si una categoría ya existe para evitar registros duplicados, permitiendo excluir un registro específico durante una modificación.*/
 const isCategoryNameTaken = async (name, excludeId = null) => {
   let query = supabase.from('categoria').select('id_categoria').ilike('nombre_categoria', name);
   if (excludeId) query = query.neq('id_categoria', excludeId);
-  const { data } = await query.maybeSingle();
+  const {data} = await query.maybeSingle();
   return Boolean(data);
 };
 
+/*Verifica si una subcategoría ya existe dentro de una categoría determinada, evitando nombres duplicados y permitiendo excluir el registro actual al editar.*/
 const isSubcategoryNameTaken = async (idCategoria, name, excludeId = null) => {
   let query = supabase.from('subcategoria').select('id_subcategoria').eq('id_categoria', idCategoria).ilike('nombre', name);
   if (excludeId) query = query.neq('id_subcategoria', excludeId);
-  const { data } = await query.maybeSingle();
+  const {data} = await query.maybeSingle();
   return Boolean(data);
 };
 
+/* Registra una nueva categoría junto con sus subcategorías asociadas, validando duplicados y almacenando imágenes cuando corresponda. */
 export const createCategoryWithSubcategories = async (nombreCategoria, categoryPhotoFile, subcategories) => {
   const nameTaken = await isCategoryNameTaken(nombreCategoria);
   if (nameTaken) throw new Error('DUPLICATE_CATEGORY');
-
   const uniqueNames = new Set(subcategories.map((item) => item.nombre.toLowerCase()));
   if (uniqueNames.size !== subcategories.length) throw new Error('DUPLICATE_SUBCATEGORY_BATCH');
-
   const categoryPhotoUrl = categoryPhotoFile ? await uploadPhoto('categories', categoryPhotoFile) : null;
-
-  const { data: category, error } = await supabase
+  const {data: category, error} = await supabase
     .from('categoria')
     .insert({ nombre_categoria: nombreCategoria, imagen_categoria: categoryPhotoUrl })
     .select('id_categoria')
     .single();
-
   if (error) {
     if (error.code === '23505') throw new Error('DUPLICATE_CATEGORY');
     throw error;
   }
-
   for (const item of subcategories) {
     const photoUrl = item.photoFile ? await uploadPhoto('subcategories', item.photoFile) : null;
     await supabase.from('subcategoria').insert({
@@ -43,25 +41,26 @@ export const createCategoryWithSubcategories = async (nombreCategoria, categoryP
       imagen_subcategoria: photoUrl
     });
   }
-
   return category.id_categoria;
 };
 
+/* Obtiene únicamente los nombres de categorías que se encuentran activas para ser utilizadas en selecciones o formularios. */
 export const listCategoryNames = async () => {
-  const { data } = await supabase
+  const {data} = await supabase
     .from('categoria')
     .select('nombre_categoria')
     .eq('activa', true)
     .order('nombre_categoria');
-
   return (data || []).map((row) => row.nombre_categoria);
 };
 
+/* Obtiene todos los nombres de categorías registradas sin considerar su estado de disponibilidad. */
 export const listAllCategoryNames = async () => {
-  const { data } = await supabase.from('categoria').select('nombre_categoria').order('nombre_categoria');
+  const {data} = await supabase.from('categoria').select('nombre_categoria').order('nombre_categoria');
   return (data || []).map((row) => row.nombre_categoria);
 };
 
+/* Lista las categorías activas junto con la cantidad de subcategorías disponibles asociadas a cada una. */
 export const listCategories = async (search) => {
   let query = supabase
     .from('categoria')

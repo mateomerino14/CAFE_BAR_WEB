@@ -6,6 +6,7 @@ import { updateSubcategoryHandler, setSubcategoryAvailabilityHandler } from '../
 
 const router = Router();
 
+/* Rutas para la gestión de subcategorías de productos */
 router.put('/:id', authenticate, authorize('MODIFICAR_CATEGORIA'), upload.any(), updateSubcategoryHandler);
 router.put('/:id/availability', authenticate, authorize('MODIFICAR_CATEGORIA'), setSubcategoryAvailabilityHandler);
 

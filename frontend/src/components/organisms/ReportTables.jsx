@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 const formatHora = (hora) => {
   if (!hora) return '—';
   const [horaStr, minutoStr] = hora.split(':');
@@ -13,7 +15,12 @@ const styles = {
   th: 'bg-slate-100 px-3 py-2 font-bold text-slate-600',
   td: 'border-t border-slate-100 px-3 py-2',
   empty: 'mt-4 p-6 text-center text-sm text-slate-400',
-  footer: 'border-t-2 border-slate-300 bg-slate-50 px-3 py-2 text-sm font-bold'
+  footer: 'border-t-2 border-slate-300 bg-slate-50 px-3 py-2 text-sm font-bold',
+  badgePromo: 'inline-block rounded bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-700',
+  badgeProducto: 'inline-block rounded bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600',
+  gananciaPositiva: 'font-bold text-emerald-600',
+  gananciaNegativa: 'font-bold text-red-600',
+  nombreClickeable: 'font-semibold text-blue-700 underline decoration-dotted hover:text-blue-900'
 };
 
 export const DetailedSalesTable = ({ rows, onSelect }) => {
@@ -76,20 +83,35 @@ export const SummaryByDateTable = ({ result }) => {
   );
 };
 
-export const TopProductsTable = ({ rows }) => {
-  if (rows.length === 0) return <p className={styles.empty}>No hay productos vendidos en este período</p>;
+export const TopProductsTable = ({ rows, onSelectPromo }) => {
+  if (rows.length === 0) return <p className={styles.empty}>No hay productos ni promociones vendidas en este período</p>;
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>
         <thead>
-          <tr>{['Producto', 'Cantidad Vendida', 'Total Ventas'].map((h) => <th key={h} className={styles.th}>{h}</th>)}</tr>
+          <tr>{['Tipo', 'Nombre', 'Cantidad', 'Ingreso', 'Costo', 'Ganancia'].map((h) => <th key={h} className={styles.th}>{h}</th>)}</tr>
         </thead>
         <tbody>
           {rows.map((r, index) => (
             <tr key={index}>
-              <td className={styles.td}>{r.producto}</td>
+              <td className={styles.td}>
+                <span className={r.tipo === 'promocion' ? styles.badgePromo : styles.badgeProducto}>
+                  {r.tipo === 'promocion' ? 'Promoción' : 'Producto'}
+                </span>
+              </td>
+              <td className={styles.td}>
+                {r.tipo === 'promocion' ? (
+                  <button type="button" className={styles.nombreClickeable} onClick={() => onSelectPromo(r)}>
+                    {r.nombre}
+                  </button>
+                ) : (
+                  r.nombre
+                )}
+              </td>
               <td className={styles.td}>{r.cantidad}</td>
-              <td className={styles.td}>Bs {r.total.toFixed(2)}</td>
+              <td className={styles.td}>Bs {r.ingreso.toFixed(2)}</td>
+              <td className={styles.td}>Bs {r.costo.toFixed(2)}</td>
+              <td className={`${styles.td} ${r.ganancia >= 0 ? styles.gananciaPositiva : styles.gananciaNegativa}`}>Bs {r.ganancia.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

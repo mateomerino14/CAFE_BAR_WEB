@@ -18,6 +18,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la gestión de categorías y subcategorías de productos */
 router.post('/', authenticate, authorize('REGISTRAR_CATEGORIA'), upload.any(), createCategoryHandler);
 router.get('/names', authenticate, listCategoryNamesHandler);
 router.get('/names/all', authenticate, authorize('BAJA_CATEGORIA'), listAllCategoryNamesHandler);

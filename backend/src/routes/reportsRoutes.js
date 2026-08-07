@@ -9,6 +9,7 @@ import {
 
 const router = Router();
 
+/* Rutas para la generación y gestión de reportes del sistema */
 router.get('/employees', authenticate, authorize('VER_REPORTES'), listReportEmployeesHandler);
 router.get('/detallado', authenticate, authorize('VER_REPORTES'), getDetailedSalesReportHandler);
 router.get('/resumen-fechas', authenticate, authorize('VER_REPORTES'), getSummaryByDateReportHandler);

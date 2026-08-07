@@ -47,7 +47,9 @@ export const CajaPage = () => {
   const ticketPrint = useDisclosure(false);
   const kitchenPrint = useDisclosure(false);
   const [sections, setSections] = useState([]);
+  const [loadingSections, setLoadingSections] = useState(false);
   const [employees, setEmployees] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [customizingProduct, setCustomizingProduct] = useState(null);
   const [addingPromotion, setAddingPromotion] = useState(null);
   const [checkoutTarget, setCheckoutTarget] = useState(null);
@@ -68,13 +70,21 @@ export const CajaPage = () => {
 
   useEffect(() => {
     if (tablePicker.isOpen) {
-      getSectionsWithTables().then(setSections).catch(() => setSections([]));
+      setLoadingSections(true);
+      getSectionsWithTables()
+        .then(setSections)
+        .catch(() => setSections([]))
+        .finally(() => setLoadingSections(false));
     }
   }, [tablePicker.isOpen]);
 
   useEffect(() => {
     if (employeePicker.isOpen) {
-      getEmployeesForPos().then(setEmployees).catch(() => setEmployees([]));
+      setLoadingEmployees(true);
+      getEmployeesForPos()
+        .then(setEmployees)
+        .catch(() => setEmployees([]))
+        .finally(() => setLoadingEmployees(false));
     }
   }, [employeePicker.isOpen]);
 
@@ -151,6 +161,7 @@ export const CajaPage = () => {
       {tablePicker.isOpen && (
         <TablePickerModal
           sections={sections}
+          loading={loadingSections}
           onClose={tablePicker.close}
           onSelect={(selectedSeccion, selectedMesa) => {
             handleSelectTable(selectedSeccion, selectedMesa);
@@ -165,6 +176,7 @@ export const CajaPage = () => {
       {employeePicker.isOpen && (
         <EmployeePickerModal
           employees={employees}
+          loading={loadingEmployees}
           onClose={employeePicker.close}
           onSelect={(employee) => {
             handleSelectMesero(employee);
@@ -194,9 +206,13 @@ export const CajaPage = () => {
           onClose={ticketPrint.close}
           title={`Ticket Venta ${lastNumVenta || ''}`}
           text={buildTicketText(ticket)}
+          tipo="ticket"
           onPrinted={() => {
             markTicketPrinted();
             printGuard.recordPrint('ticket');
+          }}
+          onCompletedWithoutCounting={() => {
+            markTicketPrinted();
           }}
         />
       )}
@@ -205,9 +221,13 @@ export const CajaPage = () => {
           onClose={kitchenPrint.close}
           title={`Cocina Venta ${lastNumVenta || ''}`}
           text={buildKitchenText(kitchenTicket)}
+          tipo="cocina"
           onPrinted={() => {
             markCocinaPrinted();
             printGuard.recordPrint('cocina');
+          }}
+          onCompletedWithoutCounting={() => {
+            markCocinaPrinted();
           }}
         />
       )}

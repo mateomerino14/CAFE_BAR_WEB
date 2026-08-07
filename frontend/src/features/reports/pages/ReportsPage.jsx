@@ -6,6 +6,7 @@ import { ReportActions } from '../../../components/organisms/ReportActions';
 import { DetailedSalesTable, SummaryByDateTable, TopProductsTable } from '../../../components/organisms/ReportTables';
 import { EmployeePieChart } from '../../../components/organisms/EmployeePieChart';
 import { SaleDetailsModal } from '../../../components/organisms/SaleDetailsModal';
+import { TopProductsDetailModal } from '../../../components/organisms/TopProductsDetailModal';
 import { useReports } from '../hooks/useReports';
 
 const styles = {
@@ -25,6 +26,7 @@ export const ReportsPage = () => {
   } = useReports();
 
   const [selectedVenta, setSelectedVenta] = useState(null);
+  const [selectedPromo, setSelectedPromo] = useState(null);
 
   return (
     <>
@@ -49,7 +51,7 @@ export const ReportsPage = () => {
                 <DetailedSalesTable rows={detalladoRows} onSelect={setSelectedVenta} />
               )}
               {subreporte === 'resumen_fechas' && <SummaryByDateTable result={resumenFechasResult} />}
-              {subreporte === 'productos_vendidos' && <TopProductsTable rows={productosRows} />}
+              {subreporte === 'productos_vendidos' && <TopProductsTable rows={productosRows} onSelectPromo={setSelectedPromo} />}
               {subreporte === 'resumen_empleado' && (
                 <div className={styles.pieGrid}>
                   <EmployeePieChart rows={empleadoCajeroRows} titulo="Ventas por Cajero" />
@@ -65,6 +67,9 @@ export const ReportsPage = () => {
           venta={{ idVenta: selectedVenta.idVenta, numVenta: selectedVenta.numVenta, mesa: selectedVenta.mesa }}
           onClose={() => setSelectedVenta(null)}
         />
+      )}
+      {selectedPromo && (
+        <TopProductsDetailModal item={selectedPromo} onClose={() => setSelectedPromo(null)} />
       )}
       {error && <Toast>{error}</Toast>}
       {success && <Toast variant="success">{success}</Toast>}

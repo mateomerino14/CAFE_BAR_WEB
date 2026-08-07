@@ -5,6 +5,7 @@ import { Toast } from '../../../components/atoms/Toast';
 import { TaxLinkModal } from '../../../components/organisms/TaxLinkModal';
 import { ChangeDirectorioPasswordModal } from '../../../components/organisms/ChangeDirectorioPasswordModal';
 import { BackupModal } from '../../../components/organisms/BackupModal';
+import { PrinterConfigModal } from '../../../components/organisms/PrinterConfigModal';
 import { PhysicalDeletionModal } from '../../../components/organisms/PhysicalDeletionModal';
 import { useDisclosure } from '../../../hooks/useDisclosure';
 import { useAutoDismiss } from '../../../hooks/useAutoDismiss';
@@ -19,6 +20,7 @@ export const ConfiguracionPage = () => {
   const taxLink = useDisclosure(false);
   const changePassword = useDisclosure(false);
   const backup = useDisclosure(false);
+  const printerConfig = useDisclosure(false);
   const deletion = useDisclosure(false);
   const [success, setSuccess] = useState('');
   useAutoDismiss(success, () => setSuccess(''));
@@ -38,6 +40,9 @@ export const ConfiguracionPage = () => {
           </button>
           <button type="button" className={styles.menuButton} style={{ backgroundColor: '#059669' }} onClick={backup.open}>
             EXPORTAR / IMPORTAR / ENVIAR BACKUP
+          </button>
+          <button type="button" className={styles.menuButton} style={{ backgroundColor: '#0891b2' }} onClick={printerConfig.open}>
+            CONFIGURAR IMPRESORAS
           </button>
           <button type="button" className={styles.menuButton} style={{ backgroundColor: '#7f1d1d' }} onClick={deletion.open}>
             ELIMINACIÓN FÍSICA DE REGISTROS
@@ -63,6 +68,7 @@ export const ConfiguracionPage = () => {
         />
       )}
       {backup.isOpen && <BackupModal onClose={backup.close} />}
+      {printerConfig.isOpen && <PrinterConfigModal onClose={printerConfig.close} />}
       {deletion.isOpen && <PhysicalDeletionModal onClose={deletion.close} />}
       {success && <Toast variant="success">{success}</Toast>}
     </>
