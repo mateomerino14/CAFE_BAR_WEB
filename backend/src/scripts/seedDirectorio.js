@@ -1,5 +1,5 @@
-import { supabase } from '../config/supabaseClient.js';
-import { hashPassword } from '../utils/password.js';
+import {supabase} from '../config/supabaseClient.js';
+import {hashPassword} from '../utils/password.js';
 
 /* Script para crear o actualizar el usuario DIRECTORIO con una contraseña segura */
 const run = async () => {
@@ -18,13 +18,13 @@ const run = async () => {
   if (existing) {
     await supabase
       .from('directorio')
-      .update({ contrasena_admin: passwordHash })
+      .update({contrasena_admin: passwordHash})
       .eq('id_admin', existing.id_admin);
   } 
   else {
     await supabase
       .from('directorio')
-      .insert({ nom_admin: 'DIRECTORIO', contrasena_admin: passwordHash });
+      .insert({nom_admin: 'DIRECTORIO', contrasena_admin: passwordHash});
   }
   console.log('Directorio configurado correctamente');
   process.exit(0);

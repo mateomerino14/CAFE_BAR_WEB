@@ -106,21 +106,25 @@ export const listCajeroNamesHandler = async (req, res) => {
   }
 };
 
+/* Obtiene la dirección configurada del servicio de impresión y la retorna al cliente. */
 export const getPrintAgentUrlHandler = async (req, res) => {
   try {
     const url = await getPrintAgentUrl();
-    return res.json({ url });
-  } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener la dirección del servicio de impresión' });
+    return res.json({url});
+  } 
+  catch (error) {
+    return res.status(500).json({message: 'Error al obtener la dirección del servicio de impresión'});
   }
 };
 
+/* Actualiza y guarda la dirección del servicio de impresión proporcionada por el cliente. */
 export const updatePrintAgentUrlHandler = async (req, res) => {
-  const { url } = req.body;
+  const {url} = req.body;
   try {
     await updatePrintAgentUrl((url || '').trim());
-    return res.json({ message: 'Dirección guardada correctamente' });
-  } catch (error) {
-    return res.status(500).json({ message: 'No se pudo guardar la dirección' });
+    return res.json({message: 'Dirección guardada correctamente'});
+  } 
+  catch (error) {
+    return res.status(500).json({message: 'No se pudo guardar la dirección'});
   }
 };

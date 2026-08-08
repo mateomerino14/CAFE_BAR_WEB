@@ -1,4 +1,4 @@
-import { getScreensTree } from '../services/screenService.js';
+import {getScreensTree} from '../services/screenService.js';
 
 /* Controlador para obtener el árbol de pantallas del sistema */
 export const getScreensTreeHandler = async (req, res) => {

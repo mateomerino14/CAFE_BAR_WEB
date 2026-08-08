@@ -8,6 +8,7 @@ const CERT_DIR = path.join(__dirname, '..', 'certs');
 const KEY_PATH = path.join(CERT_DIR, 'key.pem');
 const CERT_PATH = path.join(CERT_DIR, 'cert.pem');
 
+/* Obtiene un certificado SSL existente para el servicio de impresión o genera uno nuevo */
 export const getOrCreateCertificate = async () => {
   if (fs.existsSync(KEY_PATH) && fs.existsSync(CERT_PATH)) {
     return {
@@ -15,14 +16,12 @@ export const getOrCreateCertificate = async () => {
       cert: fs.readFileSync(CERT_PATH)
     };
   }
-
-  if (!fs.existsSync(CERT_DIR)) fs.mkdirSync(CERT_DIR, { recursive: true });
-
-  const attrs = [{ name: 'commonName', value: 'cafebar-print-agent' }];
-  const pems = await selfsigned.generate(attrs, { days: 3650 });
-
+  if (!fs.existsSync(CERT_DIR)) {
+    fs.mkdirSync(CERT_DIR, {recursive: true});
+  }
+  const attrs = [{name: 'commonName', value: 'cafebar-print-agent'}];
+  const pems = await selfsigned.generate(attrs,{days: 3650});
   fs.writeFileSync(KEY_PATH, pems.private);
   fs.writeFileSync(CERT_PATH, pems.cert);
-
-  return { key: pems.private, cert: pems.cert };
+  return {key: pems.private, cert: pems.cert};
 };

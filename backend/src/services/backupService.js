@@ -1,6 +1,6 @@
-import { supabase } from '../config/supabaseClient.js';
+import {supabase} from '../config/supabaseClient.js';
 import * as XLSX from 'xlsx';
-import { sendBackupEmailViaBrevo } from './emailService.js';
+import {sendBackupEmailViaBrevo} from './emailService.js';
 
 /* Orden de tablas utilizado para exportar e importar la base de datos respetando dependencias */
 const TABLE_ORDER = [
@@ -19,7 +19,7 @@ const findSheetName = (workbook, tabla) =>
 export const exportDatabaseToExcel = async () => {
   const workbook = XLSX.utils.book_new();
   for (const tabla of TABLE_ORDER) {
-    const { data } = await supabase.from(tabla).select('*');
+    const {data} = await supabase.from(tabla).select('*');
     const rows = data && data.length > 0 ? data : [{}];
     const sheet = XLSX.utils.json_to_sheet(rows);
     XLSX.utils.book_append_sheet(workbook, sheet, tabla.slice(0, 31));
@@ -53,7 +53,7 @@ export const importDatabaseFromExcel = async (buffer) => {
       const {error} = await supabase.from(tabla).insert(chunk);
       if (error) throw new Error(`IMPORT_INSERT_FAILED:${tabla}:${error.message}`);
     }
-    const { error: resetError } = await supabase.rpc('admin_reset_sequence', {target_table: tabla});
+    const {error: resetError} = await supabase.rpc('admin_reset_sequence', {target_table: tabla});
     if (resetError) {
       console.error(`No se pudo reiniciar la secuencia de ${tabla}:`, resetError.message);
     }

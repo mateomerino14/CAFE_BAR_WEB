@@ -1,4 +1,4 @@
-import { verifyToken } from '../utils/token.js';
+import {verifyToken} from '../utils/token.js';
 
 /* Middleware para validar el token JWT del usuario y permitir el acceso */
 export const authenticate = (req, res, next) => {

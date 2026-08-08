@@ -6,10 +6,11 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 const BRAND_BLUE = '#2563eb';
 const BRAND_BLUE_DARK = '#1e3a8a';
 
+/* Envía un correo electrónico mediante la API de Brevo utilizando las credenciales y datos del remitente configurados en las variables de entorno. */
 const sendViaBrevo = async (payload) => {
   const response = await fetch(BREVO_API_URL, {
     method: 'POST',
-    headers: {
+    headers:{
       'Content-Type': 'application/json',
       'api-key': process.env.BREVO_API_KEY
     },
@@ -18,16 +19,17 @@ const sendViaBrevo = async (payload) => {
       ...payload
     })
   });
-
   if (!response.ok) {
     const errorBody = await response.text();
     throw new Error(`BREVO_SEND_FAILED:${errorBody}`);
   }
 };
 
+
+/* Envía al usuario un código de verificación por correo electrónico para permitir la recuperación de su contraseña. */
 export const sendResetCodeEmail = async (toEmail, toName, code) => {
   await sendViaBrevo({
-    to: [{ email: toEmail, name: toName }],
+    to: [{email: toEmail, name: toName}],
     subject: 'Código de verificación - Cafebar',
     htmlContent: `
       <div style="font-family:Arial,sans-serif;background:#f1f5f9;padding:32px 16px;">
@@ -49,9 +51,11 @@ export const sendResetCodeEmail = async (toEmail, toName, code) => {
   });
 };
 
+
+/* Envía por correo electrónico un respaldo de la base de datos como archivo Excel adjunto. */
 export const sendBackupEmailViaBrevo = async (correoDestino, attachmentBuffer) => {
   await sendViaBrevo({
-    to: [{ email: correoDestino }],
+    to: [{email: correoDestino}],
     subject: 'Backup Cafebar',
     htmlContent: `
       <div style="font-family:Arial,sans-serif;background:#f1f5f9;padding:32px 16px;">
@@ -66,7 +70,7 @@ export const sendBackupEmailViaBrevo = async (correoDestino, attachmentBuffer) =
         </div>
       </div>
     `,
-    attachment: [{ content: attachmentBuffer.toString('base64'), name: 'backup_cafebar.xlsx' }]
+    attachment: [{content: attachmentBuffer.toString('base64'), name: 'backup_cafebar.xlsx'}]
   });
 };
 
@@ -89,9 +93,9 @@ const generatePdfBuffer = async (htmlContent) => {
 */
 
 
+/* Genera un archivo PDF a partir de contenido HTML utilizando Puppeteer, adaptando la configuración del navegador según el entorno de ejecución. */
 const generatePdfBuffer = async (htmlContent) => {
   const isRender = Boolean(process.env.RENDER);
-
   const browser = isRender
     ? await puppeteerCore.launch({
         args: chromium.args,
@@ -99,28 +103,29 @@ const generatePdfBuffer = async (htmlContent) => {
         executablePath: await chromium.executablePath(),
         headless: chromium.headless
       })
-    : await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-
+    : await puppeteer.launch({headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox']});
   try {
     const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    await page.setContent(htmlContent, {waitUntil: 'networkidle0'});
     const pdfBytes = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: { top: '15mm', bottom: '15mm', left: '10mm', right: '10mm' }
+      margin: {top: '15mm', bottom: '15mm', left: '10mm', right: '10mm'}
     });
     return Buffer.from(pdfBytes);
-  } finally {
+  } 
+  finally {
     await browser.close();
   }
 }
 
+
+/* Genera un reporte PDF a partir del contenido HTML y lo envía por correo electrónico como archivo adjunto mediante Brevo. */
 export const sendReportPdfEmail = async (correoDestino, titulo, htmlContent) => {
   const pdfBuffer = await generatePdfBuffer(htmlContent);
   const nombreArchivo = `${titulo.replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`;
-
   await sendViaBrevo({
-    to: [{ email: correoDestino }],
+    to: [{email: correoDestino}],
     subject: `${titulo} — Cafebar`,
     htmlContent: `
       <div style="font-family:Arial,sans-serif;background:#f1f5f9;padding:32px 16px;">
@@ -135,6 +140,6 @@ export const sendReportPdfEmail = async (correoDestino, titulo, htmlContent) => 
         </div>
       </div>
     `,
-    attachment: [{ content: pdfBuffer.toString('base64'), name: nombreArchivo }]
+    attachment: [{content: pdfBuffer.toString('base64'), name: nombreArchivo}]
   });
 };

@@ -84,10 +84,10 @@ export const isMobileDevice = () => {
 };
 
 export const tryPrintViaAgent = async (tipo, text) => {
-  const baseUrl = await getPrintAgentUrl();
-  if (!baseUrl) return { success: false, reason: 'NOT_CONFIGURED' };
-
   try {
+    const baseUrl = await getPrintAgentUrl();
+    if (!baseUrl) return { success: false, reason: 'NOT_CONFIGURED' };
+
     await checkPrintAgentHealth(baseUrl);
     await sendPrintJob(baseUrl, tipo, text);
     return { success: true };

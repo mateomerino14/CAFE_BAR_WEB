@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import {Router} from 'express';
 import multer from 'multer';
-import { authenticate } from '../middlewares/authenticate.js';
-import { authorize } from '../middlewares/authorize.js';
-import { exportBackupHandler, importBackupHandler, sendBackupEmailHandler } from '../controllers/backupController.js';
+import {authenticate} from '../middlewares/authenticate.js';
+import {authorize} from '../middlewares/authorize.js';
+import {exportBackupHandler, importBackupHandler, sendBackupEmailHandler} from '../controllers/backupController.js';
 
 const upload = multer({storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 }});
 

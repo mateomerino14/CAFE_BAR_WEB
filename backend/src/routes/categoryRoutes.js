@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { authenticate } from '../middlewares/authenticate.js';
-import { authorize } from '../middlewares/authorize.js';
-import { upload } from '../config/upload.js';
+import {Router} from 'express';
+import {authenticate} from '../middlewares/authenticate.js';
+import {authorize} from '../middlewares/authorize.js';
+import {upload} from '../config/upload.js';
 import {
   createCategoryHandler,
   listCategoryNamesHandler,

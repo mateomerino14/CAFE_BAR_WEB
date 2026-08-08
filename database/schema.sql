@@ -333,6 +333,7 @@ CREATE TABLE IF NOT EXISTS print_agent_config (
     id   BIGSERIAL PRIMARY KEY,
     url  VARCHAR(200)
 );
+
 -- =====================================================================
 -- AJUSTES 
 -- =====================================================================

@@ -6,7 +6,7 @@ import { checkPrintAgentHealth, getPrinters, getPrinterAssignment, savePrinterAs
 export const usePrinterConfig = () => {
   const [url, setUrl] = useState('');
   const [savedUrl, setSavedUrl] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState('idle'); // idle | checking | connected | failed
+  const [connectionStatus, setConnectionStatus] = useState('idle');
   const [printers, setPrinters] = useState([]);
   const [ticketPrinter, setTicketPrinter] = useState('');
   const [cocinaPrinter, setCocinaPrinter] = useState('');
@@ -18,10 +18,13 @@ export const usePrinterConfig = () => {
   useAutoDismiss(error, () => setError(''));
   useAutoDismiss(success, () => setSuccess(''));
 
+  const buildFullUrl = (ipOnly) => `https://${ipOnly.trim()}:4443`;
+  const extractIpOnly = (fullUrl) => (fullUrl || '').replace('https://', '').replace(':4443', '');
+
   useEffect(() => {
     getPrintAgentUrl()
       .then(async (savedValue) => {
-        setUrl(savedValue);
+        setUrl(extractIpOnly(savedValue));
         setSavedUrl(savedValue);
 
         if (savedValue) {
@@ -46,9 +49,14 @@ export const usePrinterConfig = () => {
 
   const handleSaveUrl = async () => {
     setError('');
+    if (!url.trim()) {
+      setError('Ingrese la dirección IP');
+      return;
+    }
+    const fullUrl = buildFullUrl(url);
     try {
-      await updatePrintAgentUrl(url.trim());
-      setSavedUrl(url.trim());
+      await updatePrintAgentUrl(fullUrl);
+      setSavedUrl(fullUrl);
       setSuccess('Dirección guardada correctamente');
     } catch (err) {
       setError('No se pudo guardar la dirección');

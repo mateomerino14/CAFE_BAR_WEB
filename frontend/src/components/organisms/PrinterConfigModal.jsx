@@ -38,14 +38,14 @@ export const PrinterConfigModal = ({ onClose }) => {
         <p className={styles.sectionTitle}>Dirección del servicio de impresión (Print Agent)</p>
         <div className={styles.sectionBody}>
           <p className={styles.hint}>
-            Dirección local de la PC donde corre el servicio de impresión, por ejemplo: https://192.168.1.50:4443
+            Solo la dirección IP de la PC donde corre el servicio de impresión (obtenida con el comando "ipconfig"), por ejemplo: 192.168.1.50
           </p>
           {loading ? (
             <p className={styles.hint}>Cargando...</p>
           ) : (
             <>
               <div className={styles.urlRow}>
-                <TextInput value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://192.168.1.50:4443" />
+                <TextInput value={url} onChange={(event) => setUrl(event.target.value)} placeholder="192.168.1.50" />
                 <Button type="button" onClick={handleSaveUrl}>GUARDAR</Button>
               </div>
               {savedUrl && (

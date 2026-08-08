@@ -1,5 +1,5 @@
-import { listStockOptions, createStock, listStockNames, listStock, getStock, updateStock } from '../services/stockService.js';
-import { isLettersOnly, isValidDecimal } from '../utils/validators.js';
+import {listStockOptions, createStock, listStockNames, listStock, getStock, updateStock} from '../services/stockService.js';
+import {isLettersOnly, isValidDecimal} from '../utils/validators.js';
 
 /* Controlador para listar las opciones de ingredientes disponibles */
 export const listStockOptionsHandler = async (req, res) => {

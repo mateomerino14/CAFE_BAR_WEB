@@ -1,6 +1,5 @@
 import {
-  listEmployeesForReports, getDetailedSalesReport, getSummaryByDateReport,
-  getTopProductsReport, getEmployeeChartReport, getEmployeeSalesReport
+  listEmployeesForReports, getDetailedSalesReport, getSummaryByDateReport,getTopProductsReport, getEmployeeChartReport, getEmployeeSalesReport
 } from '../services/reportsService.js';
 import { sendReportPdfEmail } from '../services/emailService.js';
 

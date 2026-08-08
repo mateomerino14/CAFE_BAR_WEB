@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import { loginHandler, directorioAliasHandler } from '../controllers/authController.js';
+import {Router} from 'express';
+import {loginHandler, directorioAliasHandler} from '../controllers/authController.js';
 
 const router = Router();
 

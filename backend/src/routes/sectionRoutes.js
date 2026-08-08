@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { authenticate } from '../middlewares/authenticate.js';
-import { authorize } from '../middlewares/authorize.js';
-import { createSectionHandler, listSectionsHandler, getSectionTableCountHandler, updateSectionHandler } from '../controllers/sectionController.js';
+import {Router} from 'express';
+import {authenticate} from '../middlewares/authenticate.js';
+import {authorize} from '../middlewares/authorize.js';
+import {createSectionHandler, listSectionsHandler, getSectionTableCountHandler, updateSectionHandler} from '../controllers/sectionController.js';
 
 const router = Router();
 

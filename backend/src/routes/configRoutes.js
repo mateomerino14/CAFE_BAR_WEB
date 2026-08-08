@@ -1,7 +1,9 @@
-import { Router } from 'express';
-import { authenticate } from '../middlewares/authenticate.js';
-import { authorize } from '../middlewares/authorize.js';
-import { getTaxLinkHandler, updateTaxLinkHandler, changeDirectorioPasswordHandler,getDailySalesSummaryHandler,listDailySalesHandler,getDailySaleDetailsHandler, listCajeroNamesHandler,getPrintAgentUrlHandler,updatePrintAgentUrlHandler} from '../controllers/configController.js';
+import {Router} from 'express';
+import {authenticate} from '../middlewares/authenticate.js';
+import {authorize} from '../middlewares/authorize.js';
+import {getTaxLinkHandler, updateTaxLinkHandler, changeDirectorioPasswordHandler,
+getDailySalesSummaryHandler,listDailySalesHandler,getDailySaleDetailsHandler, 
+listCajeroNamesHandler,getPrintAgentUrlHandler,updatePrintAgentUrlHandler} from '../controllers/configController.js';
 
 const router = Router();
 

@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import { authenticate } from '../middlewares/authenticate.js';
-import { authorize } from '../middlewares/authorize.js';
-import { listDeletionDataHandler, getDependencyTreeHandler, executeDeletionHandler } from '../controllers/deletionController.js';
+import {Router} from 'express';
+import {authenticate} from '../middlewares/authenticate.js';
+import {authorize} from '../middlewares/authorize.js';
+import {listDeletionDataHandler, getDependencyTreeHandler, executeDeletionHandler} from '../controllers/deletionController.js';
 
 const router = Router();
 
