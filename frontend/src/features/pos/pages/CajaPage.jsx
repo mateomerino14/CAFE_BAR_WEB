@@ -55,6 +55,8 @@ export const CajaPage = () => {
   const [checkoutTarget, setCheckoutTarget] = useState(null);
   const [checkoutError, setCheckoutError] = useState('');
   const [checkoutSuccess, setCheckoutSuccess] = useState('');
+  const [checkoutTicket, setCheckoutTicket] = useState(null);
+  const checkoutPrint = useDisclosure(false);
   const [printingType, setPrintingType] = useState(null);
   const ticket = useOrderTicket(lastOrderId);
   const kitchenTicket = useKitchenTicket(lastOrderId, lastBatchFecha);
@@ -243,10 +245,22 @@ export const CajaPage = () => {
           seccion={checkoutTarget.seccion}
           mesa={checkoutTarget.mesa}
           onClose={() => setCheckoutTarget(null)}
-          onConfirmed={() => {
-            setCheckoutTarget(null);
+          onConfirmed={(ticketData) => {
             setCheckoutSuccess(`Pago de la Mesa ${checkoutTarget.mesa.id_mesa} registrado correctamente`);
+            setCheckoutTicket(ticketData);
+            setCheckoutTarget(null);
+            printGuard.requestPrint('ticket', () => checkoutPrint.open());
           }}
+        />
+      )}
+      {checkoutPrint.isOpen && checkoutTicket && (
+        <PrintModal
+          onClose={checkoutPrint.close}
+          title={`Ticket Venta ${checkoutTicket.numVenta || ''}`}
+          text={buildTicketText(checkoutTicket)}
+          tipo="ticket"
+          onPrinted={() => printGuard.recordPrint('ticket')}
+          onCompletedWithoutCounting={() => {}}
         />
       )}
       {error && <Toast>{error}</Toast>}

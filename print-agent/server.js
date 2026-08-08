@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import https from 'https';
 import {getOrCreateCertificate} from './src/certificate.js';
+import { Bonjour } from 'bonjour-service';
 import {listPrinters, printText} from './src/printers.js';
 import {readConfig, writeConfig} from './src/config.js';
 
@@ -59,6 +60,15 @@ const start = async () => {
 
   https.createServer({ key, cert }, app).listen(PORT, () => {
     console.log(`Print Agent Cafebar escuchando en https://localhost:${PORT}`);
+    console.log(`También accesible en la red local como https://cafebar-caja.local:${PORT}`);
+
+    const bonjour = new Bonjour();
+    bonjour.publish({
+      name: 'Cafebar Print Agent',
+      host: 'cafebar-caja.local',
+      type: 'https',
+      port: PORT
+    });
   });
 };
 

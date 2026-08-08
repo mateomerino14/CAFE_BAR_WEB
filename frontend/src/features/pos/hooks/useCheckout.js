@@ -47,7 +47,7 @@ export const useCheckout = (seccion, mesa, onSuccess) => {
     setLoading(true);
     try {
       await checkoutOrder(idVenta, { metodo, montoEfectivo, montoQr });
-      onSuccess();
+      onSuccess(ticket);
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo registrar el pago');
     } finally {

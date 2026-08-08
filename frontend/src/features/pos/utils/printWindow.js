@@ -95,3 +95,11 @@ export const tryPrintViaAgent = async (tipo, text) => {
     return { success: false, reason: 'UNREACHABLE' };
   }
 };
+
+export const openPrintAgentAuthorization = async () => {
+  const { getPrintAgentUrl } = await import('../../config/services/configService');
+  const baseUrl = await getPrintAgentUrl();
+  if (!baseUrl) return false;
+  window.open(`${baseUrl}/health`, '_blank');
+  return true;
+};

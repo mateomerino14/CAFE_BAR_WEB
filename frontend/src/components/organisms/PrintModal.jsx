@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Modal } from '../atoms/Modal';
 import { Button } from '../atoms/Button';
 import { Toast } from '../atoms/Toast';
-import { printPlainText, downloadPlainTextAsPdf, isMobileDevice, tryPrintViaAgent } from '../../features/pos/utils/printWindow';
+import { printPlainText, downloadPlainTextAsPdf, isMobileDevice, tryPrintViaAgent, openPrintAgentAuthorization } from '../../features/pos/utils/printWindow';
 
 const styles = {
-  preview: 'flex max-h-[60vh] justify-center overflow-auto rounded-lg bg-slate-50 p-3',
+  preview: 'max-h-[60vh] overflow-auto rounded-lg bg-slate-50 p-3',
   pre: 'whitespace-pre font-mono text-[11px] leading-tight text-black',
   actions: 'mt-4 flex flex-col gap-2'
 };
@@ -51,6 +51,9 @@ export const PrintModal = ({ onClose, title, text, tipo, onPrinted, onCompletedW
       <div className={styles.actions}>
         <Button type="button" onClick={handlePrintDirect} disabled={sending}>
           {sending ? 'IMPRIMIENDO...' : 'IMPRIMIR'}
+        </Button>
+        <Button type="button" variant="warning" onClick={openPrintAgentAuthorization}>
+          AUTORIZAR IMPRESORA (primera vez)
         </Button>
         {isMobile && (
           <Button type="button" variant="warning" onClick={handleDownloadPdf}>DESCARGAR PDF</Button>
