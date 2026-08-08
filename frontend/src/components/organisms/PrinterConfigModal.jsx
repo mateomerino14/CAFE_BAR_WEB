@@ -5,6 +5,7 @@ import { Toast } from '../atoms/Toast';
 import { FormField } from '../molecules/FormField';
 import { SearchableSelect } from '../molecules/SearchableSelect';
 import { usePrinterConfig } from '../../features/config/hooks/usePrinterConfig';
+import { openPrintAgentAuthorization } from '../../features/pos/utils/printWindow';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -49,11 +50,14 @@ export const PrinterConfigModal = ({ onClose }) => {
               </div>
               {savedUrl && (
                 <>
+                  <Button type="button" variant="warning" onClick={() => openPrintAgentAuthorization()}>
+                    AUTORIZAR ESTE DISPOSITIVO
+                  </Button>
                   <Button type="button" variant="warning" onClick={handleTestConnection} disabled={connectionStatus === 'checking'}>
                     {connectionStatus === 'checking' ? 'PROBANDO...' : 'PROBAR CONEXIÓN'}
                   </Button>
                   <p className={styles.hint}>
-                    Si conectaste una impresora nueva, presiona este botón para que aparezca en las listas de abajo.
+                    Si conectaste una impresora nueva, presiona "Probar Conexión" para que aparezca en las listas de abajo.
                   </p>
                 </>
               )}

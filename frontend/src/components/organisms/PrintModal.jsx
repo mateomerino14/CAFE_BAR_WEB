@@ -6,7 +6,7 @@ import { printPlainText, downloadPlainTextAsPdf, isMobileDevice, tryPrintViaAgen
 
 const styles = {
   preview: 'max-h-[60vh] overflow-auto rounded-lg bg-slate-50 p-3',
-  pre: 'whitespace-pre font-mono text-[11px] leading-tight text-black',
+  pre: 'whitespace-pre font-mono text-[11px] leading-tight text-black w-max mx-auto',
   actions: 'mt-4 flex flex-col gap-2'
 };
 
