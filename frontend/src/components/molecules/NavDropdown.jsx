@@ -1,8 +1,8 @@
-import { useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { useDisclosure } from '../../hooks/useDisclosure';
-import { useClickOutside } from '../../hooks/useClickOutside';
-import { colors } from '../../constants/theme';
+import {useRef} from 'react';
+import {ChevronDown} from 'lucide-react';
+import {useDisclosure} from '../../hooks/useDisclosure';
+import {useClickOutside} from '../../hooks/useClickOutside';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'relative flex-1',
@@ -13,11 +13,10 @@ const styles = {
   menuItem: `block w-full px-4 py-2.5 text-left text-sm font-medium ${colors.navMenuText} transition-colors ${colors.navMenuHover}`
 };
 
-export const NavDropdown = ({ label, path, items = [], onNavigate }) => {
+export const NavDropdown = ({label, path, items = [], onNavigate}) => {
   const ref = useRef(null);
   const { isOpen, toggle, close } = useDisclosure(false);
   useClickOutside(ref, close);
-
   if (items.length === 0) {
     return (
       <div className={styles.wrapper}>
@@ -27,7 +26,6 @@ export const NavDropdown = ({ label, path, items = [], onNavigate }) => {
       </div>
     );
   }
-
   return (
     <div className={styles.wrapper} ref={ref}>
       <button type="button" className={styles.trigger} onClick={toggle}>

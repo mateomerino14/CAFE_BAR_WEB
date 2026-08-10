@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import {createContext, useContext, useState} from 'react';
 
 const AuthContext = createContext(null);
 
@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }) => {
     if (session.isDirectorio) return true;
     return session.permissions.includes(permission);
   };
-
   return (
     <AuthContext.Provider value={{ session, login, logout, hasPermission }}>
       {children}

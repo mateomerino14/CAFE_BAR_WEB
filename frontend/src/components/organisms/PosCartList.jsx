@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
-import { TextInput } from '../atoms/TextInput';
-import { Pagination } from '../molecules/Pagination';
-import { OrderItemDetailModal } from './OrderItemDetailModal';
-import { usePagination } from '../../hooks/usePagination';
-import { colors } from '../../constants/theme';
+import {useState} from 'react';
+import {X} from 'lucide-react';
+import {TextInput} from '../atoms/TextInput';
+import {Pagination} from '../molecules/Pagination';
+import {OrderItemDetailModal} from './OrderItemDetailModal';
+import {usePagination} from '../../hooks/usePagination';
+import {colors} from '../../constants/theme';
 
 const PAGE_SIZE = 6;
 
@@ -38,8 +38,12 @@ const styles = {
 
 const buildCustomizationText = (item) => {
   const parts = [];
-  if (item.exclusiones?.length) parts.push(`sin ${item.exclusiones.map((e) => e.nomIng).join(', ')}`);
-  if (item.extras?.length) parts.push(`extra ${item.extras.map((e) => `${e.cantidadExtra}x ${e.nomIng}`).join(', ')}`);
+  if (item.exclusiones?.length) {
+    parts.push(`sin ${item.exclusiones.map((e) => e.nomIng).join(', ')}`);
+  }
+  if (item.extras?.length) {
+    parts.push(`extra ${item.extras.map((e) => `${e.cantidadExtra}x ${e.nomIng}`).join(', ')}`);
+  }
   if (item.productCustomizations?.length) {
     item.productCustomizations.forEach((pc) => {
       (pc.unitGroups || []).forEach((group) => {
@@ -54,14 +58,13 @@ const buildCustomizationText = (item) => {
 const hasPerUnitCustomization = (item) =>
   item.type === 'promotion' && item.productCustomizations?.some((pc) => pc.unitGroups?.length > 0);
 
-export const PosCartList = ({ items, onRemove, onUpdateQuantity, total }) => {
+
+export const PosCartList = ({items, onRemove, onUpdateQuantity, total}) => {
   const [detailItem, setDetailItem] = useState(null);
   const { visible, goLeft, goRight, canGoLeft, canGoRight, currentPage, totalPages } = usePagination(items, PAGE_SIZE);
-
   if (items.length === 0) {
     return <p className={styles.empty}>Aún no agregaste productos</p>;
   }
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
@@ -75,7 +78,6 @@ export const PosCartList = ({ items, onRemove, onUpdateQuantity, total }) => {
           const customization = buildCustomizationText(item);
           const hasCustomization = Boolean(customization);
           const locked = hasPerUnitCustomization(item);
-
           return (
             <div key={item.cartId} className={styles.row}>
               <div className={styles.info}>
@@ -95,7 +97,6 @@ export const PosCartList = ({ items, onRemove, onUpdateQuantity, total }) => {
                   </div>
                 )}
               </div>
-
               {locked ? (
                 <span className={styles.lockedQuantity}>{item.cantidad}</span>
               ) : (
@@ -106,7 +107,6 @@ export const PosCartList = ({ items, onRemove, onUpdateQuantity, total }) => {
                   style={{ width: '4.5rem' }}
                 />
               )}
-
               <span className={styles.subtotal}>Bs {(item.unitPrice * Number(item.cantidad || 0)).toFixed(2)}</span>
               <button type="button" className={styles.removeButton} onClick={() => onRemove(item.cartId)}>
                 <X size={16} />

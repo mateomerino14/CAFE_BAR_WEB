@@ -1,9 +1,9 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { useTaxLink } from '../../features/config/hooks/useTaxLink';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {useTaxLink} from '../../features/config/hooks/useTaxLink';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -11,9 +11,8 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const TaxLinkModal = ({ onClose, onSaved }) => {
-  const { enlace, setEnlace, error, loading, handleSubmit } = useTaxLink(onSaved);
-
+export const TaxLinkModal = ({onClose, onSaved}) => {
+  const {enlace, setEnlace, error, loading, handleSubmit} = useTaxLink(onSaved);
   return (
     <Modal onClose={onClose}>
       <h2 className={styles.title}>Modificar enlace de Impuestos</h2>

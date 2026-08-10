@@ -1,5 +1,5 @@
-import { Power } from 'lucide-react';
-import { Avatar } from '../atoms/Avatar';
+import {Power} from 'lucide-react';
+import {Avatar} from '../atoms/Avatar';
 
 const styles = {
   wrapper: 'overflow-x-auto rounded-xl bg-white shadow-sm',
@@ -16,7 +16,7 @@ const styles = {
   toggleInactive: 'flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-600'
 };
 
-export const EmployeeStatusTable = ({ employees, onToggle }) => {
+export const EmployeeStatusTable = ({employees, onToggle}) => {
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

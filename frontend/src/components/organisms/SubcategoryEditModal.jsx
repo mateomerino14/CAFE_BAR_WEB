@@ -1,10 +1,10 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { ImagePicker } from '../molecules/ImagePicker';
-import { useEditSubcategory } from '../../features/categories/hooks/useEditSubcategory';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {ImagePicker} from '../molecules/ImagePicker';
+import {useEditSubcategory} from '../../features/categories/hooks/useEditSubcategory';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-orange-400 to-orange-500 px-4 py-3 text-center shadow-sm',
@@ -14,9 +14,8 @@ const styles = {
   actions: 'mt-4 flex w-full flex-col gap-2'
 };
 
-export const SubcategoryEditModal = ({ subcategory, onClose, onSaved }) => {
-  const { name, setName, preview, handleFileChange, error, loading, handleSave } = useEditSubcategory(subcategory, onSaved);
-
+export const SubcategoryEditModal = ({subcategory, onClose, onSaved}) => {
+  const {name, setName, preview, handleFileChange, error, loading, handleSave} = useEditSubcategory(subcategory, onSaved);
   return (
     <Modal onClose={onClose}>
       <div className={styles.header}>

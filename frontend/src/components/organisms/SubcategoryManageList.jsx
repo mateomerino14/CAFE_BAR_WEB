@@ -1,5 +1,5 @@
-import { Pencil, Power } from 'lucide-react';
-import { ImageBox } from '../atoms/ImageBox';
+import {Pencil, Power} from 'lucide-react';
+import {ImageBox} from '../atoms/ImageBox';
 
 const styles = {
   wrapper: 'flex flex-col divide-y divide-slate-100 rounded-xl bg-white shadow-sm',
@@ -17,7 +17,7 @@ const styles = {
   toggleInactive: 'flex w-28 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 px-2 py-1.5 text-xs font-bold text-white hover:bg-emerald-600'
 };
 
-export const SubcategoryManageList = ({ subcategories, onEdit, onToggle }) => {
+export const SubcategoryManageList = ({subcategories, onEdit, onToggle}) => {
   return (
     <div className={styles.wrapper}>
       {subcategories.map((subcategory) => (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 
 export const useIngredientStaging = (initialItems = []) => {
   const [items, setItems] = useState(initialItems);
@@ -63,5 +63,5 @@ export const useIngredientStaging = (initialItems = []) => {
     setQuantity('');
   };
 
-  return { items, ingredientInput, handleInputChange, handleSelectIngredient, quantity, setQuantity, handleAdd, handleRemove, handleUpdateQuantity, error, reset, setItems };
+  return {items, ingredientInput, handleInputChange, handleSelectIngredient, quantity, setQuantity, handleAdd, handleRemove, handleUpdateQuantity, error, reset, setItems};
 };

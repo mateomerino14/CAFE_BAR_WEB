@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
-import { useClickOutside } from '../../hooks/useClickOutside';
-import { TextInput } from '../atoms/TextInput';
-import { colors } from '../../constants/theme';
+import {useMemo, useRef, useState} from 'react';
+import {useClickOutside} from '../../hooks/useClickOutside';
+import {TextInput} from '../atoms/TextInput';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'relative w-full',
@@ -14,17 +14,14 @@ export const IngredientCombobox = ({ value, onInputChange, options, onSelect, pl
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   useClickOutside(ref, () => setIsOpen(false));
-
   const filtered = useMemo(() => {
     if (!value) return options;
     return options.filter((option) => option.nom_ing.toLowerCase().includes(value.toLowerCase()));
   }, [options, value]);
-
   const handleSelect = (option) => {
     onSelect(option);
     setIsOpen(false);
   };
-
   return (
     <div className={styles.wrapper} ref={ref}>
       <TextInput

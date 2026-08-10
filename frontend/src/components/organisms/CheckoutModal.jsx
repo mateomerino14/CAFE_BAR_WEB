@@ -1,11 +1,11 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { PrintableTicket } from './PrintableTicket';
-import { useCheckout } from '../../features/pos/hooks/useCheckout';
-import { getTaxLink } from '../../features/pos/services/posService';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {PrintableTicket} from './PrintableTicket';
+import {useCheckout} from '../../features/pos/hooks/useCheckout';
+import {getTaxLink} from '../../features/pos/services/posService';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -24,7 +24,7 @@ const styles = {
   taxLinkButton: 'mt-2'
 };
 
-export const CheckoutModal = ({ seccion, mesa, onClose, onConfirmed }) => {
+export const CheckoutModal = ({seccion, mesa, onClose, onConfirmed}) => {
   const {
     ticket, metodo, setMetodo,
     montoEfectivo, setMontoEfectivo,
@@ -33,16 +33,13 @@ export const CheckoutModal = ({ seccion, mesa, onClose, onConfirmed }) => {
     total, cambio,
     error, loading, handleConfirm
   } = useCheckout(seccion, mesa, onConfirmed);
-
   const handleOpenTaxLink = async () => {
     try {
       const enlace = await getTaxLink();
       window.open(enlace, '_blank');
     } catch (err) {
-      // si falla, simplemente no se abre nada
     }
   };
-
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>Área de cobro — Mesa {mesa.id_mesa}</h2>
@@ -55,7 +52,6 @@ export const CheckoutModal = ({ seccion, mesa, onClose, onConfirmed }) => {
             <span className={styles.totalLabel}>TOTAL</span>
             <p className={styles.totalValue}>Bs {total.toFixed(2)}</p>
           </div>
-
           <FormField label="MÉTODO DE PAGO">
             <div className={styles.methodRow}>
               <button type="button" className={`${styles.methodButton} ${metodo === 'efectivo' ? styles.active : styles.inactive}`} onClick={() => setMetodo('efectivo')}>Efectivo</button>
@@ -63,21 +59,18 @@ export const CheckoutModal = ({ seccion, mesa, onClose, onConfirmed }) => {
               <button type="button" className={`${styles.methodButton} ${metodo === 'mixto' ? styles.active : styles.inactive}`} onClick={() => setMetodo('mixto')}>Mixto</button>
             </div>
           </FormField>
-
           <FormField label="MONTO EFECTIVO">
             <TextInput value={montoEfectivo} onChange={(event) => setMontoEfectivo(event.target.value)} disabled={metodo === 'qr'} />
           </FormField>
           <FormField label="MONTO QR">
             <TextInput value={montoQr} onChange={(event) => setMontoQr(event.target.value)} disabled={metodo === 'efectivo'} />
           </FormField>
-
           <FormField label="PAGO RECIBIDO (calculadora de cambio)">
             <TextInput value={pagoRecibido} onChange={(event) => setPagoRecibido(event.target.value)} placeholder={total.toFixed(2)} />
           </FormField>
           <div className={styles.cambio}>
             {cambio >= 0 ? `Cambio: Bs ${cambio.toFixed(2)}` : `Falta: Bs ${Math.abs(cambio).toFixed(2)}`}
           </div>
-
           <div className={styles.actions}>
             <Button type="button" onClick={handleConfirm} disabled={loading}>{loading ? 'CONFIRMANDO...' : 'CONFIRMAR PAGO'}</Button>
             <Button type="button" variant="warning" className={styles.taxLinkButton} onClick={handleOpenTaxLink}>ABRIR PÁGINA DE IMPUESTOS</Button>

@@ -1,11 +1,11 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { SearchableSelect } from '../molecules/SearchableSelect';
-import { usePrinterConfig } from '../../features/config/hooks/usePrinterConfig';
-import { openPrintAgentAuthorization } from '../../features/pos/utils/printWindow';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {SearchableSelect} from '../molecules/SearchableSelect';
+import {usePrinterConfig} from '../../features/config/hooks/usePrinterConfig';
+import {openPrintAgentAuthorization} from '../../features/pos/utils/printWindow';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -21,7 +21,7 @@ const styles = {
   back: 'mt-5'
 };
 
-export const PrinterConfigModal = ({ onClose }) => {
+export const PrinterConfigModal = ({onClose}) => {
   const {
     url, setUrl, savedUrl, loading,
     connectionStatus, handleTestConnection,
@@ -29,11 +29,9 @@ export const PrinterConfigModal = ({ onClose }) => {
     saving, handleSaveUrl, handleSaveAssignment,
     error, success
   } = usePrinterConfig();
-
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>Configurar Impresoras</h2>
-
       <div className={styles.section}>
         <p className={styles.sectionTitle}>Dirección del servicio de impresión (Print Agent)</p>
         <div className={styles.sectionBody}>
@@ -67,7 +65,6 @@ export const PrinterConfigModal = ({ onClose }) => {
           )}
         </div>
       </div>
-
       {connectionStatus === 'connected' && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Asignar impresoras</p>
@@ -94,7 +91,6 @@ export const PrinterConfigModal = ({ onClose }) => {
           </div>
         </div>
       )}
-
       <Button type="button" variant="danger" className={styles.back} onClick={onClose}>CERRAR</Button>
       {error && <Toast>{error}</Toast>}
       {success && <Toast variant="success">{success}</Toast>}

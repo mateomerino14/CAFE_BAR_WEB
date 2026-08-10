@@ -1,6 +1,6 @@
-import { Pencil, ListTree } from 'lucide-react';
-import { ImageBox } from '../atoms/ImageBox';
-import { colors } from '../../constants/theme';
+import {Pencil, ListTree} from 'lucide-react';
+import {ImageBox} from '../atoms/ImageBox';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'overflow-x-auto rounded-xl bg-white shadow-sm',
@@ -13,7 +13,7 @@ const styles = {
   manageButton: 'flex items-center gap-1.5 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-600'
 };
 
-export const CategoryTable = ({ categories, onEdit, onManage }) => {
+export const CategoryTable = ({categories, onEdit, onManage}) => {
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

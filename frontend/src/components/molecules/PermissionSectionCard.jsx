@@ -1,5 +1,5 @@
-import { Checkbox } from '../atoms/Checkbox';
-import { colors } from '../../constants/theme';
+import {Checkbox} from '../atoms/Checkbox';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'rounded-lg border border-slate-200 bg-slate-50 p-3',
@@ -11,7 +11,7 @@ const styles = {
   grid: 'grid grid-cols-1 gap-2 sm:grid-cols-2'
 };
 
-export const PermissionSectionCard = ({ screenName, subpantallas, selectedIds, onToggle, onSelectAll, onSelectNone }) => {
+export const PermissionSectionCard = ({screenName, subpantallas, selectedIds, onToggle, onSelectAll, onSelectNone}) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>

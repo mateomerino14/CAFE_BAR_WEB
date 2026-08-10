@@ -1,5 +1,5 @@
-import { Camera } from 'lucide-react';
-import { ImageBox } from '../atoms/ImageBox';
+import {Camera} from 'lucide-react';
+import {ImageBox} from '../atoms/ImageBox';
 
 const styles = {
   wrapper: 'group relative h-40 w-40 cursor-pointer',
@@ -7,7 +7,7 @@ const styles = {
   input: 'hidden'
 };
 
-export const ImagePicker = ({ src, alt, onFileChange }) => {
+export const ImagePicker = ({src, alt, onFileChange}) => {
   return (
     <label className={styles.wrapper}>
       <ImageBox src={src} alt={alt} />

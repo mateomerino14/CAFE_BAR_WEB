@@ -1,6 +1,6 @@
-import { Pencil } from 'lucide-react';
-import { Avatar } from '../atoms/Avatar';
-import { colors } from '../../constants/theme';
+import {Pencil} from 'lucide-react';
+import {Avatar} from '../atoms/Avatar';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'overflow-x-auto rounded-xl bg-white shadow-sm',
@@ -11,7 +11,7 @@ const styles = {
   editButton: `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${colors.buttonPrimary}`
 };
 
-export const EmployeeTable = ({ employees, onEdit }) => {
+export const EmployeeTable = ({employees, onEdit}) => {
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

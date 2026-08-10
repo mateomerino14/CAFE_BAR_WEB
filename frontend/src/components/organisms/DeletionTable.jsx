@@ -7,11 +7,10 @@ const styles = {
   empty: 'p-4 text-center text-sm text-slate-400'
 };
 
-export const DeletionTable = ({ columns, rows, getId, isSelected, onToggle, hasWarning }) => {
+export const DeletionTable = ({columns, rows, getId, isSelected, onToggle, hasWarning}) => {
   if (rows.length === 0) {
     return <p className={styles.empty}>No hay registros</p>;
   }
-
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

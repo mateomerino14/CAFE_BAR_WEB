@@ -1,8 +1,8 @@
-import { TextInput } from '../atoms/TextInput';
-import { Select } from '../atoms/Select';
-import { CoverImagePicker } from '../molecules/CoverImagePicker';
-import { FormField } from '../molecules/FormField';
-import { colors } from '../../constants/theme';
+import {TextInput} from '../atoms/TextInput';
+import {Select} from '../atoms/Select';
+import {CoverImagePicker} from '../molecules/CoverImagePicker';
+import {FormField} from '../molecules/FormField';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex flex-col gap-5',
@@ -11,7 +11,7 @@ const styles = {
   grid: 'grid grid-cols-1 gap-4 sm:grid-cols-2'
 };
 
-export const EmployeeFormFields = ({ values, onChange, cargoOptions, photoPreview, onPhotoChange }) => {
+export const EmployeeFormFields = ({values, onChange, cargoOptions, photoPreview, onPhotoChange}) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.photoRow}>

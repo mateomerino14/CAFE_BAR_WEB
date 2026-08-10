@@ -1,8 +1,8 @@
-import { TextInput } from '../atoms/TextInput';
-import { Textarea } from '../atoms/Textarea';
-import { SearchableSelect } from '../molecules/SearchableSelect';
-import { FormField } from '../molecules/FormField';
-import { UNIT_OPTIONS } from '../../constants/units';
+import {TextInput} from '../atoms/TextInput';
+import {Textarea} from '../atoms/Textarea';
+import {SearchableSelect} from '../molecules/SearchableSelect';
+import {FormField} from '../molecules/FormField';
+import {UNIT_OPTIONS} from '../../constants/units';
 
 const styles = {
   wrapper: 'flex flex-col gap-5',
@@ -10,7 +10,7 @@ const styles = {
   warning: 'text-xs font-semibold text-red-600'
 };
 
-export const StockFormFields = ({ values, onChange, isDuplicateName }) => {
+export const StockFormFields = ({values, onChange, isDuplicateName}) => {
   return (
     <div className={styles.wrapper}>
       <FormField label="NOMBRE">

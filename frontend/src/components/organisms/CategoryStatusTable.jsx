@@ -1,5 +1,5 @@
-import { Power } from 'lucide-react';
-import { ImageBox } from '../atoms/ImageBox';
+import {Power} from 'lucide-react';
+import {ImageBox} from '../atoms/ImageBox';
 
 const styles = {
   wrapper: 'overflow-x-auto rounded-xl bg-white shadow-sm',
@@ -16,7 +16,7 @@ const styles = {
   toggleInactive: 'flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-600'
 };
 
-export const CategoryStatusTable = ({ categories, onToggle }) => {
+export const CategoryStatusTable = ({categories, onToggle}) => {
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Checkbox } from '../atoms/Checkbox';
-import { FormField } from '../molecules/FormField';
-import { Toast } from '../atoms/Toast';
-import { usePromotionCustomization } from '../../features/pos/hooks/usePromotionCustomization';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Checkbox} from '../atoms/Checkbox';
+import {FormField} from '../molecules/FormField';
+import {Toast} from '../atoms/Toast';
+import {usePromotionCustomization} from '../../features/pos/hooks/usePromotionCustomization';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -37,7 +37,7 @@ const styles = {
   loading: 'mt-4 rounded-lg bg-slate-50 p-6 text-center text-sm font-semibold text-blue-500'
 };
 
-export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
+export const PromotionAddModal = ({promotion, onClose, onConfirm}) => {
   const {
     products, loading,
     activeProductIndex, setActiveProductIndex,
@@ -54,11 +54,9 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
   const [tipoConsumo, setTipoConsumo] = useState('Local');
   const [tab, setTab] = useState('exclusiones');
   const [error, setError] = useState('');
-
   const cantidadNumerica = Number(cantidad) || 0;
   const canCustomize = products.some((p) => p.ingredients.length > 0);
   const total = Number(promotion.precio_prom) * cantidadNumerica + (canCustomize ? totalExtraCost : 0);
-
   const activeGroups = activeProduct ? groupsByProduct[activeProduct.idProd] || [] : [];
   const activeRestante = activeProduct ? getRestante(activeProduct.idProd, activeProduct.cantidadPromo * cantidadNumerica) : 0;
   const activeAssigned = activeProduct ? getAssigned(activeProduct.idProd) : 0;
@@ -84,7 +82,6 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
   return (
     <Modal onClose={onClose} size={!loading && canCustomize ? 'xl' : 'sm'}>
       <h2 className={styles.title}>{promotion.nom_prom}</h2>
-
       <div className={styles.section}>
         <FormField label="CANTIDAD">
           <TextInput value={cantidad} onChange={(event) => setCantidad(event.target.value.replace(/\D/g, ''))} maxLength={3} />
@@ -94,9 +91,7 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
           <button type="button" className={`${styles.typeButton} ${tipoConsumo === 'Para llevar' ? styles.typeActive : styles.typeInactive}`} onClick={() => setTipoConsumo('Para llevar')}>Para llevar</button>
         </div>
       </div>
-
       {loading && <p className={styles.loading}>Cargando productos de la promoción...</p>}
-
       {!loading && canCustomize && (
         <div className={styles.section}>
           <div className={styles.productTabsRow}>
@@ -111,7 +106,6 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
               </button>
             ))}
           </div>
-
           {activeProduct && (
             <>
               <FormField label={`CANTIDAD DEL GRUPO PARA "${activeProduct.nombre}" (restan ${activeRestante} de ${activeProduct.cantidadPromo * cantidadNumerica})`}>
@@ -138,7 +132,6 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
                   Extras
                 </button>
               </div>
-
               <div className={styles.ingredientList}>
                 {tab === 'exclusiones' && activeProduct.ingredients.map((ing) => (
                   <div key={ing.id_ing} className={styles.ingredientRow}>
@@ -162,12 +155,10 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
                   </div>
                 ))}
               </div>
-
               <Button type="button" variant="warning" size="sm" onClick={handleAddGroup}>AÑADIR GRUPO PARA ESTE PRODUCTO</Button>
               {activeRestante > 0 && activeAssigned > 0 && (
                 <p className={styles.remaining}>Las {activeRestante} unidades restantes de "{activeProduct.nombre}" quedarán sin personalizar</p>
               )}
-
               {activeGroups.length > 0 && (
                 <div className={styles.groupsList}>
                   {activeGroups.map((group) => (
@@ -190,7 +181,6 @@ export const PromotionAddModal = ({ promotion, onClose, onConfirm }) => {
           )}
         </div>
       )}
-
       {!loading && (
         <>
           <div className={styles.total}>Total: Bs {total.toFixed(2)}</div>

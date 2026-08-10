@@ -1,9 +1,9 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { PermissionsSelector } from './PermissionsSelector';
-import { useEditRole } from '../../features/roles/hooks/useEditRole';
-import { colors } from '../../constants/theme';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {PermissionsSelector} from './PermissionsSelector';
+import {useEditRole} from '../../features/roles/hooks/useEditRole';
+import {colors} from '../../constants/theme';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -12,9 +12,8 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const RoleEditModal = ({ role, onClose, onSaved }) => {
-  const { screens, selectedIds, toggle, selectAllInScreen, selectNoneInScreen, error, loading, ready, handleSave } = useEditRole(role, onSaved);
-
+export const RoleEditModal = ({role, onClose, onSaved}) => {
+  const {screens, selectedIds, toggle, selectAllInScreen, selectNoneInScreen, error, loading, ready, handleSave} = useEditRole(role, onSaved);
   return (
     <Modal onClose={onClose} size="lg">
       <div className={styles.header}>

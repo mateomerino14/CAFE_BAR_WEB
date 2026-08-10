@@ -1,8 +1,8 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Avatar } from '../atoms/Avatar';
-import { IconButton } from '../atoms/IconButton';
-import { usePagination } from '../../hooks/usePagination';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
+import {ChevronLeft, ChevronRight} from 'lucide-react';
+import {Avatar} from '../atoms/Avatar';
+import {IconButton} from '../atoms/IconButton';
+import {usePagination} from '../../hooks/usePagination';
+import {useMediaQuery} from '../../hooks/useMediaQuery';
 
 const PAGE_SIZE_MOBILE = 5;
 const PAGE_SIZE_DESKTOP = 7;
@@ -12,10 +12,10 @@ const styles = {
   list: 'grid min-w-0 flex-1 gap-1 sm:gap-2'
 };
 
-export const EmployeeCarousel = ({ employees, onSelect }) => {
+export const EmployeeCarousel = ({employees, onSelect}) => {
   const isDesktop = useMediaQuery('(min-width: 640px)');
   const pageSize = isDesktop ? PAGE_SIZE_DESKTOP : PAGE_SIZE_MOBILE;
-  const { visible, goLeft, goRight, canGoLeft, canGoRight } = usePagination(employees, pageSize);
+  const {visible, goLeft, goRight, canGoLeft, canGoRight} = usePagination(employees, pageSize);
   return (
     <div className={styles.wrapper}>
       <IconButton icon={ChevronLeft} size={18} onClick={goLeft} disabled={!canGoLeft} />

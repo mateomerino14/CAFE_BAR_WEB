@@ -1,5 +1,5 @@
-import { Pencil, X } from 'lucide-react';
-import { ImageBox } from '../atoms/ImageBox';
+import {Pencil, X} from 'lucide-react';
+import {ImageBox} from '../atoms/ImageBox';
 
 const styles = {
   wrapper: 'flex flex-col divide-y divide-slate-100 rounded-xl bg-white shadow-sm',
@@ -13,11 +13,10 @@ const styles = {
   removeButton: 'flex items-center justify-center rounded-full bg-red-100 p-1.5 text-red-600 hover:bg-red-200'
 };
 
-export const SubcategoryStagingList = ({ items, onRemove, onEdit, editingId }) => {
+export const SubcategoryStagingList = ({items, onRemove, onEdit, editingId}) => {
   if (items.length === 0) {
     return <p className={styles.empty}>Aún no agregaste subcategorías</p>;
   }
-
   return (
     <div className={styles.wrapper}>
       {items.map((item) => (

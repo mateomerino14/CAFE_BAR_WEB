@@ -1,6 +1,6 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { IconButton } from '../atoms/IconButton';
-import { colors } from '../../constants/theme';
+import {ChevronLeft, ChevronRight} from 'lucide-react';
+import {IconButton} from '../atoms/IconButton';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex items-center justify-center gap-4',
@@ -8,9 +8,8 @@ const styles = {
   text: `text-sm font-semibold ${colors.textPrimary}`
 };
 
-export const Pagination = ({ currentPage, totalPages, canGoLeft, canGoRight, onPrev, onNext }) => {
+export const Pagination = ({currentPage, totalPages, canGoLeft, canGoRight, onPrev, onNext}) => {
   if (totalPages <= 1) return null;
-
   return (
     <div className={styles.wrapper}>
       <IconButton icon={ChevronLeft} size={20} onClick={onPrev} disabled={!canGoLeft} className={styles.button} />

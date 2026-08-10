@@ -1,7 +1,7 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { usePendingOrders } from '../../features/pos/hooks/usePendingOrders';
-import { MarkCardsModal } from './MarkCardsModal';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {usePendingOrders} from '../../features/pos/hooks/usePendingOrders';
+import {MarkCardsModal} from './MarkCardsModal';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -20,11 +20,9 @@ const styles = {
   back: 'mt-4'
 };
 
-const VARIANT_CLASS = { recent: styles.recent, waiting: styles.waiting, urgent: styles.urgent };
-
+const VARIANT_CLASS = {recent: styles.recent, waiting: styles.waiting, urgent: styles.urgent};
 export const PendingOrdersModal = ({ seccion, mesa, onClose }) => {
-  const { batches, loading, expandedFecha, toggleExpand, markingFecha, openMarking, closeMarking, getElapsedStatus } = usePendingOrders(seccion, mesa, true);
-
+  const {batches, loading, expandedFecha, toggleExpand, markingFecha, openMarking, closeMarking, getElapsedStatus} = usePendingOrders(seccion, mesa, true);
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>Pedidos pendientes — Mesa {mesa.id_mesa}</h2>

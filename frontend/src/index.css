@@ -1,58 +1,71 @@
+/*Importa las utilidades y estilos base de Tailwind CSS.*/
 @import "tailwindcss";
 
+/*Evita el desplazamiento horizontal y limita el contenido al ancho disponible.*/
 html, body, #root {
   overflow-x: hidden;
   max-width: 100%;
 }
 
+/*Define una utilidad para aplicar una animación de entrada desplazándose desde abajo.*/
 @utility animate-fade-in-up {
   animation: fade-in-up 0.35s ease-out both;
 }
 
+/*Define el movimiento y cambio de opacidad de la animación de entrada desde abajo.*/
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/*Define una utilidad para aplicar una animación de pulso luminoso.*/
 @utility animate-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
+/*Define la variación de la sombra durante la animación de pulso luminoso.*/
 @keyframes glow-pulse {
   0%, 100% { box-shadow: 0 0 25px 0 rgba(52, 152, 219, 0.45); }
   50% { box-shadow: 0 0 45px 8px rgba(52, 152, 219, 0.55); }
 }
 
+/*Define una utilidad para aplicar una animación de entrada desplazándose desde arriba.*/
 @utility animate-fade-in-down {
   animation: fade-in-down 0.35s ease-out both;
 }
 
+/*Define el movimiento y cambio de opacidad de la animación de entrada desde arriba.*/
 @keyframes fade-in-down {
   from { opacity: 0; transform: translateY(-12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/*Configura el grosor y los colores de la barra de desplazamiento.*/
 * {
   scrollbar-width: thin;
   scrollbar-color: #60a5fa #eff6ff;
 }
 
+/*Define el ancho y alto de la barra de desplazamiento para navegadores WebKit.*/
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
+/*Define el fondo y la forma de la pista de la barra de desplazamiento.*/
 *::-webkit-scrollbar-track {
   background: #eff6ff;
   border-radius: 999px;
 }
 
+/*Define el color, degradado, bordes y forma del indicador de desplazamiento.*/
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #60a5fa, #3b82f6);
   border-radius: 999px;
   border: 2px solid #eff6ff;
 }
 
+/*Modifica el color del indicador de desplazamiento cuando el cursor pasa sobre él.*/
 *::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #3b82f6, #2563eb);
 }

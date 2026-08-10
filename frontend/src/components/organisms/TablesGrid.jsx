@@ -1,4 +1,4 @@
-import { LayoutGrid } from 'lucide-react';
+import {LayoutGrid} from 'lucide-react';
 
 const styles = {
   wrapper: 'grid grid-cols-4 gap-3 sm:grid-cols-5',
@@ -6,9 +6,8 @@ const styles = {
   number: 'text-xs font-bold text-amber-900'
 };
 
-export const TablesGrid = ({ count }) => {
+export const TablesGrid = ({count}) => {
   const tables = Array.from({ length: Math.max(0, count) }, (_, index) => index + 1);
-
   return (
     <div className={styles.wrapper}>
       {tables.map((number) => (

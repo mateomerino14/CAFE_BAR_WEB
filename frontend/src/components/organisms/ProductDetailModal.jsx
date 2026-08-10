@@ -1,7 +1,7 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { useProductDetail } from '../../features/catalog/hooks/useProductDetail';
-import { colors } from '../../constants/theme';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {useProductDetail} from '../../features/catalog/hooks/useProductDetail';
+import {colors} from '../../constants/theme';
 
 const styles = {
   title: `text-lg font-bold ${colors.textPrimary}`,
@@ -17,9 +17,8 @@ const styles = {
   actions: 'mt-4'
 };
 
-export const ProductDetailModal = ({ product, onClose }) => {
+export const ProductDetailModal = ({product, onClose}) => {
   const { ready, descripcion, ingredientRows, maxUnits } = useProductDetail(product.id_prod);
-
   const stockClass = (stock) => {
     if (stock === 0) return styles.stockZero;
     if (stock < 10) return styles.stockLow;

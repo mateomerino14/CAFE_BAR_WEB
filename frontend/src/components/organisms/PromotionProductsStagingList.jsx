@@ -1,6 +1,6 @@
-import { X } from 'lucide-react';
-import { TextInput } from '../atoms/TextInput';
-import { colors } from '../../constants/theme';
+import {X} from 'lucide-react';
+import {TextInput} from '../atoms/TextInput';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex flex-col divide-y divide-slate-100 rounded-xl bg-white shadow-sm',
@@ -16,9 +16,10 @@ const styles = {
   totalValue: 'text-lg font-bold text-red-600'
 };
 
-export const PromotionProductsStagingList = ({ items, onRemove, onUpdateQuantity, total }) => {
-  if (items.length === 0) return null;
-
+export const PromotionProductsStagingList = ({items, onRemove, onUpdateQuantity, total}) => {
+  if (items.length === 0) {
+    return null;
+  }
   return (
     <div className={styles.wrapper}>
       {items.map((item) => (

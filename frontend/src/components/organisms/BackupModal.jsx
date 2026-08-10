@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { useBackupActions } from '../../features/config/hooks/useBackupActions';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {useBackupActions} from '../../features/config/hooks/useBackupActions';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -18,12 +18,12 @@ const styles = {
   back: 'mt-5'
 };
 
-export const BackupModal = ({ onClose }) => {
+
+export const BackupModal = ({onClose}) => {
   const { exporting, importing, sendingEmail, error, success, handleExport, handleImport, handleSendEmail } = useBackupActions();
   const [file, setFile] = useState(null);
   const [confirmacion, setConfirmacion] = useState('');
   const [correoDestino, setCorreoDestino] = useState('');
-
   const onImportSubmit = async (event) => {
     event.preventDefault();
     const ok = await handleImport(file, confirmacion);
@@ -32,16 +32,13 @@ export const BackupModal = ({ onClose }) => {
       setConfirmacion('');
     }
   };
-
   const onEmailSubmit = async (event) => {
     event.preventDefault();
     await handleSendEmail(correoDestino);
   };
-
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>Backup de la base de datos</h2>
-
       <div className={styles.section}>
         <p className={styles.sectionTitle}>Exportar a Excel</p>
         <div className={styles.sectionBody}>
@@ -49,7 +46,6 @@ export const BackupModal = ({ onClose }) => {
           <Button type="button" onClick={handleExport} disabled={exporting}>{exporting ? 'GENERANDO...' : 'DESCARGAR BACKUP'}</Button>
         </div>
       </div>
-
       <div className={styles.section}>
         <p className={styles.sectionTitle}>Enviar backup por correo</p>
         <form onSubmit={onEmailSubmit} className={styles.sectionBody}>
@@ -59,7 +55,6 @@ export const BackupModal = ({ onClose }) => {
           <Button type="submit" variant="warning" disabled={sendingEmail}>{sendingEmail ? 'ENVIANDO...' : 'ENVIAR POR CORREO'}</Button>
         </form>
       </div>
-
       <div className={styles.section}>
         <p className={styles.sectionTitle}>Importar desde Excel</p>
         <div className={styles.warning}>
@@ -79,7 +74,6 @@ export const BackupModal = ({ onClose }) => {
           <Button type="submit" variant="danger" disabled={importing}>{importing ? 'IMPORTANDO...' : 'IMPORTAR Y REEMPLAZAR TODO'}</Button>
         </form>
       </div>
-
       <Button type="button" variant="danger" className={styles.back} onClick={onClose}>CERRAR</Button>
       {error && <Toast>{error}</Toast>}
       {success && <Toast variant="success">{success}</Toast>}

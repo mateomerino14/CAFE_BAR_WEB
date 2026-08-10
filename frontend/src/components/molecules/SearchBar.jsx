@@ -1,8 +1,8 @@
-import { useMemo, useRef, useState } from 'react';
-import { Search } from 'lucide-react';
-import { TextInput } from '../atoms/TextInput';
-import { useClickOutside } from '../../hooks/useClickOutside';
-import { colors } from '../../constants/theme';
+import {useMemo, useRef, useState} from 'react';
+import {Search} from 'lucide-react';
+import {TextInput} from '../atoms/TextInput';
+import {useClickOutside} from '../../hooks/useClickOutside';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex w-full max-w-xs items-center gap-2',
@@ -12,21 +12,19 @@ const styles = {
   menuItem: `block w-full px-4 py-2 text-left text-sm font-medium ${colors.navMenuText} transition-colors ${colors.navMenuHover}`
 };
 
-export const SearchBar = ({ value, onChange, onSubmit, onSelectSuggestion, suggestions = [], placeholder }) => {
+
+export const SearchBar = ({value, onChange, onSubmit, onSelectSuggestion, suggestions = [], placeholder}) => {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   useClickOutside(ref, () => setIsOpen(false));
-
   const filteredSuggestions = useMemo(() => {
     if (!value) return [];
     return suggestions.filter((option) => option.toLowerCase().startsWith(value.toLowerCase()));
   }, [suggestions, value]);
-
   const handleSelect = (option) => {
     onSelectSuggestion(option);
     setIsOpen(false);
   };
-
   return (
     <form onSubmit={onSubmit} className={styles.wrapper}>
       <div className={styles.inputWrapper} ref={ref}>

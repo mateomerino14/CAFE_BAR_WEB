@@ -1,8 +1,8 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Avatar } from '../atoms/Avatar';
-import { Pagination } from '../molecules/Pagination';
-import { usePagination } from '../../hooks/usePagination';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Avatar} from '../atoms/Avatar';
+import {Pagination} from '../molecules/Pagination';
+import {usePagination} from '../../hooks/usePagination';
 
 const PAGE_SIZE = 10;
 
@@ -16,9 +16,8 @@ const styles = {
   loading: 'mt-4 rounded-lg bg-slate-50 p-6 text-center text-sm font-semibold text-blue-500'
 };
 
-export const EmployeePickerModal = ({ employees, loading, onClose, onSelect }) => {
-  const { visible, goLeft, goRight, canGoLeft, canGoRight, currentPage, totalPages } = usePagination(employees, PAGE_SIZE);
-
+export const EmployeePickerModal = ({employees, loading, onClose, onSelect}) => {
+  const {visible, goLeft, goRight, canGoLeft, canGoRight, currentPage, totalPages} = usePagination(employees, PAGE_SIZE);
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>Elegir mesero</h2>

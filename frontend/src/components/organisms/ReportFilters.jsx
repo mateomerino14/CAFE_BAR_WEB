@@ -1,8 +1,8 @@
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Checkbox } from '../atoms/Checkbox';
-import { FormField } from '../molecules/FormField';
-import { SearchableSelect } from '../molecules/SearchableSelect';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Checkbox} from '../atoms/Checkbox';
+import {FormField} from '../molecules/FormField';
+import {SearchableSelect} from '../molecules/SearchableSelect';
 
 const styles = {
   wrapper: 'flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm',
@@ -11,10 +11,10 @@ const styles = {
 };
 
 const SUBREPORTES = [
-  { value: 'detallado', label: 'Ventas Detalladas' },
-  { value: 'resumen_fechas', label: 'Resumen por Fechas' },
-  { value: 'resumen_empleado', label: 'Resumen por Empleado' },
-  { value: 'productos_vendidos', label: 'Productos y Promociones (Ganancia)' }
+  {value: 'detallado', label: 'Ventas Detalladas'},
+  {value: 'resumen_fechas', label: 'Resumen por Fechas'},
+  {value: 'resumen_empleado', label: 'Resumen por Empleado'},
+  {value: 'productos_vendidos', label: 'Productos y Promociones (Ganancia)'}
 ];
 
 export const ReportFilters = ({
@@ -36,7 +36,6 @@ export const ReportFilters = ({
           placeholder="Seleccione un tipo de reporte"
         />
       </FormField>
-
       <div className={styles.row}>
         <FormField label="DESDE">
           <TextInput type="date" value={fechaInicio} onChange={(event) => setFechaInicio(event.target.value)} />
@@ -45,7 +44,6 @@ export const ReportFilters = ({
           <TextInput type="date" value={fechaFin} onChange={(event) => setFechaFin(event.target.value)} />
         </FormField>
       </div>
-
       {permiteFiltrarEmpleado && (
         <Checkbox
           label="Filtrar por empleado (cajero)"
@@ -53,7 +51,6 @@ export const ReportFilters = ({
           onChange={() => setFiltrarEmpleado((prev) => !prev)}
         />
       )}
-
       {permiteFiltrarEmpleado && filtrarEmpleado && (
         <FormField label="EMPLEADO">
           <SearchableSelect
@@ -64,7 +61,6 @@ export const ReportFilters = ({
           />
         </FormField>
       )}
-
       <div className={styles.actions}>
         <Button type="button" onClick={onGenerar} disabled={loading}>{loading ? 'GENERANDO...' : 'GENERAR REPORTE'}</Button>
         <Button type="button" variant="warning" onClick={onLimpiar}>LIMPIAR FILTROS</Button>

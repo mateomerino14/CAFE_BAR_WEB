@@ -1,5 +1,5 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-700 to-blue-900 px-4 py-3 text-center shadow-sm',
@@ -17,9 +17,8 @@ const styles = {
   back: 'mt-4'
 };
 
-export const DailySaleItemDetailModal = ({ item, onClose }) => {
+export const DailySaleItemDetailModal = ({item, onClose}) => {
   const grupos = item.personalizacionGrupos || [];
-
   return (
     <Modal onClose={onClose}>
       <div className={styles.header}>

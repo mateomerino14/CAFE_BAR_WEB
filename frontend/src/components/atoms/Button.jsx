@@ -1,4 +1,4 @@
-import { colors } from '../../constants/theme';
+import {colors} from '../../constants/theme';
 
 const styles = {
   base: 'rounded-lg font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50',
@@ -11,7 +11,7 @@ const styles = {
   }
 };
 
-export const Button = ({ children, variant = 'primary', size = 'md', className = '', ...props }) => {
+export const Button = ({children, variant = 'primary', size = 'md', className = '', ...props}) => {
   return (
     <button className={`${styles.base} ${styles[variant]} ${styles.size[size]} ${className}`} {...props}>
       {children}

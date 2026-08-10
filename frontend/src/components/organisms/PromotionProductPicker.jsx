@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { SearchableSelect } from '../molecules/SearchableSelect';
-import { ProductCombobox } from '../molecules/ProductCombobox';
-import { FormField } from '../molecules/FormField';
-import { getCategoryOptions, getSubcategoryOptions } from '../../features/products/services/productService';
-import { getProductsBySubcategory } from '../../features/promotions/services/promotionService';
+import {useEffect, useState} from 'react';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {SearchableSelect} from '../molecules/SearchableSelect';
+import {ProductCombobox} from '../molecules/ProductCombobox';
+import {FormField} from '../molecules/FormField';
+import {getCategoryOptions, getSubcategoryOptions} from '../../features/products/services/productService';
+import {getProductsBySubcategory} from '../../features/promotions/services/promotionService';
 
 const styles = {
   wrapper: 'flex flex-col gap-3',
@@ -13,7 +13,7 @@ const styles = {
   pickRow: 'grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr_auto] sm:items-end'
 };
 
-export const PromotionProductPicker = ({ productInput, onInputChange, onSelect, quantity, onQuantityChange, onAdd }) => {
+export const PromotionProductPicker = ({productInput, onInputChange, onSelect, quantity, onQuantityChange, onAdd}) => {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [subcategoryOptions, setSubcategoryOptions] = useState([]);
   const [idCategoria, setIdCategoria] = useState('');

@@ -1,8 +1,8 @@
-import { TextInput } from '../atoms/TextInput';
-import { Textarea } from '../atoms/Textarea';
-import { SearchableSelect } from '../molecules/SearchableSelect';
-import { ImagePicker } from '../molecules/ImagePicker';
-import { FormField } from '../molecules/FormField';
+import {TextInput} from '../atoms/TextInput';
+import {Textarea} from '../atoms/Textarea';
+import {SearchableSelect} from '../molecules/SearchableSelect';
+import {ImagePicker} from '../molecules/ImagePicker';
+import {FormField} from '../molecules/FormField';
 
 const styles = {
   wrapper: 'flex flex-col gap-5',
@@ -10,7 +10,7 @@ const styles = {
   grid: 'grid grid-cols-1 gap-4 sm:grid-cols-2'
 };
 
-export const ProductFormFields = ({ values, onChange, categoryOptions, subcategoryOptions, photoPreview, onPhotoChange }) => {
+export const ProductFormFields = ({values, onChange, categoryOptions, subcategoryOptions, photoPreview, onPhotoChange}) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.photoRow}>

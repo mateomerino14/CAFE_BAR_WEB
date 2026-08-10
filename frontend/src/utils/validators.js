@@ -1,3 +1,4 @@
+
 export const isLettersOnly = (value) => /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/.test(value.trim());
 export const isNumeric = (value) => /^[0-9]+$/.test(value);
 export const RESERVED_ALIASES = ['ADMINISTRADOR', 'DIRECTORIO'];

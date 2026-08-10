@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 
 export const usePromotionProductStaging = (initialItems = []) => {
   const [items, setItems] = useState(initialItems);
@@ -57,5 +57,5 @@ export const usePromotionProductStaging = (initialItems = []) => {
     setQuantity('');
   };
   const total = items.reduce((sum, item) => sum + Number(item.precio_venta) * Number(item.cantidad || 0), 0);
-  return { items, productInput, handleInputChange, handleSelectProduct, quantity, setQuantity, handleAdd, handleRemove, handleUpdateQuantity, error, reset, setItems, total };
+  return {items, productInput, handleInputChange, handleSelectProduct, quantity, setQuantity, handleAdd, handleRemove, handleUpdateQuantity, error, reset, setItems, total};
 };

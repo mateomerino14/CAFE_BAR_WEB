@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { PasswordField } from '../molecules/PasswordField';
-import { FormField } from '../molecules/FormField';
-import { EmployeeFormFields } from './EmployeeFormFields';
-import { useEditEmployee } from '../../features/employees/hooks/useEditEmployee';
-import { useResetPassword } from '../../features/employees/hooks/useResetPassword';
-import { colors } from '../../constants/theme';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {PasswordField} from '../molecules/PasswordField';
+import {FormField} from '../molecules/FormField';
+import {EmployeeFormFields} from './EmployeeFormFields';
+import {useEditEmployee} from '../../features/employees/hooks/useEditEmployee';
+import {useResetPassword} from '../../features/employees/hooks/useResetPassword';
+import {colors} from '../../constants/theme';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -18,7 +18,7 @@ const styles = {
   resetTitle: `text-sm font-bold ${colors.textPrimary}`
 };
 
-export const EmployeeEditModal = ({ employee, onClose, onSaved }) => {
+export const EmployeeEditModal = ({employee, onClose, onSaved}) => {
   const { values, updateField, cargoOptions, preview, handleFileChange, error, loading, handleSave } = useEditEmployee(employee, onSaved);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const {

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../atoms/Button';
-import { useAuth } from '../../context/AuthContext';
+import {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {Button} from '../atoms/Button';
+import {useAuth} from '../../context/AuthContext';
 
 const styles = {
   overlay: 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4',
@@ -15,7 +15,7 @@ const styles = {
 
 export const SessionExpiredModal = () => {
   const [open, setOpen] = useState(false);
-  const { logout } = useAuth();
+  const {logout} = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +30,9 @@ export const SessionExpiredModal = () => {
     navigate('/login');
   };
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   return (
     <div className={styles.overlay}>

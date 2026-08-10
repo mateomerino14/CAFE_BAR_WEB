@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import {Check} from 'lucide-react';
 
 const styles = {
   label: 'flex cursor-pointer select-none items-center gap-2 text-sm text-slate-700',
@@ -8,7 +8,7 @@ const styles = {
   boxUnchecked: 'border-slate-300 bg-white hover:border-slate-400'
 };
 
-export const Checkbox = ({ label, checked, onChange }) => {
+export const Checkbox = ({label, checked, onChange}) => {
   return (
     <label className={styles.label}>
       <input type="checkbox" className={styles.input} checked={checked} onChange={onChange} />

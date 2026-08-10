@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { useClickOutside } from '../../hooks/useClickOutside';
-import { TextInput } from '../atoms/TextInput';
-import { colors } from '../../constants/theme';
+import {useEffect, useMemo, useRef, useState} from 'react';
+import {ChevronDown} from 'lucide-react';
+import {useClickOutside} from '../../hooks/useClickOutside';
+import {TextInput} from '../atoms/TextInput';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'relative w-full',
@@ -13,7 +13,8 @@ const styles = {
   empty: 'px-4 py-2 text-sm text-slate-400'
 };
 
-export const SearchableSelect = ({ value, onChange, options, placeholder, disabled = false }) => {
+
+export const SearchableSelect = ({value, onChange, options, placeholder, disabled = false}) => {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -26,13 +27,11 @@ export const SearchableSelect = ({ value, onChange, options, placeholder, disabl
     if (!inputText || (selectedOption && inputText === selectedOption.label)) return options;
     return options.filter((option) => option.label.toLowerCase().includes(inputText.toLowerCase()));
   }, [options, inputText, selectedOption]);
-
   const handleSelect = (option) => {
     onChange(option.value);
     setInputText(option.label);
     setIsOpen(false);
   };
-
   return (
     <div className={styles.wrapper} ref={ref}>
       <div className={styles.inputWrapper}>

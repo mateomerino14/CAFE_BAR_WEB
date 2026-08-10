@@ -334,6 +334,13 @@ CREATE TABLE IF NOT EXISTS print_agent_config (
     url  VARCHAR(200)
 );
 
+-- Control de numero de ventas para varios usuarios
+CREATE TABLE IF NOT EXISTS venta_daily_counter (
+    fecha           DATE PRIMARY KEY,
+    ultimo_numero   INTEGER NOT NULL DEFAULT 0
+);
+
+
 -- =====================================================================
 -- AJUSTES 
 -- =====================================================================

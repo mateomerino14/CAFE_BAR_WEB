@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import {Fragment} from 'react';
 
 const formatHora = (hora) => {
   if (!hora) return '—';
@@ -23,7 +23,7 @@ const styles = {
   nombreClickeable: 'font-semibold text-blue-700 underline decoration-dotted hover:text-blue-900'
 };
 
-export const DetailedSalesTable = ({ rows, onSelect }) => {
+export const DetailedSalesTable = ({rows, onSelect}) => {
   if (rows.length === 0) return <p className={styles.empty}>No hay ventas en este período</p>;
   return (
     <div className={styles.wrapper}>
@@ -55,7 +55,7 @@ export const DetailedSalesTable = ({ rows, onSelect }) => {
   );
 };
 
-export const SummaryByDateTable = ({ result }) => {
+export const SummaryByDateTable = ({result}) => {
   if (result.rows.length === 0) return <p className={styles.empty}>No hay ventas en este período</p>;
   return (
     <div className={styles.wrapper}>
@@ -83,8 +83,11 @@ export const SummaryByDateTable = ({ result }) => {
   );
 };
 
-export const TopProductsTable = ({ rows, onSelectPromo }) => {
+export const TopProductsTable = ({rows, onSelectPromo}) => {
   if (rows.length === 0) return <p className={styles.empty}>No hay productos ni promociones vendidas en este período</p>;
+  const totalIngreso = rows.reduce((sum, r) => sum + r.ingreso, 0);
+  const totalCosto = rows.reduce((sum, r) => sum + r.costo, 0);
+  const totalGanancia = rows.reduce((sum, r) => sum + r.ganancia, 0);
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>
@@ -115,12 +118,20 @@ export const TopProductsTable = ({ rows, onSelectPromo }) => {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={3} className={styles.footer}>TOTAL GENERAL</td>
+            <td className={styles.footer}>Bs {totalIngreso.toFixed(2)}</td>
+            <td className={styles.footer}>Bs {totalCosto.toFixed(2)}</td>
+            <td className={`${styles.footer} ${totalGanancia >= 0 ? styles.gananciaPositiva : styles.gananciaNegativa}`}>Bs {totalGanancia.toFixed(2)}</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
 };
 
-export const EmployeeSalesTable = ({ rows }) => {
+export const EmployeeSalesTable = ({rows}) => {
   if (rows.length === 0) return <p className={styles.empty}>No hay ventas de este empleado en este período</p>;
   return (
     <div className={styles.wrapper}>

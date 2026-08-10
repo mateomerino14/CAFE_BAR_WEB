@@ -1,11 +1,11 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { PasswordField } from '../molecules/PasswordField';
-import { FormField } from '../molecules/FormField';
-import { useForgotPassword } from '../../features/auth/hooks/useForgotPassword';
-import { colors, typography } from '../../constants/theme';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {PasswordField} from '../molecules/PasswordField';
+import {FormField} from '../molecules/FormField';
+import {useForgotPassword} from '../../features/auth/hooks/useForgotPassword';
+import {colors, typography} from '../../constants/theme';
 
 const styles = {
   title: `${typography.title} text-lg ${colors.textPrimary}`,
@@ -14,7 +14,7 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const ForgotPasswordModal = ({ onClose }) => {
+export const ForgotPasswordModal = ({onClose}) => {
   const {
     step,
     email,
@@ -35,7 +35,6 @@ export const ForgotPasswordModal = ({ onClose }) => {
     handleResetPassword,
     handleClose
   } = useForgotPassword(onClose);
-
   return (
     <Modal onClose={handleClose}>
       {step === 'email' && (
@@ -98,7 +97,6 @@ export const ForgotPasswordModal = ({ onClose }) => {
           </div>
         </form>
       )}
-
       {step === 'reset' && (
         <form onSubmit={handleResetPassword}>
           <h2 className={styles.title}>Nueva contraseña</h2>

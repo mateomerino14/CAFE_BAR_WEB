@@ -1,7 +1,7 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { usePromotionDetail } from '../../features/catalog/hooks/usePromotionDetail';
-import { colors } from '../../constants/theme';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {usePromotionDetail} from '../../features/catalog/hooks/usePromotionDetail';
+import {colors} from '../../constants/theme';
 
 const styles = {
   title: `text-lg font-bold ${colors.textPrimary}`,
@@ -24,9 +24,8 @@ const scheduleTextClass = (type) => {
   return styles.scheduleInfo;
 };
 
-export const PromotionDetailModal = ({ promotion, onClose }) => {
+export const PromotionDetailModal = ({promotion, onClose}) => {
   const { ready, products, dayLabels, dateLabel, timeLabel, isActiveNow } = usePromotionDetail(promotion.id_prom);
-
   return (
     <Modal onClose={onClose}>
       <h2 className={styles.title}>{promotion.nom_prom}</h2>
@@ -41,7 +40,6 @@ export const PromotionDetailModal = ({ promotion, onClose }) => {
               </div>
             ))}
           </div>
-
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Disponibilidad</p>
             <p className={`${styles.scheduleRow} ${scheduleTextClass(dateLabel.type)}`}>{dateLabel.text}</p>
@@ -50,7 +48,6 @@ export const PromotionDetailModal = ({ promotion, onClose }) => {
               <p className="mt-1 text-sm font-semibold text-purple-600">Días disponibles: {dayLabels.join(', ')}</p>
             )}
           </div>
-
           <div className={`${styles.status} ${isActiveNow ? styles.active : styles.inactive}`}>
             {isActiveNow ? 'Promoción activa ahora' : 'Promoción no disponible ahora'}
           </div>

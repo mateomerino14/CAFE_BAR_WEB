@@ -118,6 +118,9 @@ export const buildTopProductsReportHtml = (rows, periodo) => {
     `Bs ${r.costo.toFixed(2)}`,
     `Bs ${r.ganancia.toFixed(2)}`
   ]);
+  const totalIngreso = rows.reduce((sum, r) => sum + r.ingreso, 0);
+  const totalCosto = rows.reduce((sum, r) => sum + r.costo, 0);
+  const totalGanancia = rows.reduce((sum, r) => sum + r.ganancia, 0);
 
   const promoDetailBlocks = rows
     .filter((r) => r.tipo === 'promocion' && r.productosConsumidos?.length > 0)
@@ -141,6 +144,7 @@ export const buildTopProductsReportHtml = (rows, periodo) => {
     'Productos y Promociones (Ganancia)',
     `<p class="periodo">Período: ${periodo}</p>
      ${buildTable(headers, body)}
+     <p><strong>Total general — Ingreso: Bs ${totalIngreso.toFixed(2)} | Costo: Bs ${totalCosto.toFixed(2)} | Ganancia: Bs ${totalGanancia.toFixed(2)}</strong></p>
      ${promoDetailBlocks ? `<h2>Productos consumidos por promoción</h2>${promoDetailBlocks}` : ''}`
   );
 };

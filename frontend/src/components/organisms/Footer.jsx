@@ -1,8 +1,8 @@
-import { SocialIcon } from '../atoms/SocialIcon';
-import { InstagramIcon } from '../atoms/InstagramIcon';
-import { TikTokIcon } from '../atoms/TikTokIcon';
-import { FacebookIcon } from '../atoms/FacebookIcon';
-import { colors, typography } from '../../constants/theme';
+import {SocialIcon} from '../atoms/SocialIcon';
+import {InstagramIcon} from '../atoms/InstagramIcon';
+import {TikTokIcon} from '../atoms/TikTokIcon';
+import {FacebookIcon} from '../atoms/FacebookIcon';
+import {colors, typography} from '../../constants/theme';
 
 const styles = {
   wrapper: `flex w-full flex-col items-center justify-center gap-2 ${colors.navBackground} px-4 py-2 text-center sm:flex-row sm:justify-between sm:px-6 sm:py-3 sm:text-left`,

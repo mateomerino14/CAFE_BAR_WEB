@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { SubcategoryManageList } from './SubcategoryManageList';
-import { AddSubcategoryForm } from './AddSubcategoryForm';
-import { SubcategoryEditModal } from './SubcategoryEditModal';
-import { useManageSubcategories } from '../../features/categories/hooks/useManageSubcategories';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {SubcategoryManageList} from './SubcategoryManageList';
+import {AddSubcategoryForm} from './AddSubcategoryForm';
+import {SubcategoryEditModal} from './SubcategoryEditModal';
+import {useManageSubcategories} from '../../features/categories/hooks/useManageSubcategories';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-orange-400 to-orange-500 px-4 py-3 text-center shadow-sm',
@@ -17,7 +17,7 @@ const styles = {
   empty: 'rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-400'
 };
 
-export const ManageSubcategoriesModal = ({ category, onClose }) => {
+export const ManageSubcategoriesModal = ({category, onClose}) => {
   const {
     subcategories,
     loading,
@@ -31,7 +31,6 @@ export const ManageSubcategoriesModal = ({ category, onClose }) => {
     error
   } = useManageSubcategories(category.id_categoria);
   const [showAdd, setShowAdd] = useState(false);
-
   return (
     <Modal onClose={onClose} size="lg">
       <div className={styles.header}>

@@ -13,6 +13,26 @@ BEGIN
 END;
 $$;
 
+-- =====================================================================
+---- Obtiene y actualiza de forma segura el siguiente número correlativo de venta para una fecha determinada.
+-- =====================================================================
+CREATE OR REPLACE FUNCTION get_next_daily_sale_number(p_fecha DATE)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_numero INTEGER;
+BEGIN
+  INSERT INTO venta_daily_counter (fecha, ultimo_numero)
+  VALUES (p_fecha, 1)
+  ON CONFLICT (fecha) DO UPDATE SET ultimo_numero = venta_daily_counter.ultimo_numero + 1
+  RETURNING ultimo_numero INTO v_numero;
+
+  RETURN v_numero;
+END;
+$$;
+
 
 -- =====================================================================
 -- admin_reset_sequence
@@ -46,3 +66,5 @@ BEGIN
   EXECUTE format('SELECT setval(%L, %s, true)', seq_name, GREATEST(max_id, 1));
 END;
 $$;
+
+

@@ -1,4 +1,4 @@
-import { colors } from '../../constants/theme';
+import {colors} from '../../constants/theme';
 
 const styles = {
   base: `w-full rounded-lg border-2 ${colors.border} ${colors.surface} px-3 py-2 text-base focus:outline-none`

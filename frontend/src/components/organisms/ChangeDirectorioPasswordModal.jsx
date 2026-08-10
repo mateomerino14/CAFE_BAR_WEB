@@ -1,9 +1,9 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { PasswordField } from '../molecules/PasswordField';
-import { FormField } from '../molecules/FormField';
-import { useChangeDirectorioPassword } from '../../features/config/hooks/useChangeDirectorioPassword';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {PasswordField} from '../molecules/PasswordField';
+import {FormField} from '../molecules/FormField';
+import {useChangeDirectorioPassword} from '../../features/config/hooks/useChangeDirectorioPassword';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -11,9 +11,8 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const ChangeDirectorioPasswordModal = ({ onClose, onSaved }) => {
+export const ChangeDirectorioPasswordModal = ({onClose, onSaved}) => {
   const { actual, setActual, nueva, setNueva, repetir, setRepetir, error, loading, handleSubmit } = useChangeDirectorioPassword(onSaved);
-
   return (
     <Modal onClose={onClose}>
       <h2 className={styles.title}>Cambiar contraseña del DIRECTORIO</h2>

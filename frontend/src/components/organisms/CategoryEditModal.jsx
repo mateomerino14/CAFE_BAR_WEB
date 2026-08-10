@@ -1,10 +1,10 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { ImagePicker } from '../molecules/ImagePicker';
-import { useEditCategory } from '../../features/categories/hooks/useEditCategory';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast } from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {ImagePicker} from '../molecules/ImagePicker';
+import {useEditCategory} from '../../features/categories/hooks/useEditCategory';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -14,7 +14,7 @@ const styles = {
   actions: 'mt-4 flex w-full flex-col gap-2'
 };
 
-export const CategoryEditModal = ({ category, onClose, onSaved }) => {
+export const CategoryEditModal = ({category, onClose, onSaved}) => {
   const { name, setName, preview, handleFileChange, error, loading, handleSave } = useEditCategory(category, onSaved);
 
   return (

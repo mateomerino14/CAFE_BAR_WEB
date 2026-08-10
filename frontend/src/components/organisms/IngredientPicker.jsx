@@ -1,13 +1,13 @@
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { IngredientCombobox } from '../molecules/IngredientCombobox';
-import { FormField } from '../molecules/FormField';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {IngredientCombobox} from '../molecules/IngredientCombobox';
+import {FormField} from '../molecules/FormField';
 
 const styles = {
   wrapper: 'grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr_auto] sm:items-end'
 };
 
-export const IngredientPicker = ({ ingredientInput, onInputChange, options, onSelect, quantity, onQuantityChange, onAdd }) => {
+export const IngredientPicker = ({ingredientInput, onInputChange, options, onSelect, quantity, onQuantityChange, onAdd}) => {
   return (
     <div className={styles.wrapper}>
       <FormField label="INGREDIENTE">

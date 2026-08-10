@@ -1,12 +1,12 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { Pagination } from '../molecules/Pagination';
-import { DeletionTable } from './DeletionTable';
-import { DeletionSelectionControls } from './DeletionSelectionControls';
-import { DeletionConfirmModal } from './DeletionConfirmModal';
-import { usePhysicalDeletion } from '../../features/config/hooks/usePhysicalDeletion';
-import { usePagination } from '../../hooks/usePagination';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {Pagination} from '../molecules/Pagination';
+import {DeletionTable} from './DeletionTable';
+import {DeletionSelectionControls} from './DeletionSelectionControls';
+import {DeletionConfirmModal} from './DeletionConfirmModal';
+import {usePhysicalDeletion} from '../../features/config/hooks/usePhysicalDeletion';
+import {usePagination} from '../../hooks/usePagination';
 
 const PAGE_SIZE = 5;
 
@@ -25,13 +25,13 @@ const styles = {
 };
 
 const TABS = [
-  { key: 'empleados', label: 'Empleados' },
-  { key: 'cargos', label: 'Cargos' },
-  { key: 'secciones', label: 'Secciones' },
-  { key: 'ventas', label: 'Ventas' }
+  {key: 'empleados', label: 'Empleados'},
+  {key: 'cargos', label: 'Cargos'},
+  {key: 'secciones', label: 'Secciones'},
+  {key: 'ventas', label: 'Ventas'}
 ];
 
-export const PhysicalDeletionModal = ({ onClose }) => {
+export const PhysicalDeletionModal = ({onClose}) => {
   const {
     activeTab, setActiveTab,
     data, loading,
@@ -44,35 +44,35 @@ export const PhysicalDeletionModal = ({ onClose }) => {
   } = usePhysicalDeletion();
 
   const empleadosColumns = [
-    { key: 'codEmp', label: 'Código' },
-    { key: 'nombreCompleto', label: 'Nombre Completo' },
-    { key: 'alias', label: 'Alias' },
-    { key: 'ci', label: 'CI' },
-    { key: 'cargo', label: 'Cargo' },
-    { key: 'disponible', label: 'Disponible', render: (r) => (r.disponible ? 'Sí' : 'No') }
+    {key: 'codEmp', label: 'Código'},
+    {key: 'nombreCompleto', label: 'Nombre Completo'},
+    {key: 'alias', label: 'Alias'},
+    {key: 'ci', label: 'CI'},
+    {key: 'cargo', label: 'Cargo'},
+    {key: 'disponible', label: 'Disponible', render: (r) => (r.disponible ? 'Sí' : 'No')}
   ];
 
   const cargosColumns = [
-    { key: 'idCargo', label: 'ID' },
-    { key: 'nombre', label: 'Nombre del Cargo' },
-    { key: 'numEmpleados', label: 'Empleados' }
+    {key: 'idCargo', label: 'ID'},
+    {key: 'nombre', label: 'Nombre del Cargo'},
+    {key: 'numEmpleados', label: 'Empleados'}
   ];
 
   const seccionesColumns = [
-    { key: 'idSeccion', label: 'ID' },
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'numMesas', label: 'Mesas' },
-    { key: 'numVentas', label: 'Ventas Asociadas' }
+    {key: 'idSeccion', label: 'ID'},
+    {key: 'nombre', label: 'Nombre'},
+    {key: 'numMesas', label: 'Mesas'},
+    {key: 'numVentas', label: 'Ventas Asociadas'}
   ];
 
   const ventasColumns = [
-    { key: 'numVenta', label: 'N° Venta' },
-    { key: 'fecha', label: 'Fecha', render: (r) => (r.fecha ? r.fecha.slice(0, 10) : '') },
-    { key: 'hora', label: 'Hora' },
-    { key: 'total', label: 'Total', render: (r) => `Bs ${Number(r.total).toFixed(2)}` },
-    { key: 'mesa', label: 'Mesa' },
-    { key: 'seccion', label: 'Sección' },
-    { key: 'estado', label: 'Estado' }
+    {key: 'numVenta', label: 'N° Venta'},
+    {key: 'fecha', label: 'Fecha', render: (r) => (r.fecha ? r.fecha.slice(0, 10) : '')},
+    {key: 'hora', label: 'Hora'},
+    {key: 'total', label: 'Total', render: (r) => `Bs ${Number(r.total).toFixed(2)}`},
+    {key: 'mesa', label: 'Mesa'},
+    {key: 'seccion', label: 'Sección'},
+    {key: 'estado', label: 'Estado'}
   ];
 
   const currentRows = data[activeTab] || [];
@@ -85,14 +85,12 @@ export const PhysicalDeletionModal = ({ onClose }) => {
 
   const columnsFor = { empleados: empleadosColumns, cargos: cargosColumns, secciones: seccionesColumns, ventas: ventasColumns }[activeTab];
   const allIds = currentRows.map(getIdFor);
-
   const { visible, goLeft, goRight, canGoLeft, canGoRight, currentPage, totalPages } = usePagination(currentRows, PAGE_SIZE);
 
   return (
     <>
       <Modal onClose={onClose} size="xl">
         <h2 className={styles.title}>Eliminación Física de Registros</h2>
-
         <div className={styles.tabsRow}>
           {TABS.map((tab) => (
             <button
@@ -105,7 +103,6 @@ export const PhysicalDeletionModal = ({ onClose }) => {
             </button>
           ))}
         </div>
-
         {activeTab === 'empleados' && (
           <div className={styles.filterRow}>
             <button type="button" className={`${styles.filterButton} bg-slate-700 ${filtroEmpleados === 'todas' ? styles.filterActive : ''}`} onClick={() => setFiltroEmpleados('todas')}>Todas</button>
@@ -113,14 +110,12 @@ export const PhysicalDeletionModal = ({ onClose }) => {
             <button type="button" className={`${styles.filterButton} bg-slate-400 ${filtroEmpleados === 'inactivas' ? styles.filterActive : ''}`} onClick={() => setFiltroEmpleados('inactivas')}>Inactivas</button>
           </div>
         )}
-
         <div className={styles.content}>
           <DeletionSelectionControls
             onSelectAll={() => selectAll(activeTab, allIds)}
             onDeselectAll={() => deselectAll(activeTab)}
             onInvert={() => invertSelection(activeTab, allIds)}
           />
-
           {loading ? (
             <p className={styles.loading}>Cargando...</p>
           ) : (
@@ -146,7 +141,6 @@ export const PhysicalDeletionModal = ({ onClose }) => {
             </>
           )}
         </div>
-
         <div className={styles.footer}>
           <Button type="button" variant="danger" onClick={handleRequestDelete} disabled={totalSelected === 0}>
             ELIMINAR {totalSelected} SELECCIONADO(S)

@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/atoms/Button';
-import { Footer } from '../components/organisms/Footer';
-import { useMouseTilt } from '../hooks/useMouseTilt';
-import { colors, typography } from '../constants/theme';
+import {useNavigate} from 'react-router-dom';
+import {Button} from '../components/atoms/Button';
+import {Footer} from '../components/organisms/Footer';
+import {useMouseTilt} from '../hooks/useMouseTilt';
+import {colors, typography} from '../constants/theme';
 
 const styles = {
   wrapper: `relative flex min-h-screen flex-col overflow-hidden ${colors.background}`,
@@ -15,10 +15,11 @@ const styles = {
   cup: 'text-7xl sm:text-8xl transition-transform duration-150 ease-out'
 };
 
+
+/*Pagina en caso de 404 o not found, al acceder a una ruta no existente */
 export const NotFoundPage = () => {
   const navigate = useNavigate();
   const tilt = useMouseTilt(10);
-
   return (
     <div className={styles.wrapper}>
       <style>{`
@@ -32,7 +33,6 @@ export const NotFoundPage = () => {
         .steam-wisp:nth-child(2) { animation-delay: 0.4s; }
         .steam-wisp:nth-child(3) { animation-delay: 0.8s; }
       `}</style>
-
       <div className={styles.content}>
         <div className={styles.cupWrapper}>
           <div className={styles.steamRow}>
@@ -47,7 +47,6 @@ export const NotFoundPage = () => {
             ☕
           </span>
         </div>
-
         <h1 className={styles.code}>404</h1>
         <p className={styles.message}>
           Esta página no existe o no tienes acceso a ella. Prueba volver al inicio.

@@ -1,10 +1,10 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { ProductFormFields } from './ProductFormFields';
-import { IngredientPicker } from './IngredientPicker';
-import { IngredientStagingList } from './IngredientStagingList';
-import { useEditProduct } from '../../features/products/hooks/useEditProduct';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {ProductFormFields} from './ProductFormFields';
+import {IngredientPicker} from './IngredientPicker';
+import {IngredientStagingList} from './IngredientStagingList';
+import {useEditProduct} from '../../features/products/hooks/useEditProduct';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -13,7 +13,7 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const ProductEditModal = ({ product, onClose, onSaved }) => {
+export const ProductEditModal = ({product, onClose, onSaved}) => {
   const {
     values,
     updateField,

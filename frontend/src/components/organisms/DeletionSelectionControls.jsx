@@ -1,6 +1,6 @@
-import { Button } from '../atoms/Button';
+import {Button} from '../atoms/Button';
 
-const styles = { wrapper: 'flex flex-wrap gap-2' };
+const styles = {wrapper: 'flex flex-wrap gap-2'};
 
 export const DeletionSelectionControls = ({ onSelectAll, onDeselectAll, onInvert }) => {
   return (

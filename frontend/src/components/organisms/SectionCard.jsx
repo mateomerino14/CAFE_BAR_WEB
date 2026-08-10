@@ -1,5 +1,5 @@
-import { LayoutGrid } from 'lucide-react';
-import { colors } from '../../constants/theme';
+import {LayoutGrid} from 'lucide-react';
+import {colors} from '../../constants/theme';
 
 const styles = {
   card: 'flex cursor-pointer flex-col items-center gap-3 rounded-xl bg-white p-5 text-center shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md',
@@ -8,7 +8,7 @@ const styles = {
   count: 'text-xs text-slate-500'
 };
 
-export const SectionCard = ({ section, onClick }) => {
+export const SectionCard = ({section, onClick}) => {
   return (
     <button type="button" className={styles.card} onClick={onClick}>
       <div className={styles.icon}>

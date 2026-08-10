@@ -1,8 +1,8 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { StockFormFields } from './StockFormFields';
-import { useEditStock } from '../../features/stock/hooks/useEditStock';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {StockFormFields} from './StockFormFields';
+import {useEditStock} from '../../features/stock/hooks/useEditStock';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -11,7 +11,7 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const StockEditModal = ({ item, onClose, onSaved }) => {
+export const StockEditModal = ({item, onClose, onSaved}) => {
   const { values, updateField, ready, error, loading, handleSave } = useEditStock(item, onSaved);
   return (
     <Modal onClose={onClose} size="lg">

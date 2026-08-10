@@ -1,8 +1,8 @@
-import { CatalogCard } from './CatalogCard';
+import {CatalogCard} from './CatalogCard';
 
 const styles = { wrapper: 'grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6' };
 
-export const CatalogGrid = ({ items, type, onSelect }) => {
+export const CatalogGrid = ({items, type, onSelect}) => {
   return (
     <div className={styles.wrapper}>
       {items.map((item) => (

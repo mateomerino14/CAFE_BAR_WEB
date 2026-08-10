@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { useMarkCards } from '../../features/pos/hooks/useMarkCards';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {useMarkCards} from '../../features/pos/hooks/useMarkCards';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -32,11 +32,10 @@ const styles = {
   unsavedNotice: 'flex items-center justify-center gap-2 rounded-xl border-2 border-orange-300 bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700'
 };
 
-const Card = ({ card, cardIndex, markCount, unmarkOne, variant }) => {
+const Card = ({card, cardIndex, markCount, unmarkOne, variant}) => {
   const listos = card.listos.length;
   const total = card.total;
   const percent = total > 0 ? (listos / total) * 100 : 0;
-
   return (
     <div className={`${styles.card} ${variant === 'Local' ? styles.local : styles.llevar}`}>
       <p className={styles.name}>{card.nombre}</p>
@@ -58,11 +57,10 @@ const Card = ({ card, cardIndex, markCount, unmarkOne, variant }) => {
   );
 };
 
-export const MarkCardsModal = ({ fecha, onClose }) => {
+export const MarkCardsModal = ({fecha, onClose}) => {
   const { cards, markCount, unmarkOne, loading, saving, hasPendingChanges, save } = useMarkCards(fecha);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
   const handleSaveAndClose = async () => {
     setError('');
     try {
@@ -72,7 +70,6 @@ export const MarkCardsModal = ({ fecha, onClose }) => {
       setError('No se pudieron guardar los cambios, intenta de nuevo');
     }
   };
-
   const handleSave = async () => {
     setError('');
     try {
@@ -82,12 +79,10 @@ export const MarkCardsModal = ({ fecha, onClose }) => {
       setError('No se pudieron guardar los cambios, intenta de nuevo');
     }
   };
-
   const cardsWithIndex = cards.map((card, index) => ({ card, index }));
   const locales = cardsWithIndex.filter((c) => c.card.tipo === 'Local');
   const llevar = cardsWithIndex.filter((c) => c.card.tipo !== 'Local');
   const totalFaltantes = cards.reduce((sum, c) => sum + c.pendientes.length, 0);
-
   return (
     <Modal onClose={handleSaveAndClose} size="xl">  
       <h2 className={styles.title}>Marcar productos listos</h2>
@@ -117,18 +112,18 @@ export const MarkCardsModal = ({ fecha, onClose }) => {
             <p className={`${styles.columnTitle} ${styles.faltantesTitle}`}>Faltantes</p>
             <div className={styles.columnBody}>
               {totalFaltantes === 0 && <p className={styles.completo}>Todos los productos están listos</p>}
-{cards.filter((c) => c.pendientes.length > 0).map((card, index) => {
-  const detalle = [
-    card.exclusiones.length ? `sin ${card.exclusiones.join(', ')}` : '',
-    card.extrasTexto ? `extra ${card.extrasTexto}` : ''
-  ].filter(Boolean).join(' | ');
+              {cards.filter((c) => c.pendientes.length > 0).map((card, index) => {
+                const detalle = [
+                  card.exclusiones.length ? `sin ${card.exclusiones.join(', ')}` : '',
+                  card.extrasTexto ? `extra ${card.extrasTexto}` : ''
+                ].filter(Boolean).join(' | ');
 
-  return (
-    <p key={index} className={styles.faltanteRow}>
-      {card.nombre} ({card.tipo}){detalle ? ` — ${detalle}` : ''}: {card.pendientes.length} faltantes
-    </p>
-  );
-})}
+                return (
+                  <p key={index} className={styles.faltanteRow}>
+                    {card.nombre} ({card.tipo}){detalle ? ` — ${detalle}` : ''}: {card.pendientes.length} faltantes
+                  </p>
+                );
+              })}
             </div>
           </div>
         </div>

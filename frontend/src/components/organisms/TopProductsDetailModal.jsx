@@ -1,5 +1,5 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 px-4 py-3 text-center shadow-sm',
@@ -16,7 +16,7 @@ const styles = {
   back: 'mt-4'
 };
 
-export const TopProductsDetailModal = ({ item, onClose }) => {
+export const TopProductsDetailModal = ({item, onClose}) => {
   return (
     <Modal onClose={onClose}>
       <div className={styles.header}>
@@ -39,7 +39,6 @@ export const TopProductsDetailModal = ({ item, onClose }) => {
         <span className={styles.label}>Ganancia</span>
         <span className={item.ganancia >= 0 ? styles.gananciaPositiva : styles.gananciaNegativa}>Bs {item.ganancia.toFixed(2)}</span>
       </div>
-
       {item.productosConsumidos?.length > 0 && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Productos consumidos</p>
@@ -50,7 +49,6 @@ export const TopProductsDetailModal = ({ item, onClose }) => {
           </div>
         </div>
       )}
-
       <Button type="button" variant="danger" className={styles.back} onClick={onClose}>CERRAR</Button>
     </Modal>
   );

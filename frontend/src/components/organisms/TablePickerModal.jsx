@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Pagination } from '../molecules/Pagination';
-import { usePagination } from '../../hooks/usePagination';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Pagination} from '../molecules/Pagination';
+import {usePagination} from '../../hooks/usePagination';
 
 const SECTIONS_PAGE_SIZE = 9;
 const TABLES_PAGE_SIZE = 15;
@@ -24,12 +24,10 @@ const styles = {
 
 const SECTION_COLORS = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#d35400'];
 
-export const TablePickerModal = ({ sections, loading, onClose, onSelect, onCheckout }) => {
+export const TablePickerModal = ({sections, loading, onClose, onSelect, onCheckout}) => {
   const [activeSection, setActiveSection] = useState(null);
-
   const sectionsPagination = usePagination(sections, SECTIONS_PAGE_SIZE);
   const tablesPagination = usePagination(activeSection?.mesas || [], TABLES_PAGE_SIZE);
-
   if (!activeSection) {
     return (
       <Modal onClose={onClose} size="lg">
@@ -69,7 +67,6 @@ export const TablePickerModal = ({ sections, loading, onClose, onSelect, onCheck
       </Modal>
     );
   }
-
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>{activeSection.nomb_seccion}</h2>

@@ -1,10 +1,10 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { TablesGrid } from './TablesGrid';
-import { useManageSection } from '../../features/sections/hooks/useManageSection';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {TablesGrid} from './TablesGrid';
+import {useManageSection} from '../../features/sections/hooks/useManageSection';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -16,9 +16,8 @@ const styles = {
   preview: 'max-h-72 overflow-y-auto rounded-lg border border-slate-100 p-2'
 };
 
-export const ManageSectionModal = ({ section, onClose, onUpdated }) => {
-  const { nombre, setNombre, descripcion, setDescripcion, cantidadMesas, setCantidadMesas, ready, error, loading, handleSubmit } = useManageSection(section, onUpdated);
-
+export const ManageSectionModal = ({section, onClose, onUpdated}) => {
+  const {nombre, setNombre, descripcion, setDescripcion, cantidadMesas, setCantidadMesas, ready, error, loading, handleSubmit} = useManageSection(section, onUpdated);
   return (
     <Modal onClose={onClose} size="lg">
       <div className={styles.header}>
@@ -38,12 +37,10 @@ export const ManageSectionModal = ({ section, onClose, onUpdated }) => {
               <TextInput value={cantidadMesas} onChange={(event) => setCantidadMesas(event.target.value.replace(/\D/g, ''))} maxLength={4} />
             </FormField>
           </div>
-
           <p className={styles.previewLabel}>Vista previa de mesas</p>
           <div className={styles.preview}>
             <TablesGrid count={Number(cantidadMesas) || 0} />
           </div>
-
           <div className={styles.actions}>
             <Button type="submit" className="flex-1" disabled={loading}>{loading ? 'GUARDANDO...' : 'MODIFICAR'}</Button>
             <Button type="button" variant="danger" className="flex-1" onClick={onClose}>VOLVER</Button>

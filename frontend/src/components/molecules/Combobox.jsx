@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
-import { useClickOutside } from '../../hooks/useClickOutside';
-import { TextInput } from '../atoms/TextInput';
-import { colors } from '../../constants/theme';
+import {useMemo, useRef, useState} from 'react';
+import {useClickOutside} from '../../hooks/useClickOutside';
+import {TextInput} from '../atoms/TextInput';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'relative w-full',
@@ -10,21 +10,19 @@ const styles = {
   empty: 'px-4 py-2 text-sm text-slate-400'
 };
 
-export const Combobox = ({ value, onChange, options = [], placeholder, maxLength }) => {
+
+export const Combobox = ({value, onChange, options = [], placeholder, maxLength}) => {
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   useClickOutside(ref, () => setIsOpen(false));
-
   const filteredOptions = useMemo(() => {
     if (!value) return options;
     return options.filter((option) => option.toLowerCase().includes(value.toLowerCase()));
   }, [options, value]);
-
   const handleSelect = (option) => {
     onChange(option);
     setIsOpen(false);
   };
-
   return (
     <div className={styles.wrapper} ref={ref}>
       <TextInput

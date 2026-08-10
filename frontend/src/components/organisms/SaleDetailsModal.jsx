@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { DailySaleItemDetailModal } from './DailySaleItemDetailModal';
-import { useSaleDetails } from '../../features/config/hooks/useSaleDetails';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {DailySaleItemDetailModal} from './DailySaleItemDetailModal';
+import {useSaleDetails} from '../../features/config/hooks/useSaleDetails';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-700 to-blue-900 px-4 py-3 text-center shadow-sm',
@@ -38,10 +38,9 @@ const buildSummaryText = (grupos) => {
     .join(' | ');
 };
 
-export const SaleDetailsModal = ({ venta, onClose }) => {
+export const SaleDetailsModal = ({venta, onClose}) => {
   const { details, loading } = useSaleDetails(venta.idVenta);
   const [selectedItem, setSelectedItem] = useState(null);
-
   return (
     <Modal onClose={onClose} size="lg">
       <div className={styles.header}>
@@ -53,7 +52,6 @@ export const SaleDetailsModal = ({ venta, onClose }) => {
         const grupos = item.personalizacionGrupos || [];
         const hasCustomization = grupos.length > 0;
         const summary = hasCustomization ? buildSummaryText(grupos) : '';
-
         return (
           <div key={index} className={styles.row}>
             <div className={styles.info}>

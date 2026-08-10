@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import { InterestSelector } from './InterestSelector';
-import { SearchableSelect } from '../molecules/SearchableSelect';
-import { FormField } from '../molecules/FormField';
-import { ImageBox } from '../atoms/ImageBox';
-import { Button } from '../atoms/Button';
-import { Pagination } from '../molecules/Pagination';
-import { usePagination } from '../../hooks/usePagination';
-import { getCategoryOptions, getSubcategoryOptions } from '../../features/products/services/productService';
-import { getProductsBySubcategory } from '../../features/promotions/services/promotionService';
-import { getPromotionsForPos } from '../../features/pos/services/posService';
+import {useEffect, useState} from 'react';
+import {InterestSelector} from './InterestSelector';
+import {SearchableSelect} from '../molecules/SearchableSelect';
+import {FormField} from '../molecules/FormField';
+import {ImageBox} from '../atoms/ImageBox';
+import {Button} from '../atoms/Button';
+import {Pagination} from '../molecules/Pagination';
+import {usePagination} from '../../hooks/usePagination';
+import {getCategoryOptions, getSubcategoryOptions} from '../../features/products/services/productService';
+import {getProductsBySubcategory} from '../../features/promotions/services/promotionService';
+import {getPromotionsForPos} from '../../features/pos/services/posService';
 
 const PAGE_SIZE = 12;
 
@@ -24,7 +24,7 @@ const styles = {
   hint: 'rounded-xl bg-white p-6 text-center text-sm text-slate-400 shadow-sm'
 };
 
-export const PosProductBrowser = ({ onAddProduct, onAddPromotion }) => {
+export const PosProductBrowser = ({onAddProduct, onAddPromotion}) => {
   const [interest, setInterest] = useState('products');
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [subcategoryOptions, setSubcategoryOptions] = useState([]);
@@ -34,14 +34,11 @@ export const PosProductBrowser = ({ onAddProduct, onAddPromotion }) => {
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
   const items = interest === 'products' ? products : promotions;
   const { visible, goLeft, goRight, canGoLeft, canGoRight, currentPage, totalPages } = usePagination(items, PAGE_SIZE);
-
   useEffect(() => {
     getCategoryOptions().then(setCategoryOptions).catch(() => setCategoryOptions([]));
   }, []);
-
   useEffect(() => {
     if (interest !== 'promotions') return;
     setLoading(true);
@@ -51,13 +48,11 @@ export const PosProductBrowser = ({ onAddProduct, onAddPromotion }) => {
       .catch(() => setPromotions([]))
       .finally(() => setLoading(false));
   }, [interest]);
-
   useEffect(() => {
     if (interest === 'products' && !idSubcategoria) {
       setHasSearched(false);
     }
   }, [interest]);
-
   useEffect(() => {
     if (!idCategoria) {
       setSubcategoryOptions([]);
@@ -66,7 +61,6 @@ export const PosProductBrowser = ({ onAddProduct, onAddPromotion }) => {
     }
     getSubcategoryOptions(idCategoria).then(setSubcategoryOptions).catch(() => setSubcategoryOptions([]));
   }, [idCategoria]);
-
   useEffect(() => {
     if (!idSubcategoria) {
       setProducts([]);
@@ -80,7 +74,6 @@ export const PosProductBrowser = ({ onAddProduct, onAddPromotion }) => {
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, [idSubcategoria]);
-
   return (
     <div className={styles.wrapper}>
       <InterestSelector value={interest} onChange={setInterest} />
@@ -105,19 +98,15 @@ export const PosProductBrowser = ({ onAddProduct, onAddPromotion }) => {
           </FormField>
         </div>
       )}
-
       {loading && <p className={styles.loading}>Cargando...</p>}
-
       {!loading && interest === 'products' && !idSubcategoria && (
         <p className={styles.hint}>Selecciona una categoría y subcategoría para ver los productos</p>
       )}
-
       {!loading && hasSearched && items.length === 0 && (
         <p className={styles.empty}>
           {interest === 'products' ? 'No hay productos en esta subcategoría' : 'No hay promociones activas en este momento'}
         </p>
       )}
-
       {!loading && items.length > 0 && (
         <>
           <div className={styles.grid}>

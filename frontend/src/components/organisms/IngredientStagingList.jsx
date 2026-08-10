@@ -1,6 +1,6 @@
-import { X } from 'lucide-react';
-import { TextInput } from '../atoms/TextInput';
-import { colors } from '../../constants/theme';
+import {X} from 'lucide-react';
+import {TextInput} from '../atoms/TextInput';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex flex-col divide-y divide-slate-100 rounded-xl bg-white shadow-sm',
@@ -14,9 +14,8 @@ const styles = {
   removeButton: 'flex shrink-0 items-center justify-center rounded-full bg-red-100 p-1.5 text-red-600 hover:bg-red-200'
 };
 
-export const IngredientStagingList = ({ items, onRemove, onUpdateQuantity }) => {
+export const IngredientStagingList = ({items, onRemove, onUpdateQuantity}) => {
   if (items.length === 0) return null;
-
   return (
     <div className={styles.wrapper}>
       {items.map((item) => (

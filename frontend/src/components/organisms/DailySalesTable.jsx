@@ -21,11 +21,10 @@ const formatHora = (hora) => {
   return `${hora12}:${minutoStr} ${periodo}`;
 };
 
-export const DailySalesTable = ({ sales, onSelect }) => {
+export const DailySalesTable = ({sales, onSelect}) => {
   if (sales.length === 0) {
     return <p className={styles.empty}>No hay ventas para mostrar</p>;
   }
-
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

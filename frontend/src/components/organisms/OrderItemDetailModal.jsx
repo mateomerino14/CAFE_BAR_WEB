@@ -1,5 +1,5 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
 
 const styles = {
   header: 'mb-4 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-center shadow-sm',
@@ -16,7 +16,7 @@ const styles = {
   back: 'mt-4'
 };
 
-export const OrderItemDetailModal = ({ item, onClose }) => {
+export const OrderItemDetailModal = ({item, onClose}) => {
   return (
     <Modal onClose={onClose} hideCloseButton>
       <div className={styles.header}>
@@ -39,7 +39,6 @@ export const OrderItemDetailModal = ({ item, onClose }) => {
         <span className={styles.label}>Subtotal</span>
         <span>Bs {(item.unitPrice * Number(item.cantidad || 0)).toFixed(2)}</span>
       </div>
-
       {item.exclusiones?.length > 0 && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Sin ingredientes</p>
@@ -52,7 +51,6 @@ export const OrderItemDetailModal = ({ item, onClose }) => {
           <p className={styles.sectionBody}>{item.extras.map((e) => `+${e.cantidadExtra} ${e.nomIng}`).join(', ')}</p>
         </div>
       )}
-
       {item.productCustomizations?.length > 0 && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Personalización por producto</p>
@@ -72,7 +70,6 @@ export const OrderItemDetailModal = ({ item, onClose }) => {
           ))}
         </div>
       )}
-
       <Button type="button" variant="danger" className={styles.back} onClick={onClose}>CERRAR</Button>
     </Modal>
   );

@@ -1,5 +1,5 @@
-import { Camera } from 'lucide-react';
-import { CoverImage } from '../atoms/CoverImage';
+import {Camera} from 'lucide-react';
+import {CoverImage} from '../atoms/CoverImage';
 
 const styles = {
   wrapper: 'group relative h-48 w-48 cursor-pointer sm:h-64 sm:w-64 md:h-72 md:w-72',
@@ -7,7 +7,7 @@ const styles = {
   input: 'hidden'
 };
 
-export const CoverImagePicker = ({ src, alt, onFileChange }) => {
+export const CoverImagePicker = ({src, alt, onFileChange}) => {
   return (
     <label className={styles.wrapper}>
       <CoverImage src={src} alt={alt} />

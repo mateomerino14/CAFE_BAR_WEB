@@ -1,16 +1,37 @@
-# React + Vite
+# Cafebar — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React (Vite + Tailwind CSS v4) del sistema de gestión Cafebar. Ver el README principal en la raíz del repositorio para la descripción completa del proyecto.
 
-Currently, two official plugins are available:
+## Arrancar en desarrollo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+Crea un archivo `.env` con:
+```
+VITE_API_URL=http://localhost:3000/api
+```
+(o la URL de tu backend desplegado)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Documentación de componentes (Storybook)
 
-## Expanding the ESLint configuration
+```bash
+npm run storybook
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Abre `http://localhost:6006` — documentación interactiva de los átomos (`src/stories/atoms/`) y moléculas (`src/stories/molecules/`) del sistema.
+
+## Estructura
+
+- `src/components/` — atoms, molecules, organisms, templates (Atomic Design)
+- `src/features/` — un folder por módulo de negocio (pages, hooks, services, utils)
+- `src/stories/` — documentación de componentes con Storybook
+- `src/context/`, `src/hooks/`, `src/router/`, `src/lib/` — utilidades compartidas
+
+## Build de producción
+
+```bash
+npm run build
+```

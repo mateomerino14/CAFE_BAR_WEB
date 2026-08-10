@@ -1,9 +1,9 @@
-import { TextInput } from '../atoms/TextInput';
-import { Checkbox } from '../atoms/Checkbox';
-import { FormField } from '../molecules/FormField';
-import { DaysSelector } from '../molecules/DaysSelector';
-import { ScheduleTypeSelector } from './ScheduleTypeSelector';
-import { colors } from '../../constants/theme';
+import {TextInput} from '../atoms/TextInput';
+import {Checkbox} from '../atoms/Checkbox';
+import {FormField} from '../molecules/FormField';
+import {DaysSelector} from '../molecules/DaysSelector';
+import {ScheduleTypeSelector} from './ScheduleTypeSelector';
+import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4',
@@ -11,15 +11,13 @@ const styles = {
   info: `text-sm ${colors.textSecondary}`
 };
 
-export const PromotionScheduleFields = ({ schedule, onChange, days, onToggleDay }) => {
+export const PromotionScheduleFields = ({schedule, onChange, days, onToggleDay}) => {
   return (
     <div className={styles.wrapper}>
       <ScheduleTypeSelector value={schedule.scheduleType} onChange={(value) => onChange('scheduleType', value)} />
-
       {schedule.scheduleType === 'always' && (
         <p className={styles.info}>Esta promoción estará disponible en todo momento, sin restricción de fecha u horario.</p>
       )}
-
       {schedule.scheduleType === 'specific' && (
         <div className={styles.grid}>
           <FormField label="FECHA">
@@ -35,7 +33,6 @@ export const PromotionScheduleFields = ({ schedule, onChange, days, onToggleDay 
           </div>
         </div>
       )}
-
       {schedule.scheduleType === 'range' && (
         <>
           <div className={styles.grid}>
@@ -60,7 +57,6 @@ export const PromotionScheduleFields = ({ schedule, onChange, days, onToggleDay 
           {schedule.daysEnabled && <DaysSelector selectedDays={days} onToggle={onToggleDay} />}
         </>
       )}
-
       {schedule.scheduleType === 'recurring' && (
         <>
           <div className={styles.grid}>

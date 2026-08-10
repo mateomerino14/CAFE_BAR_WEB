@@ -1,35 +1,41 @@
-import { supabase } from '../config/supabaseClient.js';
+import {supabase} from '../config/supabaseClient.js';
 
+
+/*Verifica si ya existe una sección con el mismo nombre, permitiendo excluir una sección específica al editar.*/
 const isSectionNameTaken = async (name, excludeId = null) => {
   let query = supabase.from('seccion').select('id_seccion').ilike('nomb_seccion', name);
   if (excludeId) query = query.neq('id_seccion', excludeId);
-  const { data } = await query.maybeSingle();
+  const {data} = await query.maybeSingle();
   return Boolean(data);
 };
 
+
+/*Crea una nueva sección y genera la cantidad de mesas habilitadas indicada para ella.*/
 export const createSection = async (nombre, descripcion, cantidadMesas) => {
   const nameTaken = await isSectionNameTaken(nombre);
   if (nameTaken) throw new Error('DUPLICATE_SECTION');
-  const { data: section, error } = await supabase
+  const {data: section, error} = await supabase
     .from('seccion')
-    .insert({ nomb_seccion: nombre, descripcion: descripcion || null })
+    .insert({nomb_seccion: nombre, descripcion: descripcion || null})
     .select('id_seccion')
     .single();
   if (error) throw error;
   if (cantidadMesas > 0) {
-    const rows = Array.from({ length: cantidadMesas }, () => ({ id_seccion: section.id_seccion }));
-    const { error: insertError } = await supabase.from('mesa').insert(rows);
+    const rows = Array.from({length: cantidadMesas }, () => ({ id_seccion: section.id_seccion}));
+    const {error: insertError} = await supabase.from('mesa').insert(rows);
     if (insertError) throw insertError;
   }
   return section.id_seccion;
 };
 
+
+/*Obtiene todas las secciones junto con la cantidad de mesas habilitadas en cada una.*/
 export const listSections = async () => {
-  const { data: sections } = await supabase
+  const {data: sections} = await supabase
     .from('seccion')
     .select('id_seccion, nomb_seccion, descripcion')
     .order('nomb_seccion');
-  const { data: counts } = await supabase.rpc('get_section_table_counts');
+  const {data: counts} = await supabase.rpc('get_section_table_counts');
   const countMap = new Map((counts || []).map((row) => [row.id_seccion, Number(row.mesas_count)]));
   return (sections || []).map((section) => ({
     ...section,
@@ -37,19 +43,23 @@ export const listSections = async () => {
   }));
 };
 
+
+/*Obtiene la cantidad de mesas habilitadas que pertenecen a una sección específica.*/
 export const getSectionTableCount = async (idSeccion) => {
-  const { count } = await supabase
+  const {count} = await supabase
     .from('mesa')
-    .select('*', { count: 'exact', head: true })
+    .select('*', {count: 'exact', head: true})
     .eq('id_seccion', idSeccion)
     .eq('existe', true);
   return count || 0;
 };
 
+
+/*Actualiza los datos de una sección y ajusta la cantidad de mesas habilitadas según la nueva cantidad indicada.*/
 export const updateSection = async (idSeccion, nombre, descripcion, nuevaCantidad) => {
   const nameTaken = await isSectionNameTaken(nombre, idSeccion);
   if (nameTaken) throw new Error('DUPLICATE_SECTION');
-  const { count: cantidadHabilitada } = await supabase
+  const {count: cantidadHabilitada} = await supabase
     .from('mesa')
     .select('*', { count: 'exact', head: true })
     .eq('id_seccion', idSeccion)
@@ -70,14 +80,15 @@ export const updateSection = async (idSeccion, nombre, descripcion, nuevaCantida
         await supabase.from('mesa').update({ existe: false }).eq('id_seccion', idSeccion).in('id_mesa', ids);
       }
     }
-  } else {
+  } 
+  else {
     const resto = nuevaCantidad - habilitada;
-    const { data: toEnable } = await supabase
+    const {data: toEnable} = await supabase
       .from('mesa')
       .select('id_mesa')
       .eq('id_seccion', idSeccion)
       .eq('existe', false)
-      .order('id_mesa', { ascending: true })
+      .order('id_mesa', {ascending: true})
       .limit(resto);
     const enableIds = (toEnable || []).map((row) => row.id_mesa);
     if (enableIds.length > 0) {
@@ -85,12 +96,12 @@ export const updateSection = async (idSeccion, nombre, descripcion, nuevaCantida
     }
     const restante = resto - enableIds.length;
     if (restante > 0) {
-      const rows = Array.from({ length: restante }, () => ({ id_seccion: idSeccion }));
-      const { error: insertError } = await supabase.from('mesa').insert(rows);
+      const rows = Array.from({length: restante}, () => ({id_seccion: idSeccion}));
+      const {error: insertError} = await supabase.from('mesa').insert(rows);
       if (insertError) throw insertError;
     }
   }
-  const { error } = await supabase
+  const {error} = await supabase
     .from('seccion')
     .update({ nomb_seccion: nombre, descripcion: descripcion || null })
     .eq('id_seccion', idSeccion);

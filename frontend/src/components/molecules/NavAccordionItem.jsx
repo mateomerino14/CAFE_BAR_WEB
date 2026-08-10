@@ -1,5 +1,5 @@
-import { ChevronDown } from 'lucide-react';
-import { colors } from '../../constants/theme';
+import {ChevronDown} from 'lucide-react';
+import {colors} from '../../constants/theme';
 
 const styles = {
   trigger: `flex w-full items-center justify-between px-4 py-3.5 text-left text-sm font-bold tracking-wide ${colors.navText} transition-colors ${colors.navHover}`,
@@ -9,7 +9,7 @@ const styles = {
   subItem: `px-8 py-2.5 text-left text-sm font-medium ${colors.navMenuText} transition-colors ${colors.navMenuHover}`
 };
 
-export const NavAccordionItem = ({ label, path, items = [], isOpen, onToggle, onNavigate }) => {
+export const NavAccordionItem = ({label, path, items = [], isOpen, onToggle, onNavigate}) => {
   if (items.length === 0) {
     return (
       <button type="button" className={styles.trigger} onClick={() => onNavigate(path)}>
@@ -17,7 +17,6 @@ export const NavAccordionItem = ({ label, path, items = [], isOpen, onToggle, on
       </button>
     );
   }
-
   return (
     <div>
       <button type="button" className={styles.trigger} onClick={onToggle}>

@@ -8,7 +8,7 @@ const styles = {
   monto: 'mt-1 rounded-lg bg-black/20 px-3 py-1 text-xs font-bold'
 };
 
-export const DailySalesSummaryCards = ({ summary }) => {
+export const DailySalesSummaryCards = ({summary}) => {
   return (
     <div className={styles.wrapper}>
       <div className={`${styles.card} ${styles.finalizadas}`}>

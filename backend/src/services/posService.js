@@ -12,23 +12,32 @@ export const listSectionsWithTables = async () => {
   }));
 };
 
-/* Calcula el siguiente número de venta correspondiente al día actual según la fecha de Bolivia. */
-const getDailySaleNumber = async () => {
+/*Obtiene la fecha actual correspondiente a Bolivia en formato YYYY-MM-DD.*/
+const getBoliviaDateString = () => {
   const now = new Date();
   const bolivianShifted = new Date(now.getTime() - 4 * 60 * 60 * 1000);
   const year = bolivianShifted.getUTCFullYear();
-  const month = bolivianShifted.getUTCMonth();
-  const day = bolivianShifted.getUTCDate();
-  const startOfDayBolivia = new Date(Date.UTC(year, month, day, 4, 0, 0, 0));
+  const month = String(bolivianShifted.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(bolivianShifted.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/*Obtiene de forma segura el siguiente número correlativo de venta para la fecha actual mediante una función de la base de datos.*/
+const reserveNextSaleNumber = async () => {
+  const {data, error} = await supabase.rpc('get_next_daily_sale_number', {p_fecha: getBoliviaDateString()});
+  if (error) throw error;
+  return data;
+};
+
+/*Calcula una vista previa del siguiente número de venta contando las ventas registradas desde el inicio del día actual.*/
+export const getNextSaleNumberPreview = async () => {
   const {count} = await supabase
     .from('venta')
-    .select('*', { count: 'exact', head: true })
-    .gte('fecha_reg', startOfDayBolivia.toISOString());
+    .select('*', {count: 'exact', head: true})
+    .gte('fecha_reg', `${getBoliviaDateString()}T04:00:00.000Z`);
   return (count || 0) + 1;
 };
 
-/* Obtiene una vista previa del siguiente número de venta que será asignado. */
-export const getNextSaleNumberPreview = async () => getDailySaleNumber();
 
 /* Calcula la cantidad de ingredientes necesarios para los productos y promociones solicitados, considerando exclusiones, extras y personalizaciones. */
 const buildStockRequirements = async (items) => {
@@ -102,15 +111,17 @@ export const deductStock = async (neededByIngredient) => {
 
 
 /* Obtiene la venta existente de una mesa o crea una nueva cuando la mesa se encuentra disponible, asignando el mesero y cajero correspondientes. */
-export const createOrGetVenta = async ({ idMesa, idSeccion, idMesero, idCajero }) => {
-  const {data: table} = await supabase
+export const createOrGetVenta = async ({idMesa, idSeccion, idMesero, idCajero}) => {
+  const {data: claimedTable} = await supabase
     .from('mesa')
-    .select('disponible')
+    .update({ disponible: false })
     .eq('id_mesa', idMesa)
     .eq('id_seccion', idSeccion)
-    .single();
-  if (table.disponible) {
-    const numVenta = await getDailySaleNumber();
+    .eq('disponible', true)
+    .select('id_mesa')
+    .maybeSingle();
+  if (claimedTable) {
+    const numVenta = await reserveNextSaleNumber();
     const {data: venta, error} = await supabase
       .from('venta')
       .insert({
@@ -124,15 +135,14 @@ export const createOrGetVenta = async ({ idMesa, idSeccion, idMesero, idCajero }
       .select('id_venta, num_venta')
       .single();
     if (error) throw error;
-    await supabase.from('mesa').update({disponible: false}).eq('id_mesa', idMesa).eq('id_seccion', idSeccion);
-    return { idVenta: venta.id_venta, numVenta: venta.num_venta };
+    return {idVenta: venta.id_venta, numVenta: venta.num_venta};
   }
   const {data: venta} = await supabase
     .from('venta')
     .select('id_venta, num_venta')
     .eq('id_mesa', idMesa)
     .eq('id_seccion', idSeccion)
-    .order('fecha_reg', { ascending: false })
+    .order('fecha_reg', {ascending: false})
     .limit(1)
     .single();
   return {idVenta: venta.id_venta, numVenta: venta.num_venta};

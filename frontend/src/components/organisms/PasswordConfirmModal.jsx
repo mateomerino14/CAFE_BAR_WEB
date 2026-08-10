@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { Toast } from '../atoms/Toast';
-import { PasswordField } from '../molecules/PasswordField';
-import { FormField } from '../molecules/FormField';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {Toast} from '../atoms/Toast';
+import {PasswordField} from '../molecules/PasswordField';
+import {FormField} from '../molecules/FormField';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -12,14 +12,12 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const PasswordConfirmModal = ({ onClose, onConfirm, error }) => {
+export const PasswordConfirmModal = ({onClose, onConfirm, error}) => {
   const [password, setPassword] = useState('');
-
   const handleSubmit = (event) => {
     event.preventDefault();
     onConfirm(password);
   };
-
   return (
     <Modal onClose={onClose}>
       <h2 className={styles.title}>Autorización requerida</h2>

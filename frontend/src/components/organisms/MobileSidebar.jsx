@@ -1,7 +1,7 @@
-import { X } from 'lucide-react';
-import { Overlay } from '../atoms/Overlay';
-import { NavAccordionItem } from '../molecules/NavAccordionItem';
-import { colors } from '../../constants/theme';
+import {X} from 'lucide-react';
+import {Overlay} from '../atoms/Overlay';
+import {NavAccordionItem } from '../molecules/NavAccordionItem';
+import {colors} from '../../constants/theme';
 
 const styles = {
   panel: `fixed inset-y-0 left-0 z-50 flex w-72 max-w-[80vw] flex-col overflow-y-auto ${colors.navBackground} shadow-2xl transition-transform duration-300 md:hidden`,
@@ -13,7 +13,7 @@ const styles = {
   list: 'flex flex-1 flex-col divide-y divide-white/20'
 };
 
-export const MobileSidebar = ({ isOpen, onClose, items, openLabel, onToggleSection, onNavigate }) => {
+export const MobileSidebar = ({isOpen, onClose, items, openLabel, onToggleSection, onNavigate}) => {
   return (
     <>
       {isOpen && <Overlay onClick={onClose} className="md:hidden" />}

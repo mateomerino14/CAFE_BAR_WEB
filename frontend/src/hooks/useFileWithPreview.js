@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 
 export const useFileWithPreview = (initialSrc = null) => {
   const [file, setFile] = useState(null);
@@ -13,5 +13,5 @@ export const useFileWithPreview = (initialSrc = null) => {
     setFile(null);
     setPreview(initialSrc);
   };
-  return { file, preview, handleFileChange, reset, setPreview };
+  return {file, preview, handleFileChange, reset, setPreview};
 };

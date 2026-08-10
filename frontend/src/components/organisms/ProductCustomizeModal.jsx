@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Checkbox } from '../atoms/Checkbox';
-import { FormField } from '../molecules/FormField';
-import { Toast } from '../atoms/Toast';
-import { useProductCustomization } from '../../features/pos/hooks/useProductCustomization';
-import { usePagination } from '../../hooks/usePagination';
+import {useState} from 'react';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Checkbox} from '../atoms/Checkbox';
+import {FormField} from '../molecules/FormField';
+import {Toast} from '../atoms/Toast';
+import {useProductCustomization} from '../../features/pos/hooks/useProductCustomization';
+import {usePagination} from '../../hooks/usePagination';
 
 const PAGE_SIZE = 6;
 
@@ -34,7 +34,7 @@ const styles = {
   loading: 'mt-4 rounded-lg bg-slate-50 p-6 text-center text-sm font-semibold text-blue-500'
 };
 
-export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
+export const ProductCustomizeModal = ({product, onClose, onConfirm}) => {
   const {
     cantidadTotal, setCantidadTotal,
     tipoConsumo, setTipoConsumo,
@@ -48,6 +48,7 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
     simpleExclusiones, simpleExtras, simpleUnitPrice, simpleTotal,
     groupsTotal
   } = useProductCustomization(product);
+
   const [tab, setTab] = useState('exclusiones');
   const [error, setError] = useState('');
   const { visible, goLeft, goRight, canGoLeft, canGoRight, currentPage, totalPages } = usePagination(ingredients, PAGE_SIZE);
@@ -61,12 +62,10 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
   const handleConfirm = () => {
     setError('');
     const cantidadNumerica = Number(cantidadTotal);
-
     if (!cantidadNumerica || cantidadNumerica < 1) {
       setError('Ingrese una cantidad válida');
       return;
     }
-
     if (subGroupsMode) {
       if (restante !== 0) {
         setError(`Aún faltan ${restante} unidades por asignar a un grupo`);
@@ -84,7 +83,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
   return (
     <Modal onClose={onClose} size="lg">
       <h2 className={styles.title}>{product.nom_prod}</h2>
-
       <div className={styles.section}>
         <FormField label="CANTIDAD TOTAL">
           <TextInput value={cantidadTotal} onChange={(event) => setCantidadTotal(event.target.value.replace(/\D/g, ''))} maxLength={3} />
@@ -101,9 +99,7 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
           />
         )}
       </div>
-
       {loading && <p className={styles.loading}>Cargando ingredientes...</p>}
-
       {!loading && ingredients.length > 0 && (
         <div className={styles.section}>
           {subGroupsMode && (
@@ -111,7 +107,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
               <TextInput value={draftCantidad} onChange={(event) => setDraftCantidad(event.target.value.replace(/\D/g, ''))} maxLength={3} />
             </FormField>
           )}
-
           <div className={styles.subTabRow}>
             <button
               type="button"
@@ -128,7 +123,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
               Extras
             </button>
           </div>
-
           <div>
             {tab === 'exclusiones' && visible.map((ing) => (
               <div key={ing.id_ing} className={styles.ingredientRow}>
@@ -139,7 +133,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
                 />
               </div>
             ))}
-
             {tab === 'extras' && visible.map((ing) => (
               <div key={ing.id_ing} className={styles.ingredientRow}>
                 <span>{ing.nom_ing} (Bs {Number(ing.precio_extra || 0).toFixed(2)} c/u)</span>
@@ -153,7 +146,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
               </div>
             ))}
           </div>
-
           {ingredients.length > PAGE_SIZE && (
             <Pagination
               currentPage={currentPage}
@@ -164,7 +156,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
               onNext={goRight}
             />
           )}
-
           {subGroupsMode && (
             <>
               <Button type="button" variant="warning" size="sm" onClick={handleAddGroup}>AÑADIR GRUPO</Button>
@@ -191,7 +182,6 @@ export const ProductCustomizeModal = ({ product, onClose, onConfirm }) => {
           )}
         </div>
       )}
-
       {!loading && (
         <>
           <div className={styles.total}>Total: Bs {(subGroupsMode ? groupsTotal : simpleTotal).toFixed(2)}</div>

@@ -1,4 +1,4 @@
-import { UserRound } from 'lucide-react';
+import {UserRound} from 'lucide-react';
 
 const styles = {
   wrapper: 'flex h-full w-full items-center justify-center rounded-full border-4 border-white bg-slate-100 animate-glow-pulse',
@@ -6,7 +6,7 @@ const styles = {
   placeholder: 'text-slate-300'
 };
 
-export const CoverImage = ({ src, alt }) => {
+export const CoverImage = ({src, alt}) => {
   return (
     <div className={styles.wrapper}>
       {src ? (

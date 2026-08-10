@@ -1,9 +1,9 @@
-import { Modal } from '../atoms/Modal';
-import { Button } from '../atoms/Button';
-import { TextInput } from '../atoms/TextInput';
-import { Toast } from '../atoms/Toast';
-import { FormField } from '../molecules/FormField';
-import { useRegisterSection } from '../../features/sections/hooks/useRegisterSection';
+import {Modal} from '../atoms/Modal';
+import {Button} from '../atoms/Button';
+import {TextInput} from '../atoms/TextInput';
+import {Toast} from '../atoms/Toast';
+import {FormField} from '../molecules/FormField';
+import {useRegisterSection} from '../../features/sections/hooks/useRegisterSection';
 
 const styles = {
   title: 'text-lg font-bold text-slate-800',
@@ -11,9 +11,8 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const RegisterSectionModal = ({ onClose, onRegistered }) => {
+export const RegisterSectionModal = ({onClose, onRegistered}) => {
   const { nombre, setNombre, descripcion, setDescripcion, cantidadMesas, setCantidadMesas, error, loading, handleSubmit } = useRegisterSection(onRegistered);
-
   return (
     <Modal onClose={onClose}>
       <h2 className={styles.title}>Registro de nueva sección</h2>

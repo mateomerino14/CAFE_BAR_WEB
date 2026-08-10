@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 
 const COLORS = ['#2980b9', '#27ae60', '#f39c12', '#9b59b6', '#e74c3c', '#16a085', '#d35400', '#2c3e50', '#c0392b', '#8e44ad'];
 
@@ -9,7 +9,7 @@ const styles = {
   empty: 'p-6 text-center text-sm text-slate-400'
 };
 
-export const EmployeePieChart = ({ rows, titulo }) => {
+export const EmployeePieChart = ({rows, titulo}) => {
   if (rows.length === 0) {
     return (
       <div className={styles.wrapper}>
@@ -18,7 +18,6 @@ export const EmployeePieChart = ({ rows, titulo }) => {
       </div>
     );
   }
-
   return (
     <div className={styles.wrapper}>
       <p className={styles.title}>{titulo}</p>
