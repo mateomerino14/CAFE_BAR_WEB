@@ -1,6 +1,5 @@
 import jsPDF from 'jspdf';
-import { sendPrintJob, checkPrintAgentHealth } from '../../config/services/printAgentService';
-import { getPrintAgentUrl } from '../../config/services/configService';
+import { sendPrintJob } from '../../config/services/printAgentService';
 
 export const printPlainText = (title, text) => {
   const printWindow = window.open('', '_blank', 'width=420,height=640');
@@ -83,23 +82,14 @@ export const isMobileDevice = () => {
   return window.matchMedia('(max-width: 639px)').matches;
 };
 
+/* Intenta imprimir directo usando el propio backend (que corre en esta misma red local),
+   sin necesitar ninguna dirección IP configurada — el backend ya sabe hablar con las impresoras
+   de la PC de Caja usando PowerShell, sin ningún certificado ni servicio aparte de por medio. */
 export const tryPrintViaAgent = async (tipo, text) => {
   try {
-    const baseUrl = await getPrintAgentUrl();
-    if (!baseUrl) return { success: false, reason: 'NOT_CONFIGURED' };
-
-    await checkPrintAgentHealth(baseUrl);
-    await sendPrintJob(baseUrl, tipo, text);
+    await sendPrintJob(tipo, text);
     return { success: true };
   } catch (err) {
     return { success: false, reason: 'UNREACHABLE' };
   }
-};
-
-export const openPrintAgentAuthorization = async () => {
-  const { getPrintAgentUrl } = await import('../../config/services/configService');
-  const baseUrl = await getPrintAgentUrl();
-  if (!baseUrl) return false;
-  window.open(`${baseUrl}/health`, '_blank');
-  return true;
 };

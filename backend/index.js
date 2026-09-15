@@ -19,6 +19,7 @@ import configRoutes from './src/routes/configRoutes.js';
 import backupRoutes from './src/routes/backupRoutes.js';
 import posRoutes from './src/routes/posRoutes.js';
 import reportsRoutes from './src/routes/reportsRoutes.js';
+import printerRoutes from './src/routes/printerRoutes.js';
 import { restrictByIp } from './src/middlewares/restrictByIp.js';
 import { startCronJobs } from './src/cronJobs.js';
 
@@ -71,6 +72,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/backup', backupRoutes);
 app.use('/api/deletion', deletionRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/printers', printerRoutes);
 
 /* Arranca el servidor Express y el trabajo programado (cron) del reporte automático semanal.
    Escucha en 0.0.0.0 para que otros dispositivos de la red local (celulares, tablets) puedan conectarse. */

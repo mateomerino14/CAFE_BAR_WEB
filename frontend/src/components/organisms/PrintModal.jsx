@@ -1,8 +1,8 @@
-import {useState} from 'react';
-import {Modal} from '../atoms/Modal';
-import {Button} from '../atoms/Button';
-import {Toast} from '../atoms/Toast';
-import {printPlainText, downloadPlainTextAsPdf, isMobileDevice, tryPrintViaAgent, openPrintAgentAuthorization} from '../../features/pos/utils/printWindow';
+import { useState } from 'react';
+import { Modal } from '../atoms/Modal';
+import { Button } from '../atoms/Button';
+import { Toast } from '../atoms/Toast';
+import { printPlainText, downloadPlainTextAsPdf, isMobileDevice, tryPrintViaAgent } from '../../features/pos/utils/printWindow';
 
 const styles = {
   preview: 'max-h-[60vh] overflow-auto rounded-lg bg-slate-50 p-3',
@@ -10,7 +10,7 @@ const styles = {
   actions: 'mt-4 flex flex-col gap-2'
 };
 
-export const PrintModal = ({onClose, title, text, tipo, onPrinted, onCompletedWithoutCounting}) => {
+export const PrintModal = ({ onClose, title, text, tipo, onPrinted, onCompletedWithoutCounting }) => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const isMobile = isMobileDevice();
@@ -26,7 +26,7 @@ export const PrintModal = ({onClose, title, text, tipo, onPrinted, onCompletedWi
       return;
     }
     if (isMobile) {
-      setError('No se pudo conectar con el servicio de impresión. Verifica el WiFi del local.');
+      setError('No se pudo conectar con el sistema para imprimir. Verifica el WiFi del local.');
     } else {
       printPlainText(title, text);
       onPrinted();
@@ -48,9 +48,6 @@ export const PrintModal = ({onClose, title, text, tipo, onPrinted, onCompletedWi
       <div className={styles.actions}>
         <Button type="button" onClick={handlePrintDirect} disabled={sending}>
           {sending ? 'IMPRIMIENDO...' : 'IMPRIMIR'}
-        </Button>
-        <Button type="button" variant="warning" onClick={openPrintAgentAuthorization}>
-          AUTORIZAR IMPRESORA (primera vez)
         </Button>
         {isMobile && (
           <Button type="button" variant="warning" onClick={handleDownloadPdf}>DESCARGAR PDF</Button>

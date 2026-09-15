@@ -348,3 +348,15 @@ CREATE TABLE IF NOT EXISTS venta_daily_counter (
 -- cod_emp2 (cajero) puede quedar vacío
 -- Esto pasa cuando quien cobra es el usuario DIRECTORIO, que no es un empleado normal y por lo tanto no tiene un cod_emp que guardar aquí.
 ALTER TABLE venta ALTER COLUMN cod_emp2 DROP NOT NULL;
+
+-- =====================================================================
+-- Tabla de configuración de impresoras (versión de escritorio)
+-- Reemplaza a la tabla print_agent_config (ya no aplica, esa era para
+-- guardar una dirección IP; en la versión de escritorio todo corre en
+-- la misma PC, así que solo se guarda qué impresora usar para cada cosa.
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS printer_config (
+    id              BIGSERIAL PRIMARY KEY,
+    ticket_printer  VARCHAR(200),
+    cocina_printer  VARCHAR(200)
+);
