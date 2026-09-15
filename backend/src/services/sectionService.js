@@ -1,109 +1,101 @@
-import {supabase} from '../config/supabaseClient.js';
-
+import { query } from '../config/db.js';
 
 /*Verifica si ya existe una sección con el mismo nombre, permitiendo excluir una sección específica al editar.*/
 const isSectionNameTaken = async (name, excludeId = null) => {
-  let query = supabase.from('seccion').select('id_seccion').ilike('nomb_seccion', name);
-  if (excludeId) query = query.neq('id_seccion', excludeId);
-  const {data} = await query.maybeSingle();
-  return Boolean(data);
+  const result = excludeId
+    ? await query(`SELECT id_seccion FROM seccion WHERE nomb_seccion ILIKE $1 AND id_seccion != $2 LIMIT 1`, [name, excludeId])
+    : await query(`SELECT id_seccion FROM seccion WHERE nomb_seccion ILIKE $1 LIMIT 1`, [name]);
+  return Boolean(result.rows[0]);
 };
-
 
 /*Crea una nueva sección y genera la cantidad de mesas habilitadas indicada para ella.*/
 export const createSection = async (nombre, descripcion, cantidadMesas) => {
   const nameTaken = await isSectionNameTaken(nombre);
   if (nameTaken) throw new Error('DUPLICATE_SECTION');
-  const {data: section, error} = await supabase
-    .from('seccion')
-    .insert({nomb_seccion: nombre, descripcion: descripcion || null})
-    .select('id_seccion')
-    .single();
-  if (error) throw error;
-  if (cantidadMesas > 0) {
-    const rows = Array.from({length: cantidadMesas }, () => ({ id_seccion: section.id_seccion}));
-    const {error: insertError} = await supabase.from('mesa').insert(rows);
-    if (insertError) throw insertError;
+
+  const sectionResult = await query(
+    `INSERT INTO seccion (nomb_seccion, descripcion) VALUES ($1, $2) RETURNING id_seccion`,
+    [nombre, descripcion || null]
+  );
+  const section = sectionResult.rows[0];
+
+  for (let i = 0; i < cantidadMesas; i++) {
+    await query(`INSERT INTO mesa (id_seccion) VALUES ($1)`, [section.id_seccion]);
   }
+
   return section.id_seccion;
 };
 
-
 /*Obtiene todas las secciones junto con la cantidad de mesas habilitadas en cada una.*/
 export const listSections = async () => {
-  const {data: sections} = await supabase
-    .from('seccion')
-    .select('id_seccion, nomb_seccion, descripcion')
-    .order('nomb_seccion');
-  const {data: counts} = await supabase.rpc('get_section_table_counts');
-  const countMap = new Map((counts || []).map((row) => [row.id_seccion, Number(row.mesas_count)]));
-  return (sections || []).map((section) => ({
+  const sectionsResult = await query(
+    `SELECT id_seccion, nomb_seccion, descripcion FROM seccion ORDER BY nomb_seccion`
+  );
+  const countsResult = await query(`SELECT * FROM get_section_table_counts()`);
+  const countMap = new Map(countsResult.rows.map((row) => [row.id_seccion, Number(row.mesas_count)]));
+
+  return sectionsResult.rows.map((section) => ({
     ...section,
     mesas_count: countMap.get(section.id_seccion) || 0
   }));
 };
 
-
 /*Obtiene la cantidad de mesas habilitadas que pertenecen a una sección específica.*/
 export const getSectionTableCount = async (idSeccion) => {
-  const {count} = await supabase
-    .from('mesa')
-    .select('*', {count: 'exact', head: true})
-    .eq('id_seccion', idSeccion)
-    .eq('existe', true);
-  return count || 0;
+  const result = await query(
+    `SELECT COUNT(*) FROM mesa WHERE id_seccion = $1 AND existe = true`,
+    [idSeccion]
+  );
+  return Number(result.rows[0].count) || 0;
 };
-
 
 /*Actualiza los datos de una sección y ajusta la cantidad de mesas habilitadas según la nueva cantidad indicada.*/
 export const updateSection = async (idSeccion, nombre, descripcion, nuevaCantidad) => {
   const nameTaken = await isSectionNameTaken(nombre, idSeccion);
   if (nameTaken) throw new Error('DUPLICATE_SECTION');
-  const {count: cantidadHabilitada} = await supabase
-    .from('mesa')
-    .select('*', { count: 'exact', head: true })
-    .eq('id_seccion', idSeccion)
-    .eq('existe', true);
-  const habilitada = cantidadHabilitada || 0;
+
+  const habilitadaResult = await query(
+    `SELECT COUNT(*) FROM mesa WHERE id_seccion = $1 AND existe = true`,
+    [idSeccion]
+  );
+  const habilitada = Number(habilitadaResult.rows[0].count) || 0;
+
   if (habilitada >= nuevaCantidad) {
     const diferencia = habilitada - nuevaCantidad;
     if (diferencia > 0) {
-      const { data: toDisable } = await supabase
-        .from('mesa')
-        .select('id_mesa')
-        .eq('id_seccion', idSeccion)
-        .eq('existe', true)
-        .order('id_mesa', { ascending: false })
-        .limit(diferencia);
-      const ids = (toDisable || []).map((row) => row.id_mesa);
+      const toDisableResult = await query(
+        `SELECT id_mesa FROM mesa WHERE id_seccion = $1 AND existe = true ORDER BY id_mesa DESC LIMIT $2`,
+        [idSeccion, diferencia]
+      );
+      const ids = toDisableResult.rows.map((row) => row.id_mesa);
       if (ids.length > 0) {
-        await supabase.from('mesa').update({ existe: false }).eq('id_seccion', idSeccion).in('id_mesa', ids);
+        await query(
+          `UPDATE mesa SET existe = false WHERE id_seccion = $1 AND id_mesa = ANY($2::int[])`,
+          [idSeccion, ids]
+        );
       }
     }
-  } 
-  else {
+  } else {
     const resto = nuevaCantidad - habilitada;
-    const {data: toEnable} = await supabase
-      .from('mesa')
-      .select('id_mesa')
-      .eq('id_seccion', idSeccion)
-      .eq('existe', false)
-      .order('id_mesa', {ascending: true})
-      .limit(resto);
-    const enableIds = (toEnable || []).map((row) => row.id_mesa);
+    const toEnableResult = await query(
+      `SELECT id_mesa FROM mesa WHERE id_seccion = $1 AND existe = false ORDER BY id_mesa ASC LIMIT $2`,
+      [idSeccion, resto]
+    );
+    const enableIds = toEnableResult.rows.map((row) => row.id_mesa);
     if (enableIds.length > 0) {
-      await supabase.from('mesa').update({ existe: true }).eq('id_seccion', idSeccion).in('id_mesa', enableIds);
+      await query(
+        `UPDATE mesa SET existe = true WHERE id_seccion = $1 AND id_mesa = ANY($2::int[])`,
+        [idSeccion, enableIds]
+      );
     }
     const restante = resto - enableIds.length;
-    if (restante > 0) {
-      const rows = Array.from({length: restante}, () => ({id_seccion: idSeccion}));
-      const {error: insertError} = await supabase.from('mesa').insert(rows);
-      if (insertError) throw insertError;
+    for (let i = 0; i < restante; i++) {
+      await query(`INSERT INTO mesa (id_seccion) VALUES ($1)`, [idSeccion]);
     }
   }
-  const {error} = await supabase
-    .from('seccion')
-    .update({ nomb_seccion: nombre, descripcion: descripcion || null })
-    .eq('id_seccion', idSeccion);
-  if (error) throw error;
+
+  await query(
+    `UPDATE seccion SET nomb_seccion = $1, descripcion = $2 WHERE id_seccion = $3`,
+    [nombre, descripcion || null, idSeccion]
+  );
 };
