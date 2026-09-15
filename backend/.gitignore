@@ -21,8 +21,9 @@ build/
 tmp/
 temp/
 
-# Uploads o archivos generados en pruebas locales (si los tienes)
-uploads/
+# Uploads: se ignora el contenido real, pero se conserva la carpeta con .gitkeep
+uploads/*
+!uploads/.gitkeep
 
 # Sistema y editores
 .DS_Store

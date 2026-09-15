@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './src/routes/authRoutes.js';
 import employeeRoutes from './src/routes/employeeRoutes.js';
 import passwordResetRoutes from './src/routes/passwordResetRoutes.js';
@@ -17,8 +19,10 @@ import configRoutes from './src/routes/configRoutes.js';
 import backupRoutes from './src/routes/backupRoutes.js';
 import posRoutes from './src/routes/posRoutes.js';
 import reportsRoutes from './src/routes/reportsRoutes.js';
-import {restrictByIp} from './src/middlewares/restrictByIp.js';
+import { restrictByIp } from './src/middlewares/restrictByIp.js';
+import { startCronJobs } from './src/cronJobs.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 const app = express();
@@ -26,34 +30,20 @@ const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 
+/* En la versión de escritorio, el backend solo es alcanzable dentro de la red local del negocio
+   (nunca expuesto a internet), así que se permite cualquier origen sin restricción de dominio. */
+app.use(cors());
 
-/* Define los orígenes autorizados para permitir solicitudes mediante CORS. */
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://cafe-bar-web.vercel.app'
-];
-
-
-/* Configura CORS para permitir únicamente solicitudes provenientes de los orígenes autorizados. */
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } 
-    else {
-      callback(new Error('No permitido por CORS'));
-    }
-  }
-}));
-
-
-/* Habilita el procesamiento de solicitudes con datos en formato JSON y aplica el control de acceso por dirección IP. */
+/* Habilita el procesamiento de solicitudes con datos en formato JSON y aplica el control de acceso por dirección IP (opcional, vacío por defecto). */
 app.use(express.json());
 app.use(restrictByIp);
 
+/* Sirve las imágenes subidas (productos, empleados, categorías, etc.) como archivos estáticos accesibles desde la red local. */
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 /* Define una ruta de comprobación para verificar que el servidor se encuentre funcionando correctamente. */
 app.get('/api/health', (req, res) => {
-  res.json({status: 'ok', message: 'Servidor del Café Bar corriendo correctamente y conectado a Supabase'});
+  res.json({ status: 'ok', message: 'Servidor del Café Bar corriendo correctamente (base de datos local)' });
 });
 
 /* Registra las rutas relacionadas con autenticación, empleados y recuperación de contraseñas. */
@@ -82,8 +72,21 @@ app.use('/api/backup', backupRoutes);
 app.use('/api/deletion', deletionRoutes);
 app.use('/api/reports', reportsRoutes);
 
+/* Arranca el servidor Express y el trabajo programado (cron) del reporte automático semanal.
+   Escucha en 0.0.0.0 para que otros dispositivos de la red local (celulares, tablets) puedan conectarse. */
+export const startServer = () => {
+  return new Promise((resolve) => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Servidor backend escuchando en http://0.0.0.0:${PORT}`);
+      startCronJobs();
+      resolve(server);
+    });
+  });
+};
 
-
-app.listen(PORT, () => {
-  console.log(`Servidor backend escuchando en http://localhost:${PORT}`);
-});
+/* Si este archivo se ejecuta directamente (node index.js), arranca el servidor de inmediato.
+   Cuando lo arranca Electron, en cambio, se importa startServer() y se llama desde ahí. */
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMainModule) {
+  startServer();
+}
