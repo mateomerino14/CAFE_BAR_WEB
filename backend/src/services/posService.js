@@ -1,14 +1,13 @@
-import {supabase} from '../config/supabaseClient.js';
-import {verifyPassword} from '../utils/password.js';
-
+import { query } from '../config/db.js';
+import { verifyPassword } from '../utils/password.js';
 
 /* Obtiene las secciones junto con las mesas existentes de cada una y sus estados de disponibilidad. */
 export const listSectionsWithTables = async () => {
-  const {data: sections} = await supabase.from('seccion').select('id_seccion, nomb_seccion').order('nomb_seccion');
-  const {data: tables} = await supabase.from('mesa').select('id_mesa, id_seccion, disponible').eq('existe', true).order('id_mesa');
-  return (sections || []).map((section) => ({
+  const sectionsResult = await query(`SELECT id_seccion, nomb_seccion FROM seccion ORDER BY nomb_seccion`);
+  const tablesResult = await query(`SELECT id_mesa, id_seccion, disponible FROM mesa WHERE existe = true ORDER BY id_mesa`);
+  return sectionsResult.rows.map((section) => ({
     ...section,
-    mesas: (tables || []).filter((table) => table.id_seccion === section.id_seccion)
+    mesas: tablesResult.rows.filter((table) => table.id_seccion === section.id_seccion)
   }));
 };
 
@@ -24,66 +23,60 @@ const getBoliviaDateString = () => {
 
 /*Obtiene de forma segura el siguiente número correlativo de venta para la fecha actual mediante una función de la base de datos.*/
 const reserveNextSaleNumber = async () => {
-  const {data, error} = await supabase.rpc('get_next_daily_sale_number', {p_fecha: getBoliviaDateString()});
-  if (error) throw error;
-  return data;
+  const result = await query(`SELECT get_next_daily_sale_number($1) AS numero`, [getBoliviaDateString()]);
+  return result.rows[0].numero;
 };
 
 /*Calcula una vista previa del siguiente número de venta contando las ventas registradas desde el inicio del día actual.*/
 export const getNextSaleNumberPreview = async () => {
-  const {count} = await supabase
-    .from('venta')
-    .select('*', {count: 'exact', head: true})
-    .gte('fecha_reg', `${getBoliviaDateString()}T04:00:00.000Z`);
-  return (count || 0) + 1;
+  const result = await query(
+    `SELECT COUNT(*) FROM venta WHERE fecha_reg >= $1`,
+    [`${getBoliviaDateString()}T04:00:00.000Z`]
+  );
+  return Number(result.rows[0].count) + 1;
 };
-
 
 /* Calcula la cantidad de ingredientes necesarios para los productos y promociones solicitados, considerando exclusiones, extras y personalizaciones. */
 const buildStockRequirements = async (items) => {
   const neededByIngredient = new Map();
   const addNeed = (idIng, amount) => neededByIngredient.set(idIng, (neededByIngredient.get(idIng) || 0) + amount);
+
   for (const item of items) {
     if (item.type === 'product') {
       const exclusionIds = (item.exclusiones || []).map((e) => e.idIng);
-      const {data: ingredients} = await supabase
-        .from('productos_ingredientes')
-        .select('id_ing, cantidad_ing_necesitada')
-        .eq('id_prod', item.idProd);
-      for (const row of ingredients || []) {
-        if (exclusionIds.includes(row.id_ing)) {
-          continue;
-        }
+      const ingredientsResult = await query(
+        `SELECT id_ing, cantidad_ing_necesitada FROM productos_ingredientes WHERE id_prod = $1`,
+        [item.idProd]
+      );
+      for (const row of ingredientsResult.rows) {
+        if (exclusionIds.includes(row.id_ing)) continue;
         addNeed(row.id_ing, Number(row.cantidad_ing_necesitada) * item.cantidad);
       }
       for (const extra of item.extras || []) {
         addNeed(extra.idIng, Number(extra.cantidadExtra) * item.cantidad);
       }
-    } 
-    else {
-      const {data: promProducts} = await supabase
-        .from('promocion_prod')
-        .select('id_prod, cantidad_prod_prom')
-        .eq('id_prom', item.idProm);
+    } else {
+      const promProductsResult = await query(
+        `SELECT id_prod, cantidad_prod_prom FROM promocion_prod WHERE id_prom = $1`,
+        [item.idProm]
+      );
       const customizationByProduct = new Map((item.productCustomizations || []).map((pc) => [pc.idProd, pc]));
-      for (const pp of promProducts || []) {
-        const {data: ingredients} = await supabase
-          .from('productos_ingredientes')
-          .select('id_ing, cantidad_ing_necesitada')
-          .eq('id_prod', pp.id_prod);
+      for (const pp of promProductsResult.rows) {
+        const ingredientsResult = await query(
+          `SELECT id_ing, cantidad_ing_necesitada FROM productos_ingredientes WHERE id_prod = $1`,
+          [pp.id_prod]
+        );
         const customization = customizationByProduct.get(pp.id_prod);
         if (!customization?.unitGroups?.length) {
-          for (const row of ingredients || []) {
+          for (const row of ingredientsResult.rows) {
             addNeed(row.id_ing, Number(row.cantidad_ing_necesitada) * pp.cantidad_prod_prom * item.cantidad);
           }
           continue;
         }
         for (const group of customization.unitGroups) {
           const exclusionIds = (group.exclusiones || []).map((e) => e.idIng);
-          for (const row of ingredients || []) {
-            if (exclusionIds.includes(row.id_ing)) {
-              continue;
-            }
+          for (const row of ingredientsResult.rows) {
+            if (exclusionIds.includes(row.id_ing)) continue;
             addNeed(row.id_ing, Number(row.cantidad_ing_necesitada) * group.cantidad);
           }
           for (const extra of group.extras || []) {
@@ -99,113 +92,95 @@ const buildStockRequirements = async (items) => {
 /* Calcula los requerimientos de stock necesarios para los productos y promociones de una orden. */
 export const computeStockRequirements = async (items) => buildStockRequirements(items);
 
-
 /* Descuenta del stock la cantidad de ingredientes requerida por los productos y promociones procesados. */
 export const deductStock = async (neededByIngredient) => {
   for (const [idIng, needed] of neededByIngredient) {
-    const {data: stockRow} = await supabase.from('stock').select('cantidad_stock').eq('id_ing', idIng).single();
-    const newStock = Math.max(0, (Number(stockRow?.cantidad_stock) || 0) - needed);
-    await supabase.from('stock').update({ cantidad_stock: newStock }).eq('id_ing', idIng);
+    const stockResult = await query(`SELECT cantidad_stock FROM stock WHERE id_ing = $1`, [idIng]);
+    const newStock = Math.max(0, (Number(stockResult.rows[0]?.cantidad_stock) || 0) - needed);
+    await query(`UPDATE stock SET cantidad_stock = $1 WHERE id_ing = $2`, [newStock, idIng]);
   }
 };
-
 
 /* Obtiene la venta existente de una mesa o crea una nueva cuando la mesa se encuentra disponible, asignando el mesero y cajero correspondientes. */
-export const createOrGetVenta = async ({idMesa, idSeccion, idMesero, idCajero}) => {
-  const {data: claimedTable} = await supabase
-    .from('mesa')
-    .update({ disponible: false })
-    .eq('id_mesa', idMesa)
-    .eq('id_seccion', idSeccion)
-    .eq('disponible', true)
-    .select('id_mesa')
-    .maybeSingle();
-  if (claimedTable) {
-    const numVenta = await reserveNextSaleNumber();
-    const {data: venta, error} = await supabase
-      .from('venta')
-      .insert({
-        num_venta: numVenta,
-        cod_emp: idMesero,
-        cod_emp2: idCajero,
-        total_venta: 0,
-        id_mesa: idMesa,
-        id_seccion: idSeccion
-      })
-      .select('id_venta, num_venta')
-      .single();
-    if (error) throw error;
-    return {idVenta: venta.id_venta, numVenta: venta.num_venta};
-  }
-  const {data: venta} = await supabase
-    .from('venta')
-    .select('id_venta, num_venta')
-    .eq('id_mesa', idMesa)
-    .eq('id_seccion', idSeccion)
-    .order('fecha_reg', {ascending: false})
-    .limit(1)
-    .single();
-  return {idVenta: venta.id_venta, numVenta: venta.num_venta};
-};
+export const createOrGetVenta = async ({ idMesa, idSeccion, idMesero, idCajero }) => {
+  const claimedResult = await query(
+    `UPDATE mesa SET disponible = false WHERE id_mesa = $1 AND id_seccion = $2 AND disponible = true RETURNING id_mesa`,
+    [idMesa, idSeccion]
+  );
 
+  if (claimedResult.rows[0]) {
+    const numVenta = await reserveNextSaleNumber();
+    const ventaResult = await query(
+      `INSERT INTO venta (num_venta, cod_emp, cod_emp2, total_venta, id_mesa, id_seccion)
+       VALUES ($1, $2, $3, 0, $4, $5) RETURNING id_venta, num_venta`,
+      [numVenta, idMesero, idCajero, idMesa, idSeccion]
+    );
+    const venta = ventaResult.rows[0];
+    return { idVenta: venta.id_venta, numVenta: venta.num_venta };
+  }
+
+  const ventaResult = await query(
+    `SELECT id_venta, num_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
+    [idMesa, idSeccion]
+  );
+  const venta = ventaResult.rows[0];
+  return { idVenta: venta.id_venta, numVenta: venta.num_venta };
+};
 
 /* Crea los registros individuales de las unidades correspondientes a un producto dentro de un detalle de venta. */
 const insertUnits = async (idDetalle, idProd, cantidad, startIndex = 0) => {
-  const rows = Array.from({length: cantidad}, (_, index) => ({
-    id_detalle_venta: idDetalle,
-    num_unidad: startIndex + index,
-    marcado: false,
-    id_prod: idProd
-  }));
-  await supabase.from('detalles_venta_unidades').insert(rows);
+  for (let index = 0; index < cantidad; index++) {
+    await query(
+      `INSERT INTO detalles_venta_unidades (id_detalle_venta, num_unidad, marcado, id_prod) VALUES ($1, $2, false, $3)`,
+      [idDetalle, startIndex + index, idProd]
+    );
+  }
 };
-
 
 /* Registra un producto individual en una venta, calculando su subtotal y almacenando sus unidades, exclusiones y extras personalizados. */
 const insertProductItem = async (idVenta, idMesero, item, batchFecha) => {
-  const {data: product} = await supabase.from('producto').select('precio_venta').eq('id_prod', item.idProd).single();
+  const productResult = await query(`SELECT precio_venta FROM producto WHERE id_prod = $1`, [item.idProd]);
+  const product = productResult.rows[0];
   if (!product) throw new Error('PRODUCT_NOT_FOUND');
+
   const extraCost = (item.extras || []).reduce((sum, extra) => sum + Number(extra.precioExtra) * Number(extra.cantidadExtra), 0);
   const unitPrice = Number(product.precio_venta) + extraCost;
   const subtotal = unitPrice * item.cantidad;
-  const {data: detalle, error} = await supabase
-    .from('detalles_venta')
-    .insert({
-      id_venta: idVenta,
-      id_prod: item.idProd,
-      subtotal,
-      cantidad_prod_det: item.cantidad,
-      tipo_consumo: item.tipoConsumo || 'Local',
-      estado_detalle_venta: 'PENDIENTE',
-      id_mesero_actual: idMesero,
-      fecha_reg_detalle_venta: batchFecha
-    })
-    .select('id_detalle_venta')
-    .single();
-  if (error) throw error;
+
+  const detalleResult = await query(
+    `INSERT INTO detalles_venta (id_venta, id_prod, subtotal, cantidad_prod_det, tipo_consumo, estado_detalle_venta, id_mesero_actual, fecha_reg_detalle_venta)
+     VALUES ($1, $2, $3, $4, $5, 'PENDIENTE', $6, $7) RETURNING id_detalle_venta`,
+    [idVenta, item.idProd, subtotal, item.cantidad, item.tipoConsumo || 'Local', idMesero, batchFecha]
+  );
+  const detalle = detalleResult.rows[0];
+
   await insertUnits(detalle.id_detalle_venta, item.idProd, item.cantidad);
+
   if (item.exclusiones?.length) {
-    const rows = item.exclusiones.map((e) => ({ id_detalle_venta: detalle.id_detalle_venta, id_ing: e.idIng, nom_ing: e.nomIng }));
-    await supabase.from('detalles_venta_exclusiones').insert(rows);
+    for (const e of item.exclusiones) {
+      await query(
+        `INSERT INTO detalles_venta_exclusiones (id_detalle_venta, id_ing, nom_ing) VALUES ($1, $2, $3)`,
+        [detalle.id_detalle_venta, e.idIng, e.nomIng]
+      );
+    }
   }
   if (item.extras?.length) {
-    const rows = item.extras.map((e) => ({
-      id_detalle_venta: detalle.id_detalle_venta,
-      id_ing: e.idIng,
-      nom_ing: e.nomIng,
-      cantidad_extra: e.cantidadExtra,
-      precio_extra: e.precioExtra
-    }));
-    await supabase.from('detalles_venta_extras').insert(rows);
+    for (const e of item.extras) {
+      await query(
+        `INSERT INTO detalles_venta_extras (id_detalle_venta, id_ing, nom_ing, cantidad_extra, precio_extra) VALUES ($1, $2, $3, $4, $5)`,
+        [detalle.id_detalle_venta, e.idIng, e.nomIng, e.cantidadExtra, e.precioExtra]
+      );
+    }
   }
   return subtotal;
 };
 
-
 /* Registra una promoción en una venta, incluyendo sus productos, unidades, exclusiones, extras y personalizaciones individuales. */
 const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
-  const {data: promotion} = await supabase.from('promocion').select('precio_prom').eq('id_prom', item.idProm).single();
+  const promotionResult = await query(`SELECT precio_prom FROM promocion WHERE id_prom = $1`, [item.idProm]);
+  const promotion = promotionResult.rows[0];
   if (!promotion) throw new Error('PROMOTION_NOT_FOUND');
+
   const customizationByProduct = new Map((item.productCustomizations || []).map((pc) => [pc.idProd, pc]));
   const extraCost = (item.productCustomizations || []).reduce((sum, pc) => {
     return sum + (pc.unitGroups || []).reduce((s, g) => {
@@ -214,29 +189,24 @@ const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
     }, 0);
   }, 0);
   const subtotal = Number(promotion.precio_prom) * item.cantidad + extraCost;
-  const {data: detalle, error} = await supabase
-    .from('detalles_venta')
-    .insert({
-      id_venta: idVenta,
-      id_prom: item.idProm,
-      subtotal,
-      cantidad_prod_det: item.cantidad,
-      tipo_consumo: item.tipoConsumo || 'Local',
-      estado_detalle_venta: 'PENDIENTE',
-      id_mesero_actual: idMesero,
-      fecha_reg_detalle_venta: batchFecha
-    })
-    .select('id_detalle_venta')
-    .single();
-  if (error) throw error;
-  const {data: promProducts} = await supabase
-    .from('promocion_prod')
-    .select('id_prod, cantidad_prod_prom')
-    .eq('id_prom', item.idProm);
+
+  const detalleResult = await query(
+    `INSERT INTO detalles_venta (id_venta, id_prom, subtotal, cantidad_prod_det, tipo_consumo, estado_detalle_venta, id_mesero_actual, fecha_reg_detalle_venta)
+     VALUES ($1, $2, $3, $4, $5, 'PENDIENTE', $6, $7) RETURNING id_detalle_venta`,
+    [idVenta, item.idProm, subtotal, item.cantidad, item.tipoConsumo || 'Local', idMesero, batchFecha]
+  );
+  const detalle = detalleResult.rows[0];
+
+  const promProductsResult = await query(
+    `SELECT id_prod, cantidad_prod_prom FROM promocion_prod WHERE id_prom = $1`,
+    [item.idProm]
+  );
+
   let globalUnitIndex = 0;
-  for (const pp of promProducts || []) {
+  for (const pp of promProductsResult.rows) {
     const totalUnits = pp.cantidad_prod_prom * item.cantidad;
     await insertUnits(detalle.id_detalle_venta, pp.id_prod, totalUnits, globalUnitIndex);
+
     const customization = customizationByProduct.get(pp.id_prod);
     if (customization?.unitGroups?.length) {
       let localUnitIndex = globalUnitIndex;
@@ -244,26 +214,21 @@ const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
         for (let i = 0; i < group.cantidad; i += 1) {
           const numUnidad = localUnitIndex + i;
           if (group.exclusiones?.length) {
-            const rows = group.exclusiones.map((e) => ({
-              id_detalle_venta: detalle.id_detalle_venta,
-              id_prod: pp.id_prod,
-              id_ing: e.idIng,
-              nom_ing: e.nomIng,
-              num_unidad: numUnidad
-            }));
-            await supabase.from('detalles_venta_exclusiones_promo').insert(rows);
+            for (const e of group.exclusiones) {
+              await query(
+                `INSERT INTO detalles_venta_exclusiones_promo (id_detalle_venta, id_prod, id_ing, nom_ing, num_unidad) VALUES ($1, $2, $3, $4, $5)`,
+                [detalle.id_detalle_venta, pp.id_prod, e.idIng, e.nomIng, numUnidad]
+              );
+            }
           }
           if (group.extras?.length) {
-            const rows = group.extras.map((e) => ({
-              id_detalle_venta: detalle.id_detalle_venta,
-              id_ing: e.idIng,
-              nom_ing: e.nomIng,
-              cantidad_extra: e.cantidadExtra,
-              precio_extra: e.precioExtra,
-              id_prod: pp.id_prod,
-              num_unidad: numUnidad
-            }));
-            await supabase.from('detalles_venta_extras').insert(rows);
+            for (const e of group.extras) {
+              await query(
+                `INSERT INTO detalles_venta_extras (id_detalle_venta, id_ing, nom_ing, cantidad_extra, precio_extra, id_prod, num_unidad)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [detalle.id_detalle_venta, e.idIng, e.nomIng, e.cantidadExtra, e.precioExtra, pp.id_prod, numUnidad]
+              );
+            }
           }
         }
         localUnitIndex += group.cantidad;
@@ -274,175 +239,145 @@ const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
   return subtotal;
 };
 
-
 /* Agrega productos y promociones a una venta, actualiza el total acumulado y devuelve el nuevo total de la venta. */
 export const addOrderItems = async (idVenta, idMesero, items, batchFecha) => {
   let totalAdded = 0;
   for (const item of items) {
     if (item.type === 'product') {
       totalAdded += await insertProductItem(idVenta, idMesero, item, batchFecha);
-    } 
-    else {
+    } else {
       totalAdded += await insertPromotionItem(idVenta, idMesero, item, batchFecha);
     }
   }
-  const {data: venta} = await supabase.from('venta').select('total_venta').eq('id_venta', idVenta).single();
-  const newTotal = Number(venta.total_venta) + totalAdded;
-  await supabase.from('venta').update({ total_venta: newTotal }).eq('id_venta', idVenta);
+  const ventaResult = await query(`SELECT total_venta FROM venta WHERE id_venta = $1`, [idVenta]);
+  const newTotal = Number(ventaResult.rows[0].total_venta) + totalAdded;
+  await query(`UPDATE venta SET total_venta = $1 WHERE id_venta = $2`, [newTotal, idVenta]);
   return newTotal;
 };
 
-
 /* Obtiene los detalles pendientes de la venta actual de una mesa y los agrupa por fecha de registro para identificar los pedidos que aún deben prepararse. */
 export const listPendingBatches = async (idMesa, idSeccion) => {
-  const {data: venta} = await supabase
-    .from('venta')
-    .select('id_venta')
-    .eq('id_mesa', idMesa)
-    .eq('id_seccion', idSeccion)
-    .order('fecha_reg', { ascending: false })
-    .limit(1)
-    .single();
-  if (!venta) {
-    return [];
-  }
-  const {data: detalles} = await supabase
-    .from('detalles_venta')
-    .select('id_detalle_venta, fecha_reg_detalle_venta, tipo_consumo, id_prod, id_prom, producto:producto(nom_prod), promocion:promocion(nom_prom)')
-    .eq('id_venta', venta.id_venta)
-    .eq('estado_detalle_venta', 'PENDIENTE');
-  if (!detalles || detalles.length === 0) {
-    return [];
-  }
-  const detalleIds = detalles.map((d) => d.id_detalle_venta);
-  const {data: units} = await supabase
-    .from('detalles_venta_unidades')
-    .select('id_detalle_venta, marcado')
-    .in('id_detalle_venta', detalleIds);
+  const ventaResult = await query(
+    `SELECT id_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
+    [idMesa, idSeccion]
+  );
+  const venta = ventaResult.rows[0];
+  if (!venta) return [];
+
+  const detallesResult = await query(
+    `SELECT dv.id_detalle_venta, dv.fecha_reg_detalle_venta, dv.tipo_consumo, dv.id_prod, dv.id_prom, p.nom_prod, pr.nom_prom
+     FROM detalles_venta dv
+     LEFT JOIN producto p ON p.id_prod = dv.id_prod
+     LEFT JOIN promocion pr ON pr.id_prom = dv.id_prom
+     WHERE dv.id_venta = $1 AND dv.estado_detalle_venta = 'PENDIENTE'`,
+    [venta.id_venta]
+  );
+  if (detallesResult.rows.length === 0) return [];
+
+  const detalleIds = detallesResult.rows.map((d) => d.id_detalle_venta);
+  const unitsResult = await query(
+    `SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`,
+    [detalleIds]
+  );
+
   const unitsByDetalle = new Map();
-  for (const u of units || []) {
-    if (!unitsByDetalle.has(u.id_detalle_venta)) {
-      unitsByDetalle.set(u.id_detalle_venta, { total: 0, restante: 0 });
-    }
+  for (const u of unitsResult.rows) {
+    if (!unitsByDetalle.has(u.id_detalle_venta)) unitsByDetalle.set(u.id_detalle_venta, { total: 0, restante: 0 });
     const counts = unitsByDetalle.get(u.id_detalle_venta);
     counts.total += 1;
     if (!u.marcado) counts.restante += 1;
   }
+
   const batches = new Map();
-  for (const row of detalles) {
+  for (const row of detallesResult.rows) {
     const key = row.fecha_reg_detalle_venta;
-    if (!batches.has(key)) {
-      batches.set(key,{fecha: key, items: []});
-    }
+    if (!batches.has(key)) batches.set(key, { fecha: key, items: [] });
     const counts = unitsByDetalle.get(row.id_detalle_venta) || { total: 0, restante: 0 };
-    if (counts.restante <= 0) {
-      continue;
-    }
+    if (counts.restante <= 0) continue;
     batches.get(key).items.push({
-      nombre: row.producto?.nom_prod || row.promocion?.nom_prom,
+      nombre: row.nom_prod || row.nom_prom,
       tipo: row.tipo_consumo,
       total: counts.total,
       restante: counts.restante
     });
   }
+
   return Array.from(batches.values())
     .filter((batch) => batch.items.length > 0)
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 };
 
-
-
 /* Obtiene los detalles de venta de una fecha específica y los agrupa por producto, tipo de consumo y personalización, separando las unidades pendientes de las ya marcadas. */
 export const getMarkCards = async (fecha) => {
-  const {data: detalles} = await supabase
-    .from('detalles_venta')
-    .select('id_detalle_venta, tipo_consumo, id_prod, id_prom')
-    .eq('fecha_reg_detalle_venta', fecha);
-  if (!detalles || detalles.length === 0) {
-    return [];
-  }
+  const detallesResult = await query(
+    `SELECT id_detalle_venta, tipo_consumo, id_prod, id_prom FROM detalles_venta WHERE fecha_reg_detalle_venta = $1`,
+    [fecha]
+  );
+  if (detallesResult.rows.length === 0) return [];
+
+  const detalles = detallesResult.rows;
   const detalleIds = detalles.map((d) => d.id_detalle_venta);
   const productDetalleIds = detalles.filter((d) => d.id_prod).map((d) => d.id_detalle_venta);
   const promoDetalleIds = detalles.filter((d) => d.id_prom).map((d) => d.id_detalle_venta);
   const productIds = [...new Set(detalles.filter((d) => d.id_prod).map((d) => d.id_prod))];
   const promoIds = [...new Set(detalles.filter((d) => d.id_prom).map((d) => d.id_prom))];
-  const [
-    {data: units},
-    {data: exclusions},
-    {data: extras},
-    {data: exclusionsPromo},
-    {data: productos},
-    {data: promoProducts}
-  ] = await Promise.all([
-    supabase.from('detalles_venta_unidades').select('id_unidad, id_detalle_venta, id_prod, num_unidad, marcado').in('id_detalle_venta', detalleIds),
+
+  const [unitsResult, exclusionsResult, extrasResult, exclusionsPromoResult, productosResult, promoProductsResult] = await Promise.all([
+    query(`SELECT id_unidad, id_detalle_venta, id_prod, num_unidad, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds]),
     productDetalleIds.length
-      ? supabase.from('detalles_venta_exclusiones').select('id_detalle_venta, nom_ing').in('id_detalle_venta', productDetalleIds)
-      : Promise.resolve({data: []}),
+      ? query(`SELECT id_detalle_venta, nom_ing FROM detalles_venta_exclusiones WHERE id_detalle_venta = ANY($1::bigint[])`, [productDetalleIds])
+      : Promise.resolve({ rows: [] }),
     detalleIds.length
-      ? supabase.from('detalles_venta_extras').select('id_detalle_venta, id_prod, nom_ing, cantidad_extra, num_unidad').in('id_detalle_venta', detalleIds)
-      : Promise.resolve({data: []}),
+      ? query(`SELECT id_detalle_venta, id_prod, nom_ing, cantidad_extra, num_unidad FROM detalles_venta_extras WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds])
+      : Promise.resolve({ rows: [] }),
     promoDetalleIds.length
-      ? supabase.from('detalles_venta_exclusiones_promo').select('id_detalle_venta, id_prod, nom_ing, num_unidad').in('id_detalle_venta', promoDetalleIds)
-      : Promise.resolve({data: []}),
+      ? query(`SELECT id_detalle_venta, id_prod, nom_ing, num_unidad FROM detalles_venta_exclusiones_promo WHERE id_detalle_venta = ANY($1::bigint[])`, [promoDetalleIds])
+      : Promise.resolve({ rows: [] }),
     productIds.length
-      ? supabase.from('producto').select('id_prod, nom_prod').in('id_prod', productIds)
-      : Promise.resolve({data: []}),
+      ? query(`SELECT id_prod, nom_prod FROM producto WHERE id_prod = ANY($1::bigint[])`, [productIds])
+      : Promise.resolve({ rows: [] }),
     promoIds.length
-      ? supabase.from('promocion_prod').select('id_prom, id_prod, producto:producto(nom_prod)').in('id_prom', promoIds)
-      : Promise.resolve({data: []})
+      ? query(`SELECT pp.id_prom, pp.id_prod, p.nom_prod FROM promocion_prod pp JOIN producto p ON p.id_prod = pp.id_prod WHERE pp.id_prom = ANY($1::bigint[])`, [promoIds])
+      : Promise.resolve({ rows: [] })
   ]);
-  const productNameById = new Map((productos || []).map((p) => [p.id_prod, p.nom_prod]));
+
+  const productNameById = new Map(productosResult.rows.map((p) => [p.id_prod, p.nom_prod]));
   const unitsByKey = new Map();
-  for (const u of units || []) {
+  for (const u of unitsResult.rows) {
     const key = `${u.id_detalle_venta}|${u.id_prod}`;
-    if (!unitsByKey.has(key)) {
-      unitsByKey.set(key, []);
-    }
+    if (!unitsByKey.has(key)) unitsByKey.set(key, []);
     unitsByKey.get(key).push(u);
   }
   const exclusionsByDetalle = new Map();
-  for (const e of exclusions || []) {
-    if (!exclusionsByDetalle.has(e.id_detalle_venta)) {
-      exclusionsByDetalle.set(e.id_detalle_venta, []);
-    }
+  for (const e of exclusionsResult.rows) {
+    if (!exclusionsByDetalle.has(e.id_detalle_venta)) exclusionsByDetalle.set(e.id_detalle_venta, []);
     exclusionsByDetalle.get(e.id_detalle_venta).push(e.nom_ing);
   }
   const extrasByDetalleNoProd = new Map();
-  for (const e of extras || []) {
-    if (e.id_prod) {
-      continue;
-    }
-    if (!extrasByDetalleNoProd.has(e.id_detalle_venta)) {
-      extrasByDetalleNoProd.set(e.id_detalle_venta, []);
-    }
+  for (const e of extrasResult.rows) {
+    if (e.id_prod) continue;
+    if (!extrasByDetalleNoProd.has(e.id_detalle_venta)) extrasByDetalleNoProd.set(e.id_detalle_venta, []);
     extrasByDetalleNoProd.get(e.id_detalle_venta).push(`+${e.cantidad_extra} ${e.nom_ing}`);
   }
   const exclusionsPromoByUnit = new Map();
-  for (const e of exclusionsPromo || []) {
+  for (const e of exclusionsPromoResult.rows) {
     const key = `${e.id_detalle_venta}|${e.id_prod}|${e.num_unidad}`;
-    if (!exclusionsPromoByUnit.has(key)) {
-      exclusionsPromoByUnit.set(key, []);
-    }
+    if (!exclusionsPromoByUnit.has(key)) exclusionsPromoByUnit.set(key, []);
     exclusionsPromoByUnit.get(key).push(e.nom_ing);
   }
   const extrasPromoByUnit = new Map();
-  for (const e of extras || []) {
-    if (!e.id_prod || e.num_unidad === null || e.num_unidad === undefined) {
-      continue;
-    }
+  for (const e of extrasResult.rows) {
+    if (!e.id_prod || e.num_unidad === null || e.num_unidad === undefined) continue;
     const key = `${e.id_detalle_venta}|${e.id_prod}|${e.num_unidad}`;
-    if (!extrasPromoByUnit.has(key)) {
-      extrasPromoByUnit.set(key, []);
-    }
+    if (!extrasPromoByUnit.has(key)) extrasPromoByUnit.set(key, []);
     extrasPromoByUnit.get(key).push(`+${e.cantidad_extra} ${e.nom_ing}`);
   }
   const promoProductsByPromo = new Map();
-  for (const pp of promoProducts || []) {
-    if (!promoProductsByPromo.has(pp.id_prom)) {
-      promoProductsByPromo.set(pp.id_prom, []);
-    }
+  for (const pp of promoProductsResult.rows) {
+    if (!promoProductsByPromo.has(pp.id_prom)) promoProductsByPromo.set(pp.id_prom, []);
     promoProductsByPromo.get(pp.id_prom).push(pp);
   }
+
   const grupos = new Map();
   for (const det of detalles) {
     if (det.id_prod) {
@@ -452,7 +387,7 @@ export const getMarkCards = async (fecha) => {
       const extrasText = (extrasByDetalleNoProd.get(det.id_detalle_venta) || []).join(', ');
       const key = `${nombre}|${det.tipo_consumo}|${exclusionNames.join(',')}|${extrasText}`;
       if (!grupos.has(key)) {
-        grupos.set(key, {nombre, tipo: det.tipo_consumo, exclusiones: exclusionNames, extrasTexto: extrasText, pendientes: [], listos: []});
+        grupos.set(key, { nombre, tipo: det.tipo_consumo, exclusiones: exclusionNames, extrasTexto: extrasText, pendientes: [], listos: [] });
       }
       const grupo = grupos.get(key);
       for (const unit of detUnits) {
@@ -463,7 +398,7 @@ export const getMarkCards = async (fecha) => {
       const productosDePromo = promoProductsByPromo.get(det.id_prom) || [];
       for (const pp of productosDePromo) {
         const detUnits = unitsByKey.get(`${det.id_detalle_venta}|${pp.id_prod}`) || [];
-        const nombre = pp.producto?.nom_prod;
+        const nombre = pp.nom_prod;
         for (const unit of detUnits) {
           const unitKey = `${det.id_detalle_venta}|${pp.id_prod}|${unit.num_unidad}`;
           const exclusionNames = (exclusionsPromoByUnit.get(unitKey) || []).slice().sort();
@@ -471,12 +406,8 @@ export const getMarkCards = async (fecha) => {
           const key = `${nombre}|${det.tipo_consumo}|${exclusionNames.join(',')}|${extrasList.join(',')}`;
           if (!grupos.has(key)) {
             grupos.set(key, {
-              nombre,
-              tipo: det.tipo_consumo,
-              exclusiones: exclusionNames,
-              extrasTexto: extrasList.join(', '),
-              pendientes: [],
-              listos: []
+              nombre, tipo: det.tipo_consumo, exclusiones: exclusionNames,
+              extrasTexto: extrasList.join(', '), pendientes: [], listos: []
             });
           }
           const grupo = grupos.get(key);
@@ -489,105 +420,95 @@ export const getMarkCards = async (fecha) => {
   return Array.from(grupos.values()).map((g) => ({ ...g, total: g.pendientes.length + g.listos.length })).filter((g) => g.pendientes.length > 0);
 };
 
-
 /* Actualiza el estado marcado de las unidades indicadas y sincroniza la cantidad de unidades marcadas en cada detalle de venta afectado. */
 export const markUnits = async (unitIds, marcado) => {
-  await supabase.from('detalles_venta_unidades').update({marcado}).in('id_unidad', unitIds);
-  const {data: units} = await supabase.from('detalles_venta_unidades').select('id_detalle_venta').in('id_unidad', unitIds);
-  const detalleIds = [...new Set((units || []).map((u) => u.id_detalle_venta))];
-  const {data: allUnits} = await supabase
-    .from('detalles_venta_unidades')
-    .select('id_detalle_venta, marcado')
-    .in('id_detalle_venta', detalleIds);
+  await query(`UPDATE detalles_venta_unidades SET marcado = $1 WHERE id_unidad = ANY($2::bigint[])`, [marcado, unitIds]);
+
+  const unitsResult = await query(`SELECT id_detalle_venta FROM detalles_venta_unidades WHERE id_unidad = ANY($1::bigint[])`, [unitIds]);
+  const detalleIds = [...new Set(unitsResult.rows.map((u) => u.id_detalle_venta))];
+
+  const allUnitsResult = await query(
+    `SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`,
+    [detalleIds]
+  );
   const countsByDetalle = new Map();
-  for (const unit of allUnits || []) {
-    if (!unit.marcado) {
-      continue;
-    }
+  for (const unit of allUnitsResult.rows) {
+    if (!unit.marcado) continue;
     countsByDetalle.set(unit.id_detalle_venta, (countsByDetalle.get(unit.id_detalle_venta) || 0) + 1);
   }
+
   await Promise.all(
     detalleIds.map((idDetalle) =>
-      supabase.from('detalles_venta').update({cantidad_marcado: countsByDetalle.get(idDetalle) || 0}).eq('id_detalle_venta', idDetalle)
+      query(`UPDATE detalles_venta SET cantidad_marcado = $1 WHERE id_detalle_venta = $2`, [countsByDetalle.get(idDetalle) || 0, idDetalle])
     )
   );
 };
 
-
 /* Obtiene y agrupa las exclusiones y extras aplicados a las unidades de un producto perteneciente a una promoción. */
 const getPromoProductBreakdown = async (idDetalleVenta, idProd, totalUnits) => {
-  const {data: exclusionRows} = await supabase
-    .from('detalles_venta_exclusiones_promo')
-    .select('nom_ing, num_unidad')
-    .eq('id_detalle_venta', idDetalleVenta)
-    .eq('id_prod', idProd);
-  const {data: extraRows} = await supabase
-    .from('detalles_venta_extras')
-    .select('nom_ing, cantidad_extra, num_unidad')
-    .eq('id_detalle_venta', idDetalleVenta)
-    .eq('id_prod', idProd);
+  const exclusionResult = await query(
+    `SELECT nom_ing, num_unidad FROM detalles_venta_exclusiones_promo WHERE id_detalle_venta = $1 AND id_prod = $2`,
+    [idDetalleVenta, idProd]
+  );
+  const extraResult = await query(
+    `SELECT nom_ing, cantidad_extra, num_unidad FROM detalles_venta_extras WHERE id_detalle_venta = $1 AND id_prod = $2`,
+    [idDetalleVenta, idProd]
+  );
+
   const exclusionsByUnit = new Map();
-  for (const row of exclusionRows || []) {
-    if (!exclusionsByUnit.has(row.num_unidad)) {
-      exclusionsByUnit.set(row.num_unidad, []);
-    }
+  for (const row of exclusionResult.rows) {
+    if (!exclusionsByUnit.has(row.num_unidad)) exclusionsByUnit.set(row.num_unidad, []);
     exclusionsByUnit.get(row.num_unidad).push(row.nom_ing);
   }
   const extrasByUnit = new Map();
-  for (const row of extraRows || []) {
-    if (row.num_unidad === null || row.num_unidad === undefined) {
-      continue;
-    }
-    if (!extrasByUnit.has(row.num_unidad)) {
-      extrasByUnit.set(row.num_unidad, []);
-    }
+  for (const row of extraResult.rows) {
+    if (row.num_unidad === null || row.num_unidad === undefined) continue;
+    if (!extrasByUnit.has(row.num_unidad)) extrasByUnit.set(row.num_unidad, []);
     extrasByUnit.get(row.num_unidad).push(`+${row.cantidad_extra} ${row.nom_ing}`);
   }
+
   const customizedUnits = new Set([...exclusionsByUnit.keys(), ...extrasByUnit.keys()]);
   const groups = new Map();
   for (const unit of customizedUnits) {
     const exclusiones = (exclusionsByUnit.get(unit) || []).slice().sort();
     const extras = (extrasByUnit.get(unit) || []).slice().sort();
     const key = `${exclusiones.join(',')}|${extras.join(',')}`;
-    if (!groups.has(key)) groups.set(key, {cantidad: 0, exclusiones, extras});
+    if (!groups.has(key)) groups.set(key, { cantidad: 0, exclusiones, extras });
     groups.get(key).cantidad += 1;
   }
   const plainCount = totalUnits - customizedUnits.size;
   if (plainCount > 0) {
-    groups.set('__plain__', {cantidad: plainCount, exclusiones: [], extras: []});
+    groups.set('__plain__', { cantidad: plainCount, exclusiones: [], extras: [] });
   }
   return Array.from(groups.values());
 };
 
-
 /* Construye una descripción de las personalizaciones de un detalle de venta, considerando exclusiones y extras de productos individuales o promociones. */
 export const buildPersonalizacion = async (det) => {
   if (det.id_prod) {
-    const {data: exclusions} = await supabase.from('detalles_venta_exclusiones').select('nom_ing').eq('id_detalle_venta', det.id_detalle_venta);
-    const {data: extras} = await supabase.from('detalles_venta_extras').select('nom_ing, cantidad_extra').eq('id_detalle_venta', det.id_detalle_venta);
-    const exclText = (exclusions || []).length ? `sin: ${(exclusions || []).map((e) => e.nom_ing).join(', ')}` : '';
-    const extraText = (extras || []).length ? `extra: ${(extras || []).map((e) => `+${e.cantidad_extra} ${e.nom_ing}`).join(', ')}` : '';
+    const exclusionsResult = await query(`SELECT nom_ing FROM detalles_venta_exclusiones WHERE id_detalle_venta = $1`, [det.id_detalle_venta]);
+    const extrasResult = await query(`SELECT nom_ing, cantidad_extra FROM detalles_venta_extras WHERE id_detalle_venta = $1`, [det.id_detalle_venta]);
+    const exclText = exclusionsResult.rows.length ? `sin: ${exclusionsResult.rows.map((e) => e.nom_ing).join(', ')}` : '';
+    const extraText = extrasResult.rows.length ? `extra: ${extrasResult.rows.map((e) => `+${e.cantidad_extra} ${e.nom_ing}`).join(', ')}` : '';
     return [exclText, extraText].filter(Boolean).join(' | ');
   }
   if (det.id_prom) {
-    const {data: promProducts} = await supabase
-      .from('promocion_prod')
-      .select('id_prod, cantidad_prod_prom, producto:producto(nom_prod)')
-      .eq('id_prom', det.id_prom);
+    const promProductsResult = await query(
+      `SELECT pp.id_prod, pp.cantidad_prod_prom, p.nom_prod
+       FROM promocion_prod pp JOIN producto p ON p.id_prod = pp.id_prod
+       WHERE pp.id_prom = $1`,
+      [det.id_prom]
+    );
     const partes = [];
-    for (const pp of promProducts || []) {
+    for (const pp of promProductsResult.rows) {
       const totalUnits = pp.cantidad_prod_prom * det.cantidad_prod_det;
       const breakdown = await getPromoProductBreakdown(det.id_detalle_venta, pp.id_prod, totalUnits);
       const customizedGroups = breakdown.filter((g) => g.exclusiones.length || g.extras.length);
       for (const g of customizedGroups) {
         const bits = [];
-        if (g.exclusiones.length) {
-          bits.push(`sin ${g.exclusiones.join(', ')}`);
-        }
-        if (g.extras.length) {
-          bits.push(`extra ${g.extras.join(', ')}`);
-        }
-        partes.push(`${pp.producto?.nom_prod} (${g.cantidad}x): ${bits.join(' | ')}`);
+        if (g.exclusiones.length) bits.push(`sin ${g.exclusiones.join(', ')}`);
+        if (g.extras.length) bits.push(`extra ${g.extras.join(', ')}`);
+        partes.push(`${pp.nom_prod} (${g.cantidad}x): ${bits.join(' | ')}`);
       }
     }
     return partes.join(' | ');
@@ -595,226 +516,217 @@ export const buildPersonalizacion = async (det) => {
   return '';
 };
 
-
 /* Obtiene la información de una venta y construye los datos necesarios para generar el ticket del pedido, agrupando productos con la misma configuración. */
 export const getOrderTicket = async (idVenta) => {
-  const {data: venta} = await supabase
-    .from('venta')
-    .select('num_venta, fecha_reg, hora_reg, total_venta, id_mesa, id_seccion, cod_emp')
-    .eq('id_venta', idVenta)
-    .single();
-  if (!venta) {
-    return null;
-  }
-  const {data: mesero} = await supabase.from('empleado').select('alias_emp').eq('cod_emp', venta.cod_emp).maybeSingle();
-  const {data: seccion} = await supabase.from('seccion').select('nomb_seccion').eq('id_seccion', venta.id_seccion).single();
-  const {data: detalles} = await supabase
-    .from('detalles_venta')
-    .select('id_detalle_venta, cantidad_prod_det, tipo_consumo, subtotal, id_prod, id_prom, producto:producto(nom_prod, precio_venta), promocion:promocion(nom_prom, precio_prom)')
-    .eq('id_venta', idVenta);
+  const ventaResult = await query(
+    `SELECT num_venta, fecha_reg, hora_reg, total_venta, id_mesa, id_seccion, cod_emp FROM venta WHERE id_venta = $1`,
+    [idVenta]
+  );
+  const venta = ventaResult.rows[0];
+  if (!venta) return null;
+
+  const meseroResult = await query(`SELECT alias_emp FROM empleado WHERE cod_emp = $1`, [venta.cod_emp]);
+  const seccionResult = await query(`SELECT nomb_seccion FROM seccion WHERE id_seccion = $1`, [venta.id_seccion]);
+  const detallesResult = await query(
+    `SELECT dv.id_detalle_venta, dv.cantidad_prod_det, dv.tipo_consumo, dv.subtotal, dv.id_prod, dv.id_prom,
+            p.nom_prod, p.precio_venta AS prod_precio, pr.nom_prom, pr.precio_prom AS promo_precio
+     FROM detalles_venta dv
+     LEFT JOIN producto p ON p.id_prod = dv.id_prod
+     LEFT JOIN promocion pr ON pr.id_prom = dv.id_prom
+     WHERE dv.id_venta = $1`,
+    [idVenta]
+  );
+
   const grouped = new Map();
-  for (const det of detalles || []) {
-    const nombre = det.producto?.nom_prod || det.promocion?.nom_prom;
-    const precio = det.producto?.precio_venta ?? det.promocion?.precio_prom;
+  for (const det of detallesResult.rows) {
+    const nombre = det.nom_prod || det.nom_prom;
+    const precio = det.prod_precio ?? det.promo_precio;
     const personalizacion = await buildPersonalizacion(det);
     const key = `${nombre}_${det.tipo_consumo}_${personalizacion}`;
     if (!grouped.has(key)) {
-      grouped.set(key, {producto: nombre, tipo: det.tipo_consumo, precio: Number(precio), cantidad: 0, subtotal: 0, personalizacion});
+      grouped.set(key, { producto: nombre, tipo: det.tipo_consumo, precio: Number(precio), cantidad: 0, subtotal: 0, personalizacion });
     }
     const item = grouped.get(key);
     item.cantidad += det.cantidad_prod_det;
     item.subtotal += Number(det.subtotal);
   }
+
   return {
     numVenta: venta.num_venta,
     mesa: venta.id_mesa,
-    seccion: seccion?.nomb_seccion,
-    mesero: mesero?.alias_emp,
+    seccion: seccionResult.rows[0]?.nomb_seccion,
+    mesero: meseroResult.rows[0]?.alias_emp,
     total: venta.total_venta,
     items: Array.from(grouped.values())
   };
 };
 
-
 /* Obtiene la información de una venta y construye los datos necesarios para generar el ticket de cocina correspondiente a una fecha específica del pedido. */
 export const getKitchenTicket = async (idVenta, fecha) => {
-  const {data: venta} = await supabase
-    .from('venta')
-    .select('num_venta, id_mesa, id_seccion, cod_emp')
-    .eq('id_venta', idVenta)
-    .single();
-  if (!venta) {
-    return null;
-  }
-  const {data: mesero} = await supabase.from('empleado').select('alias_emp').eq('cod_emp', venta.cod_emp).maybeSingle();
-  const {data: seccion} = await supabase.from('seccion').select('nomb_seccion').eq('id_seccion', venta.id_seccion).single();
-  const {data: detalles} = await supabase
-    .from('detalles_venta')
-    .select('id_detalle_venta, cantidad_prod_det, tipo_consumo, id_prod, id_prom, producto:producto(nom_prod)')
-    .eq('id_venta', idVenta)
-    .eq('fecha_reg_detalle_venta', fecha);
+  const ventaResult = await query(
+    `SELECT num_venta, id_mesa, id_seccion, cod_emp FROM venta WHERE id_venta = $1`,
+    [idVenta]
+  );
+  const venta = ventaResult.rows[0];
+  if (!venta) return null;
+
+  const meseroResult = await query(`SELECT alias_emp FROM empleado WHERE cod_emp = $1`, [venta.cod_emp]);
+  const seccionResult = await query(`SELECT nomb_seccion FROM seccion WHERE id_seccion = $1`, [venta.id_seccion]);
+  const detallesResult = await query(
+    `SELECT dv.id_detalle_venta, dv.cantidad_prod_det, dv.tipo_consumo, dv.id_prod, dv.id_prom, p.nom_prod
+     FROM detalles_venta dv
+     LEFT JOIN producto p ON p.id_prod = dv.id_prod
+     WHERE dv.id_venta = $1 AND dv.fecha_reg_detalle_venta = $2`,
+    [idVenta, fecha]
+  );
+
   const grouped = new Map();
   const addLine = (nombre, tipo, cantidad, personalizacion) => {
     const key = `${nombre}_${tipo}_${personalizacion}`;
     if (!grouped.has(key)) {
-      grouped.set(key, {producto: nombre, tipo, cantidad: 0, personalizacion});
+      grouped.set(key, { producto: nombre, tipo, cantidad: 0, personalizacion });
     }
     grouped.get(key).cantidad += cantidad;
   };
-  for (const det of detalles || []) {
+
+  for (const det of detallesResult.rows) {
     if (det.id_prod) {
       const personalizacion = await buildPersonalizacion(det);
-      addLine(det.producto?.nom_prod, det.tipo_consumo, det.cantidad_prod_det, personalizacion);
+      addLine(det.nom_prod, det.tipo_consumo, det.cantidad_prod_det, personalizacion);
     } else if (det.id_prom) {
-      const {data: promProducts} = await supabase
-        .from('promocion_prod')
-        .select('id_prod, cantidad_prod_prom, producto:producto(nom_prod)')
-        .eq('id_prom', det.id_prom);
-      for (const pp of promProducts || []) {
+      const promProductsResult = await query(
+        `SELECT pp.id_prod, pp.cantidad_prod_prom, p.nom_prod
+         FROM promocion_prod pp JOIN producto p ON p.id_prod = pp.id_prod
+         WHERE pp.id_prom = $1`,
+        [det.id_prom]
+      );
+      for (const pp of promProductsResult.rows) {
         const totalUnits = pp.cantidad_prod_prom * det.cantidad_prod_det;
         const breakdown = await getPromoProductBreakdown(det.id_detalle_venta, pp.id_prod, totalUnits);
         for (const g of breakdown) {
           const exclText = g.exclusiones.length ? `sin: ${g.exclusiones.join(', ')}` : '';
           const extraText = g.extras.length ? `extra: ${g.extras.join(', ')}` : '';
           const personalizacion = [exclText, extraText].filter(Boolean).join(' | ');
-          addLine(pp.producto?.nom_prod, det.tipo_consumo, g.cantidad, personalizacion);
+          addLine(pp.nom_prod, det.tipo_consumo, g.cantidad, personalizacion);
         }
       }
     }
   }
+
   return {
     numVenta: venta.num_venta,
     mesa: venta.id_mesa,
-    seccion: seccion?.nomb_seccion,
-    mesero: mesero?.alias_emp,
+    seccion: seccionResult.rows[0]?.nomb_seccion,
+    mesero: meseroResult.rows[0]?.alias_emp,
     items: Array.from(grouped.values())
   };
 };
 
-
 /* Verifica la contraseña del usuario actual consultando las credenciales correspondientes según se trate de un usuario directorio o empleado. */
 export const verifyOwnPassword = async (user, password) => {
   if (user.isDirectorio) {
-    const {data} = await supabase.from('directorio').select('contrasena_admin').limit(1).maybeSingle();
-    if (!data) {
-      return false;
-    }
+    const result = await query(`SELECT contrasena_admin FROM directorio LIMIT 1`);
+    const data = result.rows[0];
+    if (!data) return false;
     return verifyPassword(password, data.contrasena_admin);
   }
-  const {data} = await supabase.from('empleado').select('cont_emp').eq('cod_emp', user.codEmp).maybeSingle();
-  if (!data) {
-    return false;
-  }
+  const result = await query(`SELECT cont_emp FROM empleado WHERE cod_emp = $1`, [user.codEmp]);
+  const data = result.rows[0];
+  if (!data) return false;
   return verifyPassword(password, data.cont_emp);
 };
 
-
 /* Obtiene el identificador de la venta más reciente asociada a una mesa y sección determinadas. */
 export const getLatestVentaId = async (idMesa, idSeccion) => {
-  const { data } = await supabase
-    .from('venta')
-    .select('id_venta')
-    .eq('id_mesa', idMesa)
-    .eq('id_seccion', idSeccion)
-    .order('fecha_reg', { ascending: false })
-    .limit(1)
-    .single();
-
-  return data?.id_venta;
+  const result = await query(
+    `SELECT id_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
+    [idMesa, idSeccion]
+  );
+  return result.rows[0]?.id_venta;
 };
-
 
 /* Cuenta las unidades de la venta más reciente de una mesa que todavía no han sido marcadas como preparadas. */
 export const countUnmarkedUnits = async (idMesa, idSeccion) => {
   const idVenta = await getLatestVentaId(idMesa, idSeccion);
-  if (!idVenta) {
-    return 0;
-  }
-  const {data: detalles} = await supabase.from('detalles_venta').select('id_detalle_venta').eq('id_venta', idVenta);
-  const detalleIds = (detalles || []).map((d) => d.id_detalle_venta);
-  if (detalleIds.length === 0) {
-    return 0;
-  }
-  const {count} = await supabase
-    .from('detalles_venta_unidades')
-    .select('*', {count: 'exact', head: true})
-    .in('id_detalle_venta', detalleIds)
-    .eq('marcado', false);
-  return count || 0;
-};
+  if (!idVenta) return 0;
 
+  const detallesResult = await query(`SELECT id_detalle_venta FROM detalles_venta WHERE id_venta = $1`, [idVenta]);
+  const detalleIds = detallesResult.rows.map((d) => d.id_detalle_venta);
+  if (detalleIds.length === 0) return 0;
+
+  const result = await query(
+    `SELECT COUNT(*) FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[]) AND marcado = false`,
+    [detalleIds]
+  );
+  return Number(result.rows[0].count) || 0;
+};
 
 /* Obtiene el identificador del método de pago cuyo nombre coincide con el proporcionado. */
 const getMetodoPagoId = async (nombre) => {
-  const {data} = await supabase.from('metodo_pago').select('id_metodo').ilike('nombre', nombre).maybeSingle();
-  return data?.id_metodo;
+  const result = await query(`SELECT id_metodo FROM metodo_pago WHERE nombre ILIKE $1 LIMIT 1`, [nombre]);
+  return result.rows[0]?.id_metodo;
 };
-
 
 /* Valida el estado de la orden y los montos recibidos, registra los pagos, finaliza los detalles, libera la mesa y registra la hora de cierre de la venta. */
 export const checkoutOrder = async (idVenta, payment) => {
-  const {data: venta} = await supabase
-    .from('venta')
-    .select('total_venta, id_mesa, id_seccion')
-    .eq('id_venta', idVenta)
-    .single();
+  const ventaResult = await query(`SELECT total_venta, id_mesa, id_seccion FROM venta WHERE id_venta = $1`, [idVenta]);
+  const venta = ventaResult.rows[0];
   if (!venta) throw new Error('ORDER_NOT_FOUND');
+
   const unmarked = await countUnmarkedUnits(venta.id_mesa, venta.id_seccion);
   if (unmarked > 0) throw new Error(`UNMARKED_UNITS:${unmarked}`);
+
   const total = Number(venta.total_venta);
   const montoEfectivo = Number(payment.montoEfectivo || 0);
   const montoQr = Number(payment.montoQr || 0);
-  if (payment.metodo === 'efectivo' && Math.abs(montoEfectivo - total) > 0.01) {
-    throw new Error('AMOUNT_MISMATCH');
-  }
-  if (payment.metodo === 'qr' && Math.abs(montoQr - total) > 0.01) {
-    throw new Error('AMOUNT_MISMATCH');
-  }
-  if (payment.metodo === 'mixto' && Math.abs(montoEfectivo + montoQr - total) > 0.01) {
-    throw new Error('AMOUNT_MISMATCH');
-  }
+
+  if (payment.metodo === 'efectivo' && Math.abs(montoEfectivo - total) > 0.01) throw new Error('AMOUNT_MISMATCH');
+  if (payment.metodo === 'qr' && Math.abs(montoQr - total) > 0.01) throw new Error('AMOUNT_MISMATCH');
+  if (payment.metodo === 'mixto' && Math.abs(montoEfectivo + montoQr - total) > 0.01) throw new Error('AMOUNT_MISMATCH');
+
   const efectivoId = await getMetodoPagoId('Efectivo');
   const qrId = await getMetodoPagoId('Qr');
+
   if (payment.metodo === 'efectivo' || payment.metodo === 'mixto') {
-    await supabase.from('pago').insert({ id_venta: idVenta, id_metodo: efectivoId, monto: montoEfectivo });
+    await query(`INSERT INTO pago (id_venta, id_metodo, monto) VALUES ($1, $2, $3)`, [idVenta, efectivoId, montoEfectivo]);
   }
   if (payment.metodo === 'qr' || payment.metodo === 'mixto') {
-    await supabase.from('pago').insert({ id_venta: idVenta, id_metodo: qrId, monto: montoQr });
+    await query(`INSERT INTO pago (id_venta, id_metodo, monto) VALUES ($1, $2, $3)`, [idVenta, qrId, montoQr]);
   }
-  await supabase.from('detalles_venta').update({ estado_detalle_venta: 'Finalizado' }).eq('id_venta', idVenta);
-  await supabase.from('mesa').update({ disponible: true }).eq('id_mesa', venta.id_mesa).eq('id_seccion', venta.id_seccion);
-  await supabase.from('venta').update({ hora_cierre: new Date().toISOString() }).eq('id_venta', idVenta);
-};
 
+  await query(`UPDATE detalles_venta SET estado_detalle_venta = 'Finalizado' WHERE id_venta = $1`, [idVenta]);
+  await query(`UPDATE mesa SET disponible = true WHERE id_mesa = $1 AND id_seccion = $2`, [venta.id_mesa, venta.id_seccion]);
+  await query(`UPDATE venta SET hora_cierre = $1 WHERE id_venta = $2`, [new Date().toISOString(), idVenta]);
+};
 
 /* Aplica simultáneamente los cambios de unidades marcadas y desmarcadas y actualiza la cantidad total de unidades marcadas en cada detalle afectado. */
 export const applyMarkChanges = async (markIds, unmarkIds) => {
   const allIds = [...markIds, ...unmarkIds];
-  if (allIds.length === 0) {
-    return;
-  }
+  if (allIds.length === 0) return;
+
   if (markIds.length > 0) {
-    await supabase.from('detalles_venta_unidades').update({ marcado: true }).in('id_unidad', markIds);
+    await query(`UPDATE detalles_venta_unidades SET marcado = true WHERE id_unidad = ANY($1::bigint[])`, [markIds]);
   }
   if (unmarkIds.length > 0) {
-    await supabase.from('detalles_venta_unidades').update({ marcado: false }).in('id_unidad', unmarkIds);
+    await query(`UPDATE detalles_venta_unidades SET marcado = false WHERE id_unidad = ANY($1::bigint[])`, [unmarkIds]);
   }
-  const {data: units} = await supabase.from('detalles_venta_unidades').select('id_detalle_venta, marcado').in('id_unidad', allIds);
-  const detalleIds = [...new Set((units || []).map((u) => u.id_detalle_venta))];
-  const {data: allUnits} = await supabase
-    .from('detalles_venta_unidades')
-    .select('id_detalle_venta, marcado')
-    .in('id_detalle_venta', detalleIds);
+
+  const unitsResult = await query(`SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_unidad = ANY($1::bigint[])`, [allIds]);
+  const detalleIds = [...new Set(unitsResult.rows.map((u) => u.id_detalle_venta))];
+
+  const allUnitsResult = await query(
+    `SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`,
+    [detalleIds]
+  );
   const countsByDetalle = new Map();
-  for (const unit of allUnits || []) {
-    if (!unit.marcado) {
-      continue;
-    }
+  for (const unit of allUnitsResult.rows) {
+    if (!unit.marcado) continue;
     countsByDetalle.set(unit.id_detalle_venta, (countsByDetalle.get(unit.id_detalle_venta) || 0) + 1);
   }
+
   await Promise.all(
     detalleIds.map((idDetalle) =>
-      supabase.from('detalles_venta').update({cantidad_marcado: countsByDetalle.get(idDetalle) || 0}).eq('id_detalle_venta', idDetalle)
+      query(`UPDATE detalles_venta SET cantidad_marcado = $1 WHERE id_detalle_venta = $2`, [countsByDetalle.get(idDetalle) || 0, idDetalle])
     )
   );
 };
