@@ -1,9 +1,11 @@
-import {Router} from 'express';
-import {authenticate} from '../middlewares/authenticate.js';
-import {authorize} from '../middlewares/authorize.js';
-import {getTaxLinkHandler, updateTaxLinkHandler, changeDirectorioPasswordHandler,
-getDailySalesSummaryHandler,listDailySalesHandler,getDailySaleDetailsHandler, 
-listCajeroNamesHandler,getPrintAgentUrlHandler,updatePrintAgentUrlHandler} from '../controllers/configController.js';
+import { Router } from 'express';
+import { authenticate } from '../middlewares/authenticate.js';
+import { authorize } from '../middlewares/authorize.js';
+import {
+  getTaxLinkHandler, updateTaxLinkHandler, changeDirectorioPasswordHandler,
+  getDailySalesSummaryHandler, listDailySalesHandler, getDailySaleDetailsHandler,
+  listCajeroNamesHandler, getScheduledReportConfigHandler, updateScheduledReportConfigHandler
+} from '../controllers/configController.js';
 
 const router = Router();
 
@@ -15,7 +17,7 @@ router.get('/daily-sales/summary', authenticate, authorize('CONFIGURACION'), get
 router.get('/daily-sales', authenticate, authorize('CONFIGURACION'), listDailySalesHandler);
 router.get('/daily-sales/:idVenta/details', authenticate, authorize('CONFIGURACION'), getDailySaleDetailsHandler);
 router.get('/daily-sales/cajeros', authenticate, authorize('CONFIGURACION'), listCajeroNamesHandler);
-router.get('/print-agent-url', authenticate, authorize('CONFIGURACION'), getPrintAgentUrlHandler);
-router.put('/print-agent-url', authenticate, authorize('CONFIGURACION'), updatePrintAgentUrlHandler);
+router.get('/scheduled-report', authenticate, authorize('CONFIGURACION'), getScheduledReportConfigHandler);
+router.put('/scheduled-report', authenticate, authorize('CONFIGURACION'), updateScheduledReportConfigHandler);
 
 export default router;

@@ -113,8 +113,17 @@ export const getPromotionDetail = async (idProm) => {
     [idProm]
   );
 
+  const promotionRow = promotionResult.rows[0];
+  const toDateString = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value);
+  const promotion = promotionRow ? {
+    ...promotionRow,
+    fecha_especifica: toDateString(promotionRow.fecha_especifica),
+    fecha_inicio: toDateString(promotionRow.fecha_inicio),
+    fecha_fin: toDateString(promotionRow.fecha_fin)
+  } : null;
+
   return {
-    promotion: promotionResult.rows[0],
+    promotion,
     days: daysResult.rows.map((row) => row.dia_semana),
     products: productsResult.rows.map((row) => ({
       id_prod: row.id_prod,

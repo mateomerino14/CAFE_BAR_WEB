@@ -197,7 +197,7 @@ export const listVentasForDeletion = async () => {
   return ventasResult.rows.map((v) => ({
     idVenta: v.id_venta,
     numVenta: v.num_venta,
-    fecha: v.fecha_reg,
+    fecha: v.fecha_reg instanceof Date ? v.fecha_reg.toISOString() : v.fecha_reg,
     hora: v.hora_reg,
     total: v.total_venta,
     mesa: v.id_mesa,

@@ -216,7 +216,7 @@ export const getDailySaleDetails = async (idVenta) => {
       tipoConsumo: d.tipo_consumo,
       subtotal: d.subtotal,
       estado: d.estado_detalle_venta,
-      fecha: d.fecha_reg_detalle_venta,
+      fecha: d.fecha_reg_detalle_venta instanceof Date ? d.fecha_reg_detalle_venta.toISOString() : d.fecha_reg_detalle_venta,
       mesero: aliasById.get(d.id_mesero_actual) || '—',
       esPromocion: Boolean(d.id_prom),
       personalizacionGrupos

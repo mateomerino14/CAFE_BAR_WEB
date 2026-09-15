@@ -1,5 +1,5 @@
-import {supabase} from '../config/supabaseClient.js';
-import {verifyPassword} from '../utils/password.js';
+import { query } from '../config/db.js';
+import { verifyPassword } from '../utils/password.js';
 
 /* Permisos asignados directamente al usuario DIRECTORIO */
 const DIRECTORIO_PERMISSIONS = [
@@ -8,22 +8,25 @@ const DIRECTORIO_PERMISSIONS = [
 
 /* Obtiene los permisos asignados a un cargo de empleado */
 export const loadEmployeePermissions = async (idCargo) => {
-  const {data: screenPermissions} = await supabase
-    .from('permisos_cargo')
-    .select('pantalla:pantalla(nom_pant)')
-    .eq('id_carg', idCargo);
-  const {data: subscreenPermissions} = await supabase
-    .from('permisos_cargo_subpantalla')
-    .select('subpantalla:subpantalla(accion)')
-    .eq('id_carg', idCargo);
-  const screenNames = (screenPermissions || [])
-    .map((row) => row.pantalla?.nom_pant)
-    .filter(Boolean);
-  const actionNames = (subscreenPermissions || [])
-    .map((row) => row.subpantalla?.accion)
-    .filter(Boolean);
+  const screenResult = await query(
+    `SELECT p.nom_pant
+     FROM permisos_cargo pc
+     JOIN pantalla p ON p.id_pant = pc.id_pant
+     WHERE pc.id_carg = $1`,
+    [idCargo]
+  );
+  const subscreenResult = await query(
+    `SELECT sp.accion
+     FROM permisos_cargo_subpantalla pcs
+     JOIN subpantalla sp ON sp.id_sub_pant = pcs.id_sub_pant
+     WHERE pcs.id_carg = $1`,
+    [idCargo]
+  );
+
+  const screenNames = screenResult.rows.map((row) => row.nom_pant).filter(Boolean);
+  const actionNames = subscreenResult.rows.map((row) => row.accion).filter(Boolean);
   const permissions = Array.from(new Set([...screenNames, ...actionNames]));
-  if (!permissions.includes('Home')){
+  if (!permissions.includes('Home')) {
     permissions.push('Home');
   }
   return permissions;
@@ -31,11 +34,10 @@ export const loadEmployeePermissions = async (idCargo) => {
 
 /* Autentica al usuario DIRECTORIO mediante su contraseña */
 export const authenticateDirectorio = async (password) => {
-  const {data: directorio} = await supabase
-    .from('directorio')
-    .select('id_admin, nom_admin, contrasena_admin')
-    .limit(1)
-    .maybeSingle();
+  const result = await query(
+    `SELECT id_admin, nom_admin, contrasena_admin FROM directorio LIMIT 1`
+  );
+  const directorio = result.rows[0];
   if (!directorio) {
     return null;
   }
@@ -54,12 +56,13 @@ export const authenticateDirectorio = async (password) => {
 
 /* Autentica a un empleado mediante alias y contraseña */
 export const authenticateEmployee = async (alias, password) => {
-  const {data: employee} = await supabase
-    .from('empleado')
-    .select('cod_emp, alias_emp, cont_emp, id_cargo, disponible_emp')
-    .eq('alias_emp', alias)
-    .eq('disponible_emp', true)
-    .maybeSingle();
+  const result = await query(
+    `SELECT cod_emp, alias_emp, cont_emp, id_cargo, disponible_emp
+     FROM empleado
+     WHERE alias_emp = $1 AND disponible_emp = true`,
+    [alias]
+  );
+  const employee = result.rows[0];
   if (!employee) {
     return null;
   }
@@ -87,10 +90,6 @@ export const login = async (username, password) => {
 
 /* Obtiene el alias configurado del usuario DIRECTORIO */
 export const getDirectorioAlias = async () => {
-  const {data} = await supabase
-    .from('directorio')
-    .select('nom_admin')
-    .limit(1)
-    .maybeSingle();
-  return data?.nom_admin || null;
+  const result = await query(`SELECT nom_admin FROM directorio LIMIT 1`);
+  return result.rows[0]?.nom_admin || null;
 };
