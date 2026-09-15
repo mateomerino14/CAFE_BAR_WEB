@@ -1,6 +1,6 @@
-import {supabase} from '../config/supabaseClient.js';
+import { query } from '../config/db.js';
 import * as XLSX from 'xlsx';
-import {sendBackupEmailViaBrevo} from './emailService.js';
+import { sendBackupEmailViaBrevo } from './emailService.js';
 
 /* Orden de tablas utilizado para exportar e importar la base de datos respetando dependencias */
 const TABLE_ORDER = [
@@ -15,47 +15,60 @@ const TABLE_ORDER = [
 const findSheetName = (workbook, tabla) =>
   workbook.SheetNames.find((s) => s === tabla || s === tabla.slice(0, 31));
 
+/* Envuelve un nombre de tabla o columna entre comillas dobles para usarlo de forma segura en SQL dinámico */
+const quoteIdent = (name) => `"${name.replace(/"/g, '""')}"`;
+
 /* Genera un archivo Excel con la información completa de la base de datos */
 export const exportDatabaseToExcel = async () => {
   const workbook = XLSX.utils.book_new();
   for (const tabla of TABLE_ORDER) {
-    const {data} = await supabase.from(tabla).select('*');
-    const rows = data && data.length > 0 ? data : [{}];
+    const result = await query(`SELECT * FROM ${quoteIdent(tabla)}`);
+    const rows = result.rows.length > 0 ? result.rows : [{}];
     const sheet = XLSX.utils.json_to_sheet(rows);
     XLSX.utils.book_append_sheet(workbook, sheet, tabla.slice(0, 31));
   }
-  return XLSX.write(workbook, {type: 'buffer', bookType: 'xlsx'});
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 };
 
 /* Restaura la base de datos a partir de un archivo Excel de respaldo */
 export const importDatabaseFromExcel = async (buffer) => {
-  const workbook = XLSX.read(buffer, {type: 'buffer'});
+  const workbook = XLSX.read(buffer, { type: 'buffer' });
+
   const deleteOrder = [...TABLE_ORDER].reverse();
   for (const tabla of deleteOrder) {
     const sheetName = findSheetName(workbook, tabla);
-    if (!sheetName) {
-      continue;
+    if (!sheetName) continue;
+    try {
+      await query(`SELECT admin_truncate_table($1)`, [tabla]);
+    } catch (error) {
+      throw new Error(`IMPORT_DELETE_FAILED:${tabla}:${error.message}`);
     }
-    const {error} = await supabase.rpc('admin_truncate_table', {target_table: tabla});
-    if (error) throw new Error(`IMPORT_DELETE_FAILED:${tabla}:${error.message}`);
   }
+
   for (const tabla of TABLE_ORDER) {
     const sheetName = findSheetName(workbook, tabla);
     if (!sheetName) continue;
     const sheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json(sheet,{defval: null});
-    if (rows.length === 0) {
-      continue;
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+    if (rows.length === 0) continue;
+
+    const columns = Object.keys(rows[0]);
+    const columnList = columns.map(quoteIdent).join(', ');
+
+    for (const row of rows) {
+      const values = columns.map((col) => row[col]);
+      const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+      try {
+        await query(`INSERT INTO ${quoteIdent(tabla)} (${columnList}) VALUES (${placeholders})`, values);
+      } catch (error) {
+        throw new Error(`IMPORT_INSERT_FAILED:${tabla}:${error.message}`);
+      }
     }
-    const chunkSize = 500;
-    for (let i = 0; i < rows.length; i += chunkSize) {
-      const chunk = rows.slice(i, i + chunkSize);
-      const {error} = await supabase.from(tabla).insert(chunk);
-      if (error) throw new Error(`IMPORT_INSERT_FAILED:${tabla}:${error.message}`);
-    }
-    const {error: resetError} = await supabase.rpc('admin_reset_sequence', {target_table: tabla});
-    if (resetError) {
-      console.error(`No se pudo reiniciar la secuencia de ${tabla}:`, resetError.message);
+
+    try {
+      await query(`SELECT admin_reset_sequence($1)`, [tabla]);
+    } catch (error) {
+      console.error(`No se pudo reiniciar la secuencia de ${tabla}:`, error.message);
     }
   }
 };
