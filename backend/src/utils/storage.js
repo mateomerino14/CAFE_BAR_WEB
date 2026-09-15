@@ -1,16 +1,22 @@
 import { randomUUID } from 'crypto';
-import { supabase } from '../config/supabaseClient.js';
+import fs from 'fs';
+import path from 'path';
 
-const BUCKET = 'avatares';
+const UPLOADS_ROOT = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads');
+const PUBLIC_BASE_URL = process.env.UPLOADS_PUBLIC_URL || 'http://localhost:3000/uploads';
 
-/* Sube una fotografía al almacenamiento de Supabase utilizando una ruta única y devuelve su URL pública. */
+/* Guarda una fotografía como archivo local dentro de la carpeta de uploads y devuelve su URL pública dentro de la red local. */
 export const uploadPhoto = async (folder, file) => {
   const extension = file.originalname.split('.').pop();
-  const path = `${folder}/${randomUUID()}.${extension}`;
-  const {error} = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file.buffer, {contentType: file.mimetype, upsert: false});
-  if (error) throw error;
-  const {data} = supabase.storage.from(BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  const fileName = `${randomUUID()}.${extension}`;
+  const folderPath = path.join(UPLOADS_ROOT, folder);
+
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+
+  const fullPath = path.join(folderPath, fileName);
+  fs.writeFileSync(fullPath, file.buffer);
+
+  return `${PUBLIC_BASE_URL}/${folder}/${fileName}`;
 };
