@@ -328,16 +328,19 @@ CREATE TABLE IF NOT EXISTS password_reset_codes (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Configuracion de agente de impresion
-CREATE TABLE IF NOT EXISTS print_agent_config (
-    id   BIGSERIAL PRIMARY KEY,
-    url  VARCHAR(200)
-);
-
 -- Control de numero de ventas para varios usuarios
 CREATE TABLE IF NOT EXISTS venta_daily_counter (
     fecha           DATE PRIMARY KEY,
     ultimo_numero   INTEGER NOT NULL DEFAULT 0
+);
+
+-- Configuración del reporte automático semanal por correo
+CREATE TABLE IF NOT EXISTS scheduled_report_config (
+    id            BIGSERIAL PRIMARY KEY,
+    email         VARCHAR(200),
+    dia_semana    SMALLINT CHECK (dia_semana BETWEEN 0 AND 6),
+    hora          TIME,
+    ultimo_envio  DATE
 );
 
 
@@ -351,9 +354,8 @@ ALTER TABLE venta ALTER COLUMN cod_emp2 DROP NOT NULL;
 
 -- =====================================================================
 -- Tabla de configuración de impresoras (versión de escritorio)
--- Reemplaza a la tabla print_agent_config (ya no aplica, esa era para
--- guardar una dirección IP; en la versión de escritorio todo corre en
--- la misma PC, así que solo se guarda qué impresora usar para cada cosa.
+-- La impresión ahora vive directo en el backend, sin necesitar ninguna
+-- dirección de red — solo se guarda qué impresora usar para cada cosa.
 -- =====================================================================
 CREATE TABLE IF NOT EXISTS printer_config (
     id              BIGSERIAL PRIMARY KEY,

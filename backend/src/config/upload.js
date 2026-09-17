@@ -1,4 +1,4 @@
 import multer from 'multer';
 
-/*Subida de una imagen al storage de supabase o bucket */
+/*Configura la subida de imágenes en memoria antes de guardarlas como archivo local (ver utils/storage.js) */
 export const upload = multer({storage: multer.memoryStorage(),limits: {fileSize: 5 * 1024 * 1024}});
