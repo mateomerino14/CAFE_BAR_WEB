@@ -1,0 +1,34 @@
+{
+  "name": "cafebar-desktop",
+  "version": "1.0.0",
+  "description": "Sistema Cafebar - Version de escritorio",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "embedded-postgres": "^17.0.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0"
+  },
+  "build": {
+    "appId": "com.cafebar.desktop",
+    "productName": "Cafebar",
+    "files": [
+      "**/*"
+    ],
+    "extraResources": [
+      { "from": "../backend", "to": "backend", "filter": ["**/*", "!node_modules", "!.env"] },
+      { "from": "../frontend/dist", "to": "frontend/dist" },
+      { "from": "../database", "to": "database" }
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

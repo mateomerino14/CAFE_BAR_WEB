@@ -42,6 +42,12 @@ app.use(restrictByIp);
 /* Sirve las imágenes subidas (productos, empleados, categorías, etc.) como archivos estáticos accesibles desde la red local. */
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+/* Sirve el frontend ya compilado (npm run build) desde el propio backend, para que todo el sistema
+   funcione como un único servidor en un solo puerto, sin depender de ningún servidor de desarrollo aparte.
+   FRONTEND_DIST_DIR permite indicar dónde está esa carpeta (por defecto, ../frontend/dist). */
+const frontendDistDir = process.env.FRONTEND_DIST_DIR || path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(frontendDistDir));
+
 /* Define una ruta de comprobación para verificar que el servidor se encuentre funcionando correctamente. */
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Servidor del Café Bar corriendo correctamente (base de datos local)' });
@@ -73,6 +79,14 @@ app.use('/api/backup', backupRoutes);
 app.use('/api/deletion', deletionRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/printers', printerRoutes);
+
+/* Cualquier ruta que no sea /api ni /uploads se responde con el index.html del frontend,
+   para que las rutas internas de React Router (ej. /caja/registrar-pedido) funcionen
+   correctamente incluso al recargar la página directamente en esa dirección. */
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+  res.sendFile(path.join(frontendDistDir, 'index.html'));
+});
 
 /* Arranca el servidor Express y el trabajo programado (cron) del reporte automático semanal.
    Escucha en 0.0.0.0 para que otros dispositivos de la red local (celulares, tablets) puedan conectarse. */
