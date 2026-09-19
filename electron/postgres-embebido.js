@@ -1,12 +1,15 @@
 import EmbeddedPostgres from 'embedded-postgres';
 import path from 'path';
+import fs from 'fs';
 import { app } from 'electron';
 
 let pg;
 
-/* Arranca (o inicializa la primera vez) el Postgres embebido dentro de la propia app, guardando sus datos en la carpeta de datos del usuario. */
+/* Arranca (o inicializa la primera vez) el Postgres embebido dentro de la propia app, guardando sus datos en la carpeta de datos del usuario.
+   Detecta si es la primera ejecución comprobando si la carpeta de datos ya existe (el paquete no expone un método propio para esto). */
 export const startEmbeddedPostgres = async () => {
   const dataDir = path.join(app.getPath('userData'), 'postgres-data');
+  const isFirstRun = !fs.existsSync(dataDir);
 
   pg = new EmbeddedPostgres({
     databaseDir: dataDir,
@@ -15,9 +18,6 @@ export const startEmbeddedPostgres = async () => {
     port: 5432,
     persistent: true
   });
-
-  const isInitialized = await pg.isInitialized();
-  const isFirstRun = !isInitialized;
 
   if (isFirstRun) {
     await pg.initialise();
