@@ -40,6 +40,16 @@ const parseIngredients = (raw) => {
   }
 };
 
+/* Valida que cada ingrediente de la receta tenga una cantidad numérica válida (sin negativos ni letras) */
+const validateIngredientQuantities = (ingredients) => {
+  for (const item of ingredients) {
+    if (!isValidDecimal(String(item.cantidad))) {
+      return `La cantidad del ingrediente debe ser un número válido (recibido: "${item.cantidad}")`;
+    }
+  }
+  return null;
+};
+
 /* Controlador para registrar un nuevo producto */
 export const createProductHandler = async (req, res) => {
   const fields = req.body;
@@ -50,6 +60,10 @@ export const createProductHandler = async (req, res) => {
   const ingredients = parseIngredients(fields.ingredients);
   if (!ingredients || ingredients.length === 0) {
     return res.status(400).json({message: 'El producto debe contener por lo menos un ingrediente'});
+  }
+  const ingredientsError = validateIngredientQuantities(ingredients);
+  if (ingredientsError) {
+    return res.status(400).json({message: ingredientsError});
   }
   const photoFile = findFile(req.files, 'photo');
   try {
@@ -134,6 +148,10 @@ export const updateProductHandler = async (req, res) => {
   const ingredients = parseIngredients(fields.ingredients);
   if (!ingredients || ingredients.length === 0) {
     return res.status(400).json({message: 'El producto debe contener por lo menos un ingrediente'});
+  }
+  const ingredientsError = validateIngredientQuantities(ingredients);
+  if (ingredientsError) {
+    return res.status(400).json({message: ingredientsError});
   }
   const photoFile = findFile(req.files, 'photo');
   try {

@@ -80,6 +80,20 @@ app.use('/api/deletion', deletionRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/printers', printerRoutes);
 
+/* Manejador de errores global: convierte errores de subida de archivos (Multer) y cualquier otro
+   error no controlado en una respuesta JSON clara, en vez de dejar que Express devuelva HTML crudo
+   que el frontend no puede interpretar. */
+app.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ message: 'La imagen es demasiado grande (máximo 15MB)' });
+  }
+  if (err.name === 'MulterError') {
+    return res.status(400).json({ message: 'Error al subir el archivo: ' + err.message });
+  }
+  console.error('Error no controlado:', err);
+  return res.status(500).json({ message: 'Ocurrió un error inesperado en el servidor' });
+});
+
 /* Cualquier ruta que no sea /api ni /uploads se responde con el index.html del frontend,
    para que las rutas internas de React Router (ej. /caja/registrar-pedido) funcionen
    correctamente incluso al recargar la página directamente en esa dirección. */

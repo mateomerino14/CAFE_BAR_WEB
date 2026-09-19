@@ -17,6 +17,7 @@ import {
   checkoutOrder,
   getNextSaleNumberPreview
 } from '../services/posService.js';
+import { isValidDecimal } from '../utils/validators.js';
 
 /* Controlador para listar las secciones con sus mesas */
 export const listSectionsWithTablesHandler = async (req, res) => {
@@ -169,6 +170,12 @@ export const checkoutOrderHandler = async (req, res) => {
   const {metodo, montoEfectivo, montoQr} = req.body;
   if (!metodo) {
     return res.status(400).json({message: 'Seleccione un método de pago'});
+  }
+  if ((metodo === 'efectivo' || metodo === 'mixto') && !isValidDecimal(String(montoEfectivo))) {
+    return res.status(400).json({message: 'El monto en efectivo debe ser un valor numérico válido'});
+  }
+  if ((metodo === 'qr' || metodo === 'mixto') && !isValidDecimal(String(montoQr))) {
+    return res.status(400).json({message: 'El monto en QR debe ser un valor numérico válido'});
   }
   try {
     await checkoutOrder(req.params.id, {metodo, montoEfectivo, montoQr});

@@ -10,6 +10,7 @@ import {
   listActivePromotionsNow,
   getPromotionProductsWithIngredients
 } from '../services/promotionService.js';
+import { isValidDecimal } from '../utils/validators.js';
 
 /* Obtiene un archivo específico del arreglo de archivos recibidos */
 const findFile = (files, fieldname) => (files || []).find((file) => file.fieldname === fieldname);
@@ -29,6 +30,9 @@ const validateFields = (fields, products, schedule, days) => {
   if (!fields.nombre || !fields.precioProm) {
     return 'Debe llenar los campos obligatorios';
   }
+  if (!isValidDecimal(fields.precioProm)) {
+    return 'El precio de la promoción debe ser un valor numérico válido';
+  }
   if (!products || products.length === 0) {
     return 'La promoción debe tener por lo menos un producto';
   }
@@ -40,6 +44,11 @@ const validateFields = (fields, products, schedule, days) => {
   }
   if ((schedule?.scheduleType === 'recurring' || (schedule?.scheduleType === 'range' && schedule?.daysEnabled)) && (!days || days.length === 0)) {
     return 'Seleccione por lo menos un día de la semana';
+  }
+  for (const item of products) {
+    if (!isValidDecimal(String(item.cantidad))) {
+      return `La cantidad de un producto de la promoción debe ser un número válido (recibido: "${item.cantidad}")`;
+    }
   }
   return null;
 };
