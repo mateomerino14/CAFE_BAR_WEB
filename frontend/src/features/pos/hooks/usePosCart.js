@@ -73,21 +73,35 @@ export const usePosCart = () => {
   const subtotal = Number(promotion.precio_prom) * cantidad + extraCost;
   const unitPrice = subtotal / cantidad;
 
-  setItems((prev) => [
-    ...prev,
-    {
-      cartId: nextId++,
-      type: 'promotion',
-      idProm: promotion.id_prom,
-      nombre: promotion.nom_prom,
-      unitPrice,
-      cantidad,
-      tipoConsumo,
-      exclusiones: [],
-      extras: [],
-      productCustomizations: productCustomizations || []
+  setItems((prev) => {
+    const existingIndex = prev.findIndex(
+      (item) =>
+        item.type === 'promotion' &&
+        item.idProm === promotion.id_prom &&
+        item.tipoConsumo === tipoConsumo &&
+        sameProductCustomizations(item.productCustomizations, productCustomizations || [])
+    );
+
+    if (existingIndex !== -1) {
+      return prev.map((item, index) => (index === existingIndex ? { ...item, cantidad: item.cantidad + cantidad } : item));
     }
-  ]);
+
+    return [
+      ...prev,
+      {
+        cartId: nextId++,
+        type: 'promotion',
+        idProm: promotion.id_prom,
+        nombre: promotion.nom_prom,
+        unitPrice,
+        cantidad,
+        tipoConsumo,
+        exclusiones: [],
+        extras: [],
+        productCustomizations: productCustomizations || []
+      }
+    ];
+  });
 };
 
   const updateQuantity = (cartId, cantidad) => {
