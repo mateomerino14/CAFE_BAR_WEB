@@ -9,6 +9,14 @@ const formatHora = (hora) => {
   return `${hora12}:${minutoStr} ${periodo}`;
 };
 
+/* Convierte una fecha en formato AAAA-MM-DD (o un ISO completo) a DD/MM/AAAA para mostrarla. */
+const formatFecha = (fecha) => {
+  if (!fecha) return '—';
+  const soloFecha = fecha.slice(0, 10);
+  const [anio, mes, dia] = soloFecha.split('-');
+  return `${dia}/${mes}/${anio}`;
+};
+
 const styles = {
   wrapper: 'mt-4 overflow-x-auto rounded-xl bg-white shadow-sm',
   table: 'w-full min-w-[700px] text-left text-sm',
@@ -37,7 +45,7 @@ export const DetailedSalesTable = ({rows, onSelect}) => {
           {rows.map((r) => (
             <tr key={r.idVenta} className="cursor-pointer hover:bg-slate-50" onClick={() => onSelect(r)}>
               <td className={styles.td}>{r.numVenta}</td>
-              <td className={styles.td}>{r.fecha.slice(0, 10)}</td>
+              <td className={styles.td}>{formatFecha(r.fecha)}</td>
               <td className={styles.td}>{formatHora(r.hora)}</td>
               <td className={styles.td}>{r.meseroApertura}</td>
               <td className={styles.td}>{r.cajero}</td>
@@ -66,7 +74,7 @@ export const SummaryByDateTable = ({result}) => {
         <tbody>
           {result.rows.map((r, index) => (
             <tr key={index}>
-              <td className={styles.td}>{r.fecha}</td>
+              <td className={styles.td}>{formatFecha(r.fecha)}</td>
               <td className={styles.td}>{r.cajero}</td>
               <td className={styles.td}>{r.totalVentas}</td>
               <td className={styles.td}>Bs {r.totalMonto.toFixed(2)}</td>
@@ -143,7 +151,7 @@ export const EmployeeSalesTable = ({rows}) => {
           {rows.map((r, index) => (
             <tr key={index}>
               <td className={styles.td}>{r.numVenta}</td>
-              <td className={styles.td}>{r.fecha.slice(0, 10)}</td>
+              <td className={styles.td}>{formatFecha(r.fecha)}</td>
               <td className={styles.td}>{formatHora(r.hora)}</td>
               <td className={styles.td}>{r.rol}</td>
               <td className={styles.td}>Bs {r.total.toFixed(2)}</td>
