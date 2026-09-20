@@ -421,6 +421,9 @@ export const getMarkCards = async (fecha) => {
   return Array.from(grupos.values()).map((g) => ({ ...g, total: g.pendientes.length + g.listos.length })).filter((g) => g.pendientes.length > 0);
 };
 
+/* NOTA: sin usar por ningún componente del frontend todavía — reemplazada en la práctica por
+   applyMarkChanges (marca/desmarca varias unidades de una vez, usada por Marcar Pendientes).
+   Se deja disponible por si se necesita marcar una sola unidad puntual a futuro. */
 /* Actualiza el estado marcado de las unidades indicadas y sincroniza la cantidad de unidades marcadas en cada detalle de venta afectado. */
 export const markUnits = async (unitIds, marcado) => {
   await query(`UPDATE detalles_venta_unidades SET marcado = $1 WHERE id_unidad = ANY($2::bigint[])`, [marcado, unitIds]);

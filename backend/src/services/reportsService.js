@@ -407,6 +407,7 @@ export const getEmployeeChartReport = async (fechaInicio, fechaFin, tipo) => {
   return rows.sort((a, b) => b.totalVentas - a.totalVentas);
 };
 
+/* NOTA: sin usar por ningún componente del frontend todavía (queda disponible por si se conecta a futuro). */
 /*Obtiene las ventas en las que participa un empleado como cajero o mesero dentro de un rango de fechas.*/
 export const getEmployeeSalesReport = async (fechaInicio, fechaFin, empleadoId) => {
   const { start, end } = getDateRangeISO(fechaInicio, fechaFin);

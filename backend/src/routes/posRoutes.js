@@ -31,6 +31,7 @@ router.get('/tables/:idSeccion/:idMesa/pending-batches', authenticate, authorize
 router.get('/tables/:idSeccion/:idMesa/latest-order', authenticate, authorize('REGISTRAR_PEDIDO'), getLatestOrderIdHandler);
 router.get('/tables/:idSeccion/:idMesa/unmarked-count', authenticate, authorize('REGISTRAR_PEDIDO'), getUnmarkedCountHandler);
 router.get('/mark-cards', authenticate, authorize('REGISTRAR_PEDIDO'), getMarkCardsHandler);
+// NOTA: sin usar por el frontend todavía, reemplazada en la practica por /units/mark-batch
 router.put('/units/mark', authenticate, authorize('REGISTRAR_PEDIDO'), markUnitsHandler);
 router.put('/units/mark-batch', authenticate, authorize('REGISTRAR_PEDIDO'), applyMarkChangesHandler);
 router.get('/tax-link', authenticate, authorize('REGISTRAR_PEDIDO'), getTaxLinkForCajaHandler);

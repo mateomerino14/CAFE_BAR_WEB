@@ -1,1 +1,0 @@
-/* La configuración del servidor y las rutas se gestionan directamente desde index.js. */

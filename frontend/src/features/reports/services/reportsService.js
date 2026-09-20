@@ -25,6 +25,9 @@ export const getEmployeeChartReport = async (fechaInicio, fechaFin, tipo) => {
   return data;
 };
 
+/* NOTA: función completa y funcional (ruta + controller + service en el backend ya existen),
+   pero ninguna pantalla del frontend la usa todavía. Pensada para mostrar el historial de ventas
+   de un empleado específico — queda disponible para conectar a futuro si se necesita esa vista. */
 export const getEmployeeSalesReport = async (fechaInicio, fechaFin, empleadoId) => {
   const { data } = await api.get('/reports/venta-empleado', { params: { fechaInicio, fechaFin, empleadoId } });
   return data;

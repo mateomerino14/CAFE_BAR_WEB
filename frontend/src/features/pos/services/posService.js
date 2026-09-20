@@ -35,6 +35,10 @@ export const getMarkCards = async (fecha) => {
   return data;
 };
 
+/* NOTA: función completa y funcional (ruta + controller + service en el backend ya existen),
+   pero ningún componente del frontend la usa todavía. Marca una sola unidad a la vez — parece haber
+   quedado reemplazada por applyMarkChanges (marca/desmarca varias unidades de una sola vez, más
+   eficiente, usada actualmente por Marcar Pendientes). Se deja por si sirve a futuro. */
 export const markUnits = async (unitIds, marcado) => {
   const { data } = await api.put('/pos/units/mark', { unitIds, marcado });
   return data;
