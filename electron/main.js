@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -8,8 +8,10 @@ import { runMigrations } from './migrate.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/* Carga (o genera la primera vez) las claves y credenciales que necesita el backend, guardándolas
-   en la carpeta de datos del usuario para que sobrevivan entre reinicios de la app. */
+/* Carga (o genera la primera vez) la clave secreta para firmar sesiones (JWT), guardándola
+   en la carpeta de datos del usuario para que sobreviva entre reinicios de la app.
+   Las credenciales de Brevo y ALLOWED_IPS ya NO viven aquí — se guardan en la base de datos
+   y se editan desde Configuración, para poder cambiarlas sin reiniciar la aplicación. */
 const loadOrCreateAppConfig = () => {
   const configPath = path.join(app.getPath('userData'), 'app-config.json');
 
@@ -18,17 +20,16 @@ const loadOrCreateAppConfig = () => {
   }
 
   const config = {
-    JWT_SECRET: randomBytes(32).toString('hex'),
-    BREVO_API_KEY: '',
-    BREVO_SENDER_EMAIL: '',
-    BREVO_SENDER_NAME: 'Cafebar',
-    ALLOWED_IPS: ''
+    JWT_SECRET: randomBytes(32).toString('hex')
   };
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   return config;
 };
 
-/* Crea la ventana principal, cargando el frontend ya compilado (npm run build en frontend/). */
+/* Crea la ventana principal, cargando el frontend ya compilado (npm run build en frontend/).
+   Cualquier enlace que la app intente abrir en una ventana nueva (target="_blank", TikTok,
+   la página de impuestos, etc.) se manda al navegador normal de Windows en vez de abrir
+   otra ventana de Electron. */
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 1280,
@@ -38,6 +39,11 @@ const createWindow = () => {
       contextIsolation: true,
       nodeIntegration: false
     }
+  });
+
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
   });
 
   const isDev = !app.isPackaged;
@@ -53,10 +59,6 @@ const createWindow = () => {
 const startApp = async () => {
   const config = loadOrCreateAppConfig();
   process.env.JWT_SECRET = config.JWT_SECRET;
-  process.env.BREVO_API_KEY = config.BREVO_API_KEY;
-  process.env.BREVO_SENDER_EMAIL = config.BREVO_SENDER_EMAIL;
-  process.env.BREVO_SENDER_NAME = config.BREVO_SENDER_NAME;
-  process.env.ALLOWED_IPS = config.ALLOWED_IPS;
   process.env.UPLOADS_DIR = path.join(app.getPath('userData'), 'uploads');
   process.env.UPLOADS_PUBLIC_URL = 'http://localhost:3000/uploads';
 
