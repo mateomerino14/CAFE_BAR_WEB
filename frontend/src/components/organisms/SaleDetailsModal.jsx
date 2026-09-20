@@ -45,7 +45,7 @@ export const SaleDetailsModal = ({venta, onClose}) => {
     <Modal onClose={onClose} size="lg">
       <div className={styles.header}>
         <p className={styles.eyebrow}>Venta</p>
-        <h2 className={styles.title}>N° {venta.numVenta} — Mesa {venta.mesa}</h2>
+        <h2 className={styles.title}>N° {venta.numVenta} — {venta.seccion} — Mesa {venta.mesa}</h2>
       </div>
       {loading && <p className={styles.loading}>Cargando...</p>}
       {!loading && details.map((item, index) => {

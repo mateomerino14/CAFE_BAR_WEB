@@ -88,8 +88,10 @@ export const getDailySalesSummary = async () => {
 export const listDailySales = async (filtro, busqueda) => {
   const { start, end } = getTodayBoliviaRange();
   const ventasResult = await query(
-    `SELECT id_venta, num_venta, hora_reg, id_mesa, total_venta, cod_emp, cod_emp2
-     FROM venta WHERE fecha_reg >= $1 AND fecha_reg < $2 ORDER BY hora_reg DESC`,
+    `SELECT v.id_venta, v.num_venta, v.hora_reg, v.id_mesa, v.total_venta, v.cod_emp, v.cod_emp2, s.nomb_seccion
+     FROM venta v
+     LEFT JOIN seccion s ON s.id_seccion = v.id_seccion
+     WHERE v.fecha_reg >= $1 AND v.fecha_reg < $2 ORDER BY v.hora_reg DESC`,
     [start, end]
   );
   if (ventasResult.rows.length === 0) return [];
@@ -110,6 +112,7 @@ export const listDailySales = async (filtro, busqueda) => {
     cajero: v.cod_emp2 ? (aliasById.get(v.cod_emp2) || '—') : 'DIRECTORIO',
     total: v.total_venta,
     mesa: v.id_mesa,
+    seccion: v.nomb_seccion || 'N/A',
     estado: estadoByVenta.get(v.id_venta) || 'Finalizada'
   }));
 
@@ -207,22 +210,33 @@ export const getDailySaleDetails = async (idVenta) => {
     : { rows: [] };
   const aliasById = new Map(empleadosResult.rows.map((e) => [e.cod_emp, e.alias_emp]));
 
-  const result = [];
+  const grouped = new Map();
   for (const d of detallesResult.rows) {
+    const producto = d.nom_prod || d.nom_prom;
     const personalizacionGrupos = await buildPersonalizacionDetalle(d);
-    result.push({
-      producto: d.nom_prod || d.nom_prom,
-      cantidad: d.cantidad_prod_det,
-      tipoConsumo: d.tipo_consumo,
-      subtotal: d.subtotal,
-      estado: d.estado_detalle_venta,
-      fecha: d.fecha_reg_detalle_venta instanceof Date ? d.fecha_reg_detalle_venta.toISOString() : d.fecha_reg_detalle_venta,
-      mesero: aliasById.get(d.id_mesero_actual) || '—',
-      esPromocion: Boolean(d.id_prom),
-      personalizacionGrupos
-    });
+    const mesero = aliasById.get(d.id_mesero_actual) || '—';
+    const personalizacionKey = JSON.stringify(personalizacionGrupos);
+    const key = `${producto}|${d.tipo_consumo}|${mesero}|${d.estado_detalle_venta}|${personalizacionKey}`;
+
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        producto,
+        cantidad: 0,
+        tipoConsumo: d.tipo_consumo,
+        subtotal: 0,
+        estado: d.estado_detalle_venta,
+        fecha: d.fecha_reg_detalle_venta instanceof Date ? d.fecha_reg_detalle_venta.toISOString() : d.fecha_reg_detalle_venta,
+        mesero,
+        esPromocion: Boolean(d.id_prom),
+        personalizacionGrupos
+      });
+    }
+    const entry = grouped.get(key);
+    entry.cantidad += d.cantidad_prod_det;
+    entry.subtotal += Number(d.subtotal);
   }
-  return result;
+
+  return Array.from(grouped.values());
 };
 
 /* Obtiene los nombres de los cajeros que realizaron ventas durante el día, incluyendo DIRECTORIO cuando corresponda. */
