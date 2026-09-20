@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getPromotionCatalogDetail } from '../services/catalogService';
+import { getPromotionProductsIngredients } from '../../pos/services/posService';
 import { DAYS_OF_WEEK } from '../../../constants/days';
 
 const isNowWithinSchedule = (promotion, days) => {
@@ -52,10 +53,36 @@ const buildTimeLabel = (promotion) => {
   return { text: `${formatTime(promotion.hora_inicio)} - ${formatTime(promotion.hora_fin)}`, type: 'time' };
 };
 
+/* Calcula un estimado de cuántas unidades de la promoción se podrían fabricar con el stock actual,
+   sumando lo que necesita cada producto componente (multiplicado por cuántos de ese producto lleva
+   la promoción), y tomando el ingrediente "cuello de botella" que primero se agote. Solo informativo. */
+const calculateMaxPromotions = (productsWithIngredients) => {
+  const neededByIngredient = new Map();
+  for (const product of productsWithIngredients) {
+    for (const ing of product.ingredients || []) {
+      const necesario = Number(ing.cantidad_ing_necesitada) || 0;
+      if (necesario <= 0) continue;
+      const totalNecesario = necesario * (Number(product.cantidadPromo) || 1);
+      const prev = neededByIngredient.get(ing.id_ing) || { necesario: 0, stock: Number(ing.cantidad_stock) || 0 };
+      neededByIngredient.set(ing.id_ing, { necesario: prev.necesario + totalNecesario, stock: prev.stock });
+    }
+  }
+  if (neededByIngredient.size === 0) return null;
+  let maxPromos = Infinity;
+  for (const { necesario, stock } of neededByIngredient.values()) {
+    maxPromos = Math.min(maxPromos, Math.floor(stock / necesario));
+  }
+  return maxPromos;
+};
+
 export const usePromotionDetail = (idProm) => {
   const [detail, setDetail] = useState(null);
+  const [maxPromotions, setMaxPromotions] = useState(null);
   useEffect(() => {
     getPromotionCatalogDetail(idProm).then(setDetail);
+    getPromotionProductsIngredients(idProm).then((productsWithIngredients) => {
+      setMaxPromotions(calculateMaxPromotions(productsWithIngredients));
+    });
   }, [idProm]);
   if (!detail) return { ready: false };
   const dayLabels = detail.days
@@ -68,6 +95,7 @@ export const usePromotionDetail = (idProm) => {
     dayLabels,
     dateLabel: buildDateLabel(detail.promotion),
     timeLabel: buildTimeLabel(detail.promotion),
-    isActiveNow
+    isActiveNow,
+    maxPromotions
   };
 };

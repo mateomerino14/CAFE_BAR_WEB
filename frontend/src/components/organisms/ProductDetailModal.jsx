@@ -7,7 +7,7 @@ const styles = {
   title: `text-lg font-bold ${colors.textPrimary}`,
   section: 'mt-4',
   sectionTitle: `text-sm font-bold ${colors.textPrimary}`,
-  description: 'mt-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-600',
+  description: 'mt-1 rounded-lg bg-slate-50 p-3 text-sm text-slate-600 break-words whitespace-pre-wrap',
   row: 'flex items-center justify-between border-b border-slate-100 py-2 text-sm last:border-0',
   ingName: 'font-semibold text-slate-700',
   stockOk: 'text-emerald-600',

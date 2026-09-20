@@ -26,7 +26,7 @@ router.get('/catalog-pos', authenticate, authorize('REGISTRAR_PEDIDO'), listActi
 router.get('/', authenticate, authorize('MODIFICAR_PROMOCIONES'), listPromotionsHandler);
 router.get('/status', authenticate, authorize('BAJA_PROMOCIONES'), listAllPromotionsStatusHandler);
 router.get('/:id/catalog-detail', authenticate, authorize('VER_FAMILIA'), getPromotionHandler);
-router.get('/:id/products-ingredients', authenticate, authorize('REGISTRAR_PEDIDO'), getPromotionProductsIngredientsHandler);
+router.get('/:id/products-ingredients', authenticate, authorize(['REGISTRAR_PEDIDO', 'VER_FAMILIA']), getPromotionProductsIngredientsHandler);
 router.get('/:id', authenticate, authorize('MODIFICAR_PROMOCIONES'), getPromotionHandler);
 router.put('/:id', authenticate, authorize('MODIFICAR_PROMOCIONES'), upload.any(), updatePromotionHandler);
 router.put('/:id/availability', authenticate, authorize('BAJA_PROMOCIONES'), setPromotionAvailabilityHandler);

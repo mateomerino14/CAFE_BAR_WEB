@@ -185,7 +185,7 @@ export const getPromotionProductsWithIngredients = async (idProm) => {
   const result = [];
   for (const pp of promProductsResult.rows) {
     const ingredientsResult = await query(
-      `SELECT pi.id_ing, pi.cantidad_ing_necesitada, s.nom_ing, s.precio_extra
+      `SELECT pi.id_ing, pi.cantidad_ing_necesitada, s.nom_ing, s.precio_extra, s.cantidad_stock
        FROM productos_ingredientes pi
        JOIN stock s ON s.id_ing = pi.id_ing
        WHERE pi.id_prod = $1`,
@@ -195,7 +195,13 @@ export const getPromotionProductsWithIngredients = async (idProm) => {
       idProd: pp.id_prod,
       nombre: pp.nom_prod,
       cantidadPromo: pp.cantidad_prod_prom,
-      ingredients: ingredientsResult.rows.map((row) => ({ id_ing: row.id_ing, nom_ing: row.nom_ing, precio_extra: row.precio_extra }))
+      ingredients: ingredientsResult.rows.map((row) => ({
+        id_ing: row.id_ing,
+        nom_ing: row.nom_ing,
+        precio_extra: row.precio_extra,
+        cantidad_ing_necesitada: row.cantidad_ing_necesitada,
+        cantidad_stock: row.cantidad_stock
+      }))
     });
   }
   return result;

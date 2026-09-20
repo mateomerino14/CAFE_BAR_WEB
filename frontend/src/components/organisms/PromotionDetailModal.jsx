@@ -15,6 +15,7 @@ const styles = {
   status: 'mt-4 rounded-lg p-3 text-center text-sm font-bold',
   active: 'bg-emerald-50 text-emerald-700',
   inactive: 'bg-red-50 text-red-700',
+  maxPromotions: 'mt-4 rounded-lg bg-blue-50 p-3 text-center text-sm font-bold text-blue-700',
   actions: 'mt-4'
 };
 
@@ -25,7 +26,7 @@ const scheduleTextClass = (type) => {
 };
 
 export const PromotionDetailModal = ({promotion, onClose}) => {
-  const { ready, products, dayLabels, dateLabel, timeLabel, isActiveNow } = usePromotionDetail(promotion.id_prom);
+  const { ready, products, dayLabels, dateLabel, timeLabel, isActiveNow, maxPromotions } = usePromotionDetail(promotion.id_prom);
   return (
     <Modal onClose={onClose}>
       <h2 className={styles.title}>{promotion.nom_prom}</h2>
@@ -40,6 +41,11 @@ export const PromotionDetailModal = ({promotion, onClose}) => {
               </div>
             ))}
           </div>
+          {maxPromotions !== null && (
+            <p className={styles.maxPromotions}>
+              Se pueden fabricar aproximadamente {maxPromotions} {maxPromotions === 1 ? 'promoción' : 'promociones'} con el stock actual
+            </p>
+          )}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Disponibilidad</p>
             <p className={`${styles.scheduleRow} ${scheduleTextClass(dateLabel.type)}`}>{dateLabel.text}</p>
