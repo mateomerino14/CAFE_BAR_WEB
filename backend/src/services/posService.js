@@ -290,8 +290,9 @@ export const listPendingBatches = async (idMesa, idSeccion) => {
 
   const batches = new Map();
   for (const row of detallesResult.rows) {
-    const key = row.fecha_reg_detalle_venta;
-    if (!batches.has(key)) batches.set(key, { fecha: key, items: [] });
+    const fechaValue = row.fecha_reg_detalle_venta instanceof Date ? row.fecha_reg_detalle_venta.toISOString() : row.fecha_reg_detalle_venta;
+    const key = fechaValue;
+    if (!batches.has(key)) batches.set(key, { fecha: fechaValue, items: [] });
     const counts = unitsByDetalle.get(row.id_detalle_venta) || { total: 0, restante: 0 };
     if (counts.restante <= 0) continue;
     batches.get(key).items.push({
