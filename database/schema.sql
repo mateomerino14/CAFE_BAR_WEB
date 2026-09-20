@@ -362,3 +362,16 @@ CREATE TABLE IF NOT EXISTS printer_config (
     ticket_printer  VARCHAR(200),
     cocina_printer  VARCHAR(200)
 );
+
+
+-- =====================================================================
+-- Configuración del sistema (credenciales de Brevo para envío de correos)
+-- Se guarda en la base en vez de una variable de entorno fija, para que
+-- se pueda editar desde Configuración sin reiniciar la aplicación.
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS system_config (
+    id                  BIGSERIAL PRIMARY KEY,
+    brevo_api_key       VARCHAR(300),
+    brevo_sender_email  VARCHAR(200),
+    brevo_sender_name   VARCHAR(200)
+);

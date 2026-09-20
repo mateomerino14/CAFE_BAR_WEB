@@ -36,13 +36,12 @@ export const getCajeroNames = async () => {
   return data;
 };
 
-
-export const getPrintAgentUrl = async () => {
-  const { data } = await api.get('/config/print-agent-url');
-  return data.url;
+export const getScheduledReportConfig = async () => {
+  const { data } = await api.get('/config/scheduled-report');
+  return data;
 };
 
-export const updatePrintAgentUrl = async (url) => {
-  const { data } = await api.put('/config/print-agent-url', { url });
+export const updateScheduledReportConfig = async (email, diaSemana, hora) => {
+  const { data } = await api.put('/config/scheduled-report', { email, diaSemana, hora });
   return data;
 };

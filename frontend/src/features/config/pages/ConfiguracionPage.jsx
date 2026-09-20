@@ -7,6 +7,8 @@ import { ChangeDirectorioPasswordModal } from '../../../components/organisms/Cha
 import { BackupModal } from '../../../components/organisms/BackupModal';
 import { PrinterConfigModal } from '../../../components/organisms/PrinterConfigModal';
 import { PhysicalDeletionModal } from '../../../components/organisms/PhysicalDeletionModal';
+import { ScheduledReportModal } from '../../../components/organisms/ScheduledReportModal';
+import { EmailConfigModal } from '../../../components/organisms/EmailConfigModal';
 import { useDisclosure } from '../../../hooks/useDisclosure';
 import { useAutoDismiss } from '../../../hooks/useAutoDismiss';
 
@@ -22,6 +24,8 @@ export const ConfiguracionPage = () => {
   const backup = useDisclosure(false);
   const printerConfig = useDisclosure(false);
   const deletion = useDisclosure(false);
+  const scheduledReport = useDisclosure(false);
+  const emailConfig = useDisclosure(false);
   const [success, setSuccess] = useState('');
   useAutoDismiss(success, () => setSuccess(''));
 
@@ -43,6 +47,12 @@ export const ConfiguracionPage = () => {
           </button>
           <button type="button" className={styles.menuButton} style={{ backgroundColor: '#0891b2' }} onClick={printerConfig.open}>
             CONFIGURAR IMPRESORAS
+          </button>
+          <button type="button" className={styles.menuButton} style={{ backgroundColor: '#9333ea' }} onClick={scheduledReport.open}>
+            REPORTE AUTOMÁTICO SEMANAL
+          </button>
+          <button type="button" className={styles.menuButton} style={{ backgroundColor: '#ea580c' }} onClick={emailConfig.open}>
+            CONFIGURAR ENVÍO DE CORREOS
           </button>
           <button type="button" className={styles.menuButton} style={{ backgroundColor: '#7f1d1d' }} onClick={deletion.open}>
             ELIMINACIÓN FÍSICA DE REGISTROS
@@ -70,6 +80,8 @@ export const ConfiguracionPage = () => {
       {backup.isOpen && <BackupModal onClose={backup.close} />}
       {printerConfig.isOpen && <PrinterConfigModal onClose={printerConfig.close} />}
       {deletion.isOpen && <PhysicalDeletionModal onClose={deletion.close} />}
+      {scheduledReport.isOpen && <ScheduledReportModal onClose={scheduledReport.close} />}
+      {emailConfig.isOpen && <EmailConfigModal onClose={emailConfig.close} />}
       {success && <Toast variant="success">{success}</Toast>}
     </>
   );

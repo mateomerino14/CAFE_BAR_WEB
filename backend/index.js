@@ -20,6 +20,7 @@ import backupRoutes from './src/routes/backupRoutes.js';
 import posRoutes from './src/routes/posRoutes.js';
 import reportsRoutes from './src/routes/reportsRoutes.js';
 import printerRoutes from './src/routes/printerRoutes.js';
+import systemConfigRoutes from './src/routes/systemConfigRoutes.js';
 import { restrictByIp } from './src/middlewares/restrictByIp.js';
 import { startCronJobs } from './src/cronJobs.js';
 
@@ -79,6 +80,7 @@ app.use('/api/backup', backupRoutes);
 app.use('/api/deletion', deletionRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/printers', printerRoutes);
+app.use('/api/system-config', systemConfigRoutes);
 
 /* Manejador de errores global: convierte errores de subida de archivos (Multer) y cualquier otro
    error no controlado en una respuesta JSON clara, en vez de dejar que Express devuelva HTML crudo

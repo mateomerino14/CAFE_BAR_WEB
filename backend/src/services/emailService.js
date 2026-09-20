@@ -1,19 +1,24 @@
 import puppeteer from 'puppeteer';
+import { getSystemConfig } from './systemConfigService.js';
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 const BRAND_BLUE = '#2563eb';
 const BRAND_BLUE_DARK = '#1e3a8a';
 
-/* Envía un correo electrónico mediante la API de Brevo utilizando las credenciales y datos del remitente configurados en las variables de entorno. */
+/* Envía un correo electrónico mediante la API de Brevo, usando las credenciales guardadas en Configuración (no variables de entorno fijas, para poder editarlas sin reiniciar la app). */
 const sendViaBrevo = async (payload) => {
+  const config = await getSystemConfig();
+  if (!config.brevo_api_key) {
+    throw new Error('BREVO_NOT_CONFIGURED');
+  }
   const response = await fetch(BREVO_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'api-key': process.env.BREVO_API_KEY
+      'api-key': config.brevo_api_key
     },
     body: JSON.stringify({
-      sender: { name: process.env.BREVO_SENDER_NAME, email: process.env.BREVO_SENDER_EMAIL },
+      sender: { name: config.brevo_sender_name || 'Cafebar', email: config.brevo_sender_email },
       ...payload
     })
   });
