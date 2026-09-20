@@ -47,7 +47,14 @@ const createWindow = () => {
     }
   });
 
+  /* Enlaces externos reales (TikTok, página de impuestos, etc.) se mandan al navegador del sistema.
+     La ventana de vista previa de impresión (que usa window.open('', ...) con URL vacía, que el
+     navegador normaliza a "about:blank") se deja abrir normal dentro de la app — si no, se rompe
+     el respaldo de impresión por diálogo del navegador. */
   win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url === 'about:blank') {
+      return { action: 'allow' };
+    }
     shell.openExternal(url);
     return { action: 'deny' };
   });
