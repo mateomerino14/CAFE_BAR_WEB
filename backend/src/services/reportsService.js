@@ -200,29 +200,29 @@ export const getDetailedSalesReport = async (fechaInicio, fechaFin, empleadoId) 
     const pago = pagosByVenta.get(v.id_venta) || { efectivo: 0, qr: 0, total: 0 };
     const detallesForVenta = detallesByVenta.get(v.id_venta) || [];
 
-    const items = detallesForVenta.map((det) => {
+    const itemsGrouped = new Map();
+    for (const det of detallesForVenta) {
       const mesero = aliasById.get(det.id_mesero_actual) || '—';
+      let producto;
+      let personalizacionGrupos;
       if (det.id_prod) {
-        return {
-          producto: det.nom_prod,
-          cantidad: det.cantidad_prod_det,
-          tipoConsumo: det.tipo_consumo,
-          subtotal: det.subtotal,
-          mesero,
-          personalizacionGrupos: buildGroupsForProduct(det.id_detalle_venta)
-        };
+        producto = det.nom_prod;
+        personalizacionGrupos = buildGroupsForProduct(det.id_detalle_venta);
+      } else {
+        producto = det.nom_prom;
+        const productos = promoProductsByPromo.get(det.id_prom) || [];
+        personalizacionGrupos = productos.flatMap((pp) => buildGroupsForPromoProduct(det.id_detalle_venta, pp.id_prod, pp.nom_prod));
       }
-      const productos = promoProductsByPromo.get(det.id_prom) || [];
-      const grupos = productos.flatMap((pp) => buildGroupsForPromoProduct(det.id_detalle_venta, pp.id_prod, pp.nom_prod));
-      return {
-        producto: det.nom_prom,
-        cantidad: det.cantidad_prod_det,
-        tipoConsumo: det.tipo_consumo,
-        subtotal: det.subtotal,
-        mesero,
-        personalizacionGrupos: grupos
-      };
-    });
+
+      const key = `${producto}|${det.tipo_consumo}|${mesero}|${JSON.stringify(personalizacionGrupos)}`;
+      if (!itemsGrouped.has(key)) {
+        itemsGrouped.set(key, { producto, cantidad: 0, tipoConsumo: det.tipo_consumo, subtotal: 0, mesero, personalizacionGrupos });
+      }
+      const entry = itemsGrouped.get(key);
+      entry.cantidad += det.cantidad_prod_det;
+      entry.subtotal += Number(det.subtotal);
+    }
+    const items = Array.from(itemsGrouped.values());
 
     return {
       idVenta: v.id_venta,
