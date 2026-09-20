@@ -373,7 +373,7 @@ export const getEmployeeChartReport = async (fechaInicio, fechaFin, tipo) => {
   const countByEmp = new Map();
   if (tipo === 'cajero') {
     for (const v of ventasResult.rows) {
-      const key = v.cod_emp2 || -1;
+      const key = v.cod_emp2 ? Number(v.cod_emp2) : -1;
       countByEmp.set(key, (countByEmp.get(key) || 0) + 1);
     }
   } else {
@@ -398,7 +398,7 @@ export const getEmployeeChartReport = async (fechaInicio, fechaFin, tipo) => {
   const empleadosResult = empleadoIds.length
     ? await query(`SELECT cod_emp, alias_emp FROM empleado WHERE cod_emp = ANY($1::bigint[])`, [empleadoIds])
     : { rows: [] };
-  const aliasById = new Map(empleadosResult.rows.map((e) => [e.cod_emp, e.alias_emp]));
+  const aliasById = new Map(empleadosResult.rows.map((e) => [Number(e.cod_emp), e.alias_emp]));
 
   const rows = Array.from(countByEmp.entries()).map(([id, count]) => ({
     empleado: id === -1 ? 'DIRECTORIO' : (aliasById.get(id) || '—'),
