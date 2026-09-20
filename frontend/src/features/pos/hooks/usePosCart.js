@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+const CART_STORAGE_KEY = 'cafebar_cart_backup';
 
 let nextId = 1;
 
@@ -25,7 +27,30 @@ const sameProductCustomizations = (a = [], b = []) => {
 };
 
 export const usePosCart = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      const maxId = parsed.reduce((max, item) => Math.max(max, item.cartId || 0), 0);
+      nextId = maxId + 1;
+      return parsed;
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (items.length === 0) {
+        localStorage.removeItem(CART_STORAGE_KEY);
+      } else {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      }
+    } catch {
+      // si falla el guardado local, no interrumpe el uso normal del carrito
+    }
+  }, [items]);
 
   const addProduct = ({ product, cantidad, tipoConsumo, exclusiones, extras }) => {
     const extraCost = extras.reduce((sum, e) => sum + Number(e.precioExtra) * Number(e.cantidadExtra), 0);
