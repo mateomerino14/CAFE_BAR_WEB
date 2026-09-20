@@ -80,9 +80,10 @@ export const MarkCardsModal = ({fecha, onClose}) => {
     }
   };
   const cardsWithIndex = cards.map((card, index) => ({ card, index }));
-  const locales = cardsWithIndex.filter((c) => c.card.tipo === 'Local');
-  const llevar = cardsWithIndex.filter((c) => c.card.tipo !== 'Local');
+  const locales = cardsWithIndex.filter((c) => c.card.tipo === 'Local').sort((a, b) => a.card.nombre.localeCompare(b.card.nombre));
+  const llevar = cardsWithIndex.filter((c) => c.card.tipo !== 'Local').sort((a, b) => a.card.nombre.localeCompare(b.card.nombre));
   const totalFaltantes = cards.reduce((sum, c) => sum + c.pendientes.length, 0);
+  const faltantesOrdenados = cards.filter((c) => c.pendientes.length > 0).sort((a, b) => a.nombre.localeCompare(b.nombre));
   return (
     <Modal onClose={handleSaveAndClose} size="xl">  
       <h2 className={styles.title}>Marcar productos listos</h2>
@@ -112,7 +113,7 @@ export const MarkCardsModal = ({fecha, onClose}) => {
             <p className={`${styles.columnTitle} ${styles.faltantesTitle}`}>Faltantes</p>
             <div className={styles.columnBody}>
               {totalFaltantes === 0 && <p className={styles.completo}>Todos los productos están listos</p>}
-              {cards.filter((c) => c.pendientes.length > 0).map((card, index) => {
+              {faltantesOrdenados.map((card, index) => {
                 const detalle = [
                   card.exclusiones.length ? `sin ${card.exclusiones.join(', ')}` : '',
                   card.extrasTexto ? `extra ${card.extrasTexto}` : ''
