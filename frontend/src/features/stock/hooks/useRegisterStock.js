@@ -37,11 +37,11 @@ export const useRegisterStock = () => {
       return;
     }
     if (!isValidDecimal(values.cantidadStock)) {
-      setError('La cantidad de stock debe ser un valor numérico válido');
+      setError('La cantidad de stock debe ser un número válido (máximo 8 dígitos enteros y 2 decimales, sin letras ni negativos)');
       return;
     }
     if (values.precioExtra && !isValidDecimal(values.precioExtra)) {
-      setError('El precio extra debe ser un valor numérico válido');
+      setError('El precio extra debe ser un número válido (máximo 8 dígitos enteros y 2 decimales, sin letras ni negativos)');
       return;
     }
     setLoading(true);

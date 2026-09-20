@@ -62,7 +62,7 @@ export const useRegisterProduct = () => {
       return;
     }
     if (!isValidDecimal(values.precioVenta) || !isValidDecimal(values.costoFabricacion)) {
-      setError('Precio y costo deben ser valores numéricos válidos');
+      setError('Precio y costo deben ser números válidos (máximo 8 dígitos enteros y 2 decimales, sin letras ni negativos)');
       return;
     }
     if (staging.items.length === 0) {

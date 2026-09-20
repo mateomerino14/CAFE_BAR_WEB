@@ -48,7 +48,7 @@ export const useRegisterPromotion = () => {
       return;
     }
     if (!isValidDecimal(values.precioProm)) {
-      setError('El precio debe ser un valor numérico válido');
+      setError('El precio debe ser un número válido (máximo 8 dígitos enteros y 2 decimales, sin letras ni negativos)');
       return;
     }
     if (schedule.scheduleType === 'specific' && !schedule.fechaEspecifica) {
