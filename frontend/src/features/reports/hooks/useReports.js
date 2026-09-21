@@ -44,7 +44,14 @@ export const useReports = () => {
     getReportEmployees().then(setEmpleados).catch(() => setEmpleados([]));
   }, []);
 
-  const periodo = `${fechaInicio} al ${fechaFin}`;
+  /* Convierte una fecha en formato AAAA-MM-DD (la que entrega el selector nativo) a DD/MM/AAAA. */
+  const toDisplayDate = (fecha) => {
+    if (!fecha) return '';
+    const [anio, mes, dia] = fecha.split('-');
+    return `${dia}/${mes}/${anio}`;
+  };
+
+  const periodo = `${toDisplayDate(fechaInicio)} al ${toDisplayDate(fechaFin)}`;
 
   const generar = async () => {
     setError('');

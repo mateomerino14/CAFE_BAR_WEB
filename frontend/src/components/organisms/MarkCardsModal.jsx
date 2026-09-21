@@ -61,15 +61,6 @@ export const MarkCardsModal = ({fecha, onClose}) => {
   const { cards, markCount, unmarkOne, loading, saving, hasPendingChanges, save } = useMarkCards(fecha);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const handleSaveAndClose = async () => {
-    setError('');
-    try {
-      await save();
-      onClose();
-    } catch (err) {
-      setError('No se pudieron guardar los cambios, intenta de nuevo');
-    }
-  };
   const handleSave = async () => {
     setError('');
     try {
@@ -85,7 +76,7 @@ export const MarkCardsModal = ({fecha, onClose}) => {
   const totalFaltantes = cards.reduce((sum, c) => sum + c.pendientes.length, 0);
   const faltantesOrdenados = cards.filter((c) => c.pendientes.length > 0).sort((a, b) => a.nombre.localeCompare(b.nombre));
   return (
-    <Modal onClose={handleSaveAndClose} size="xl">  
+    <Modal onClose={onClose} size="xl">  
       <h2 className={styles.title}>Marcar productos listos</h2>
       {loading && <p className={styles.empty}>Cargando...</p>}
       {!loading && cards.length === 0 && <p className={styles.empty}>No hay productos pendientes por marcar</p>}
@@ -134,7 +125,7 @@ export const MarkCardsModal = ({fecha, onClose}) => {
         <Button type="button" onClick={handleSave} disabled={saving || !hasPendingChanges}>
           {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
         </Button>
-        <Button type="button" variant="danger" onClick={handleSaveAndClose}>CERRAR</Button>
+        <Button type="button" variant="danger" onClick={onClose}>CANCELAR</Button>
       </div>
       {error && <Toast>{error}</Toast>}
       {success && <Toast variant="success">{success}</Toast>}

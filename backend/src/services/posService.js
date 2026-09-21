@@ -684,9 +684,9 @@ export const checkoutOrder = async (idVenta, payment) => {
   const montoEfectivo = Number(payment.montoEfectivo || 0);
   const montoQr = Number(payment.montoQr || 0);
 
-  if (payment.metodo === 'efectivo' && Math.abs(montoEfectivo - total) > 0.01) throw new Error('AMOUNT_MISMATCH');
-  if (payment.metodo === 'qr' && Math.abs(montoQr - total) > 0.01) throw new Error('AMOUNT_MISMATCH');
-  if (payment.metodo === 'mixto' && Math.abs(montoEfectivo + montoQr - total) > 0.01) throw new Error('AMOUNT_MISMATCH');
+  if (payment.metodo === 'efectivo' && Math.abs(montoEfectivo - total) > 0.001) throw new Error('AMOUNT_MISMATCH');
+  if (payment.metodo === 'qr' && Math.abs(montoQr - total) > 0.001) throw new Error('AMOUNT_MISMATCH');
+  if (payment.metodo === 'mixto' && Math.abs(montoEfectivo + montoQr - total) > 0.001) throw new Error('AMOUNT_MISMATCH');
 
   const efectivoId = await getMetodoPagoId('Efectivo');
   const qrId = await getMetodoPagoId('Qr');

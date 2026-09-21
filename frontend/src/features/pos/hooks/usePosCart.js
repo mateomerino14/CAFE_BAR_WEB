@@ -16,13 +16,16 @@ const sameExtraSet = (a = [], b = []) => {
   return keyA === keyB;
 };
 
+const unitGroupKey = (group) =>
+  `${group.cantidad}|${(group.exclusiones || []).map((e) => e.idIng).sort().join(',')}|${(group.extras || []).map((e) => `${e.idIng}:${e.cantidadExtra}`).sort().join(',')}`;
+
 const productCustomizationKey = (pc) =>
-  `${pc.idProd}|${(pc.exclusiones || []).map((e) => e.idIng).sort().join(',')}|${(pc.extras || []).map((e) => `${e.idIng}:${e.cantidadExtra}`).sort().join(',')}`;
+  `${pc.idProd}|${(pc.unitGroups || []).map(unitGroupKey).sort().join(';')}`;
 
 const sameProductCustomizations = (a = [], b = []) => {
   if (a.length !== b.length) return false;
-  const keyA = a.map(productCustomizationKey).sort().join(';');
-  const keyB = b.map(productCustomizationKey).sort().join(';');
+  const keyA = a.map(productCustomizationKey).sort().join('||');
+  const keyB = b.map(productCustomizationKey).sort().join('||');
   return keyA === keyB;
 };
 
