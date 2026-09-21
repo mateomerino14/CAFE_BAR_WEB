@@ -64,7 +64,7 @@ export const ReportsPage = () => {
       </MainLayout>
       {selectedVenta && (
         <SaleDetailsModal
-          venta={{ idVenta: selectedVenta.idVenta, numVenta: selectedVenta.numVenta, mesa: selectedVenta.mesa }}
+          venta={{ idVenta: selectedVenta.idVenta, numVenta: selectedVenta.numVenta, mesa: selectedVenta.mesa, seccion: selectedVenta.seccion || selectedVenta.salon }}
           onClose={() => setSelectedVenta(null)}
         />
       )}
