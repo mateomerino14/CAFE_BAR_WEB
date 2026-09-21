@@ -1,9 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { app } from 'electron';
 import pg from 'pg';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/* database/ y backend/ viven junto a electron/ mientras se desarrolla, pero una vez empaquetado
+   con electron-builder quedan en un lugar distinto (resources/database, resources/backend) —
+   no son carpetas "hermanas" de electron/ en ese caso. Por eso se calcula distinto según el modo. */
+const databaseDir = app.isPackaged ? path.join(process.resourcesPath, 'database') : path.join(__dirname, '..', 'database');
+const backendDir = app.isPackaged ? path.join(process.resourcesPath, 'backend') : path.join(__dirname, '..', 'backend');
 
 /* Orden de ejecución de los scripts SQL, igual al documentado en database/README.md */
 const SQL_FILES_IN_ORDER = [
@@ -32,7 +39,6 @@ export const runMigrations = async () => {
   await client.connect();
 
   try {
-    const databaseDir = path.join(__dirname, '..', 'database');
     for (const fileName of SQL_FILES_IN_ORDER) {
       const filePath = path.join(databaseDir, fileName);
       if (!fs.existsSync(filePath)) {
@@ -44,7 +50,7 @@ export const runMigrations = async () => {
       await client.query(sql);
     }
 
-    const backendUtilsPath = path.join(__dirname, '..', 'backend', 'src', 'utils', 'password.js');
+    const backendUtilsPath = path.join(backendDir, 'src', 'utils', 'password.js');
     const { hashPassword } = await import(`file://${backendUtilsPath}`);
     const passwordHash = await hashPassword(DEFAULT_DIRECTORIO_PASSWORD);
     await client.query(

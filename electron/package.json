@@ -19,11 +19,12 @@
   "build": {
     "appId": "com.cafebar.desktop",
     "productName": "Cafebar",
+    "asar": false,
     "files": [
       "**/*"
     ],
     "extraResources": [
-      { "from": "../backend", "to": "backend", "filter": ["**/*", "!node_modules", "!.env"] },
+      { "from": "../backend", "to": "backend", "filter": ["**/*", "!.env"] },
       { "from": "../frontend/dist", "to": "frontend/dist" },
       { "from": "../database", "to": "database" }
     ],
