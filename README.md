@@ -159,4 +159,4 @@ npm run build
 
 Esto usa `electron-builder` (configurado en `electron/package.json`) para empaquetar todo (backend, frontend compilado, y los scripts de base de datos) en un instalador `.exe` para Windows, sin que el cliente necesite instalar Node, PostgreSQL, ni nada por separado — todo queda contenido dentro del instalador.
 
-Ver `database/READMI.md` para más detalle sobre cómo se inicializa la base de datos la primera vez.
+Ver `database/README.md` para más detalle sobre cómo se inicializa la base de datos la primera vez.
