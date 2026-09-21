@@ -2,7 +2,7 @@ import {Pencil, X} from 'lucide-react';
 import {ImageBox} from '../atoms/ImageBox';
 
 const styles = {
-  wrapper: 'flex flex-col divide-y divide-slate-100 rounded-xl bg-white shadow-sm',
+  wrapper: 'flex max-h-72 flex-col divide-y divide-slate-100 overflow-y-auto rounded-xl bg-white shadow-sm',
   empty: 'rounded-xl bg-white p-4 text-center text-sm text-slate-400 shadow-sm',
   row: 'flex flex-wrap items-center gap-3 px-4 py-3',
   rowEditing: 'bg-blue-50',

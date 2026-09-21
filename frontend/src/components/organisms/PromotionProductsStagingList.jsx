@@ -3,7 +3,7 @@ import {TextInput} from '../atoms/TextInput';
 import {colors} from '../../constants/theme';
 
 const styles = {
-  wrapper: 'flex flex-col divide-y divide-slate-100 rounded-xl bg-white shadow-sm',
+  wrapper: 'flex max-h-72 flex-col divide-y divide-slate-100 overflow-y-auto rounded-xl bg-white shadow-sm',
   row: 'flex flex-wrap items-center gap-3 px-4 py-3',
   info: 'min-w-0 flex-1',
   name: `font-semibold ${colors.textPrimary}`,

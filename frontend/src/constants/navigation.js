@@ -1,7 +1,13 @@
 
 export const NAV_ITEMS = [
   {label: 'HOME', permission: 'Home', path: '/'},
-  {label: 'FAMILIA', permission: 'VER_FAMILIA', path: '/familia'},
+  {
+    label: 'FAMILIA',
+    permission: 'VER_FAMILIA',
+    items: [
+      {label: 'Ver Familia', permission: 'VER_FAMILIA', path: '/familia'}
+    ]
+  },
   {
     label: 'CAJA',
     permission: 'Caja',

@@ -214,10 +214,11 @@ export const listActivePromotionsNow = async () => {
      FROM promocion WHERE activo = true ORDER BY nom_prom`
   );
 
-  const now = new Date();
+  const nowUtc = new Date();
+  const now = new Date(nowUtc.getTime() - 4 * 60 * 60 * 1000);
   const today = now.toISOString().slice(0, 10);
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const jsDay = now.getDay();
+  const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const jsDay = now.getUTCDay();
   const ourDay = (jsDay + 6) % 7;
 
   const result = [];
