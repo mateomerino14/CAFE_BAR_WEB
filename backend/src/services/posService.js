@@ -28,12 +28,16 @@ const reserveNextSaleNumber = async () => {
 };
 
 /*Calcula una vista previa del siguiente número de venta contando las ventas registradas desde el inicio del día actual.*/
+/*Calcula una vista previa del siguiente número de venta leyendo el contador real (venta_daily_counter),
+  el mismo que usa la reserva atómica — así siempre coincide con el número real que se va a asignar,
+  incluso si alguna venta de hoy se llegó a eliminar (el contador real nunca retrocede, a diferencia
+  de simplemente contar cuántas filas de venta existen ahora mismo, que sí puede bajar con un borrado).*/
 export const getNextSaleNumberPreview = async () => {
   const result = await query(
-    `SELECT COUNT(*) FROM venta WHERE fecha_reg >= $1`,
-    [`${getBoliviaDateString()}T04:00:00.000Z`]
+    `SELECT ultimo_numero FROM venta_daily_counter WHERE fecha = $1`,
+    [getBoliviaDateString()]
   );
-  return Number(result.rows[0].count) + 1;
+  return (Number(result.rows[0]?.ultimo_numero) || 0) + 1;
 };
 
 /* Calcula la cantidad de ingredientes necesarios para los productos y promociones solicitados, considerando exclusiones, extras y personalizaciones. */
