@@ -41,7 +41,8 @@ app.use(express.json());
 app.use(restrictByIp);
 
 /* Sirve las imágenes subidas (productos, empleados, categorías, etc.) como archivos estáticos accesibles desde la red local. */
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 /* Sirve el frontend ya compilado (npm run build) desde el propio backend, para que todo el sistema
    funcione como un único servidor en un solo puerto, sin depender de ningún servidor de desarrollo aparte.
