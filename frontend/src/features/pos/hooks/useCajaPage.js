@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAutoDismiss } from '../../../hooks/useAutoDismiss';
 import { usePosCart } from './usePosCart';
-import { submitOrder, getNextSaleNumber } from '../services/posService';
+import { submitOrder, getNextSaleNumber, getOpenVentaSummary } from '../services/posService';
 
 export const useCajaPage = () => {
   const [seccion, setSeccion] = useState(null);
@@ -45,7 +45,7 @@ export const useCajaPage = () => {
     cart.reset();
   };
 
-  const handleSelectTable = (selectedSeccion, selectedMesa) => {
+  const handleSelectTable = async (selectedSeccion, selectedMesa) => {
     setSeccion(selectedSeccion);
     setMesa(selectedMesa);
     setLastOrderId(null);
@@ -53,6 +53,26 @@ export const useCajaPage = () => {
     setLastNumVenta(null);
     setTicketPrinted(false);
     setCocinaPrinted(false);
+
+    /* Si la mesa ya está ocupada, existe una venta real abierta con su propio número —
+       lo mostramos de inmediato en vez de esperar a que se registre un pedido nuevo (que
+       antes era el único momento en que se buscaba el número real). Para una mesa
+       disponible no hay ninguna venta todavía, así que esto no encuentra nada y se sigue
+       usando la vista previa normalmente.
+       Importante: solo se usa para MOSTRAR el número — lastOrderId se deja en null a
+       propósito, para que la próxima ronda de productos que se agregue a esta mesa se
+       registre igual (el backend ya sabe reutilizar la venta existente por mesa+sección,
+       no hace falta que el frontend se lo indique). */
+    if (selectedMesa && !selectedMesa.disponible) {
+      try {
+        const summary = await getOpenVentaSummary(selectedSeccion.id_seccion, selectedMesa.id_mesa);
+        if (summary) {
+          setLastNumVenta(summary.numVenta);
+        }
+      } catch (err) {
+        // si falla, se sigue mostrando la vista previa como respaldo, sin bloquear la selección de mesa
+      }
+    }
   };
 
   const handleSelectMesero = (employee) => setMesero(employee);

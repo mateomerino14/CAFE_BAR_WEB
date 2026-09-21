@@ -653,6 +653,18 @@ export const getLatestVentaId = async (idMesa, idSeccion) => {
   return result.rows[0]?.id_venta;
 };
 
+/* Obtiene el resumen (id y número de venta) de la venta actualmente abierta en una mesa, si existe.
+   Se usa para mostrar de inmediato el número real de venta al elegir una mesa ya ocupada, en vez
+   de mostrar la vista previa (pensada solo para mesas disponibles, donde todavía no existe venta). */
+export const getOpenVentaSummary = async (idMesa, idSeccion) => {
+  const result = await query(
+    `SELECT id_venta, num_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
+    [idMesa, idSeccion]
+  );
+  const row = result.rows[0];
+  return row ? { idVenta: row.id_venta, numVenta: row.num_venta } : null;
+};
+
 /* Cuenta las unidades de la venta más reciente de una mesa que todavía no han sido marcadas como preparadas. */
 export const countUnmarkedUnits = async (idMesa, idSeccion) => {
   const idVenta = await getLatestVentaId(idMesa, idSeccion);

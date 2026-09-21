@@ -13,6 +13,7 @@ import {
   getKitchenTicket,
   verifyOwnPassword,
   getLatestVentaId,
+  getOpenVentaSummary,
   countUnmarkedUnits,
   checkoutOrder,
   getNextSaleNumberPreview
@@ -151,6 +152,16 @@ export const getLatestOrderIdHandler = async (req, res) => {
   } 
   catch (error) {
     return res.status(500).json({message: 'Error al obtener la venta'});
+  }
+};
+
+/* Controlador para obtener el resumen (id + número real) de la venta abierta de una mesa, si existe */
+export const getOpenVentaSummaryHandler = async (req, res) => {
+  try {
+    const summary = await getOpenVentaSummary(req.params.idMesa, req.params.idSeccion);
+    return res.json(summary);
+  } catch (error) {
+    return res.status(500).json({message: 'Error al obtener el resumen de la venta'});
   }
 };
 

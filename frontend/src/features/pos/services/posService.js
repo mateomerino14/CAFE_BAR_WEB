@@ -64,6 +64,11 @@ export const getLatestOrderId = async (idSeccion, idMesa) => {
   return data.idVenta;
 };
 
+export const getOpenVentaSummary = async (idSeccion, idMesa) => {
+  const { data } = await api.get(`/pos/tables/${idSeccion}/${idMesa}/open-venta-summary`);
+  return data;
+};
+
 export const getUnmarkedCount = async (idSeccion, idMesa) => {
   const { data } = await api.get(`/pos/tables/${idSeccion}/${idMesa}/unmarked-count`);
   return data.count;

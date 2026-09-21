@@ -12,6 +12,7 @@ import {
   verifyPasswordHandler,
   getTaxLinkForCajaHandler,
   getLatestOrderIdHandler,
+  getOpenVentaSummaryHandler,
   getUnmarkedCountHandler,
   applyMarkChangesHandler,
   checkoutOrderHandler,
@@ -29,6 +30,7 @@ router.get('/orders/:id/kitchen-ticket', authenticate, authorize('REGISTRAR_PEDI
 router.post('/orders/:id/checkout', authenticate, authorize('REGISTRAR_PEDIDO'), checkoutOrderHandler);
 router.get('/tables/:idSeccion/:idMesa/pending-batches', authenticate, authorize('REGISTRAR_PEDIDO'), listPendingBatchesHandler);
 router.get('/tables/:idSeccion/:idMesa/latest-order', authenticate, authorize('REGISTRAR_PEDIDO'), getLatestOrderIdHandler);
+router.get('/tables/:idSeccion/:idMesa/open-venta-summary', authenticate, authorize('REGISTRAR_PEDIDO'), getOpenVentaSummaryHandler);
 router.get('/tables/:idSeccion/:idMesa/unmarked-count', authenticate, authorize('REGISTRAR_PEDIDO'), getUnmarkedCountHandler);
 router.get('/mark-cards', authenticate, authorize('REGISTRAR_PEDIDO'), getMarkCardsHandler);
 // NOTA: sin usar por el frontend todavía, reemplazada en la practica por /units/mark-batch
