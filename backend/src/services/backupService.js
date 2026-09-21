@@ -7,7 +7,7 @@ const TABLE_ORDER = [
   'pantalla', 'subpantalla', 'cargo', 'permisos_cargo_subpantalla', 'empleado', 'password_reset_codes',
   'directorio', 'categoria', 'subcategoria', 'stock', 'producto', 'productos_ingredientes',
   'promocion', 'promocion_dias', 'promocion_prod', 'seccion', 'mesa', 'metodo_pago',
-  'venta', 'detalles_venta', 'detalles_venta_unidades', 'detalles_venta_exclusiones',
+  'venta_daily_counter', 'venta', 'detalles_venta', 'detalles_venta_unidades', 'detalles_venta_exclusiones',
   'detalles_venta_exclusiones_promo', 'detalles_venta_extras', 'pago', 'enlace'
 ];
 
