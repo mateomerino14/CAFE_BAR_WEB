@@ -36,8 +36,6 @@ CREATE INDEX IF NOT EXISTS idx_empleado_disponible  ON empleado(disponible_emp) 
 -- Permisos por cargo
 -- =====================================================================
 
---CREATE INDEX IF NOT EXISTS idx_permisos_personal_pant             ON permisos_personal(id_pant);
---CREATE INDEX IF NOT EXISTS idx_permisos_personal_subpant_subpant  ON permisos_personal_subpantalla(id_sub_pant);
 CREATE INDEX IF NOT EXISTS idx_permisos_cargo_pant                ON permisos_cargo(id_pant);
 CREATE INDEX IF NOT EXISTS idx_permisos_cargo_subpant_subpant     ON permisos_cargo_subpantalla(id_sub_pant);
 CREATE INDEX IF NOT EXISTS idx_subpantalla_pant                   ON subpantalla(id_pant);

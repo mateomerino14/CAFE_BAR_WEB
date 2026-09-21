@@ -1,42 +1,54 @@
 ========================================================
-# Base de Datos — Cafebar
+# Base de Datos — Cafebar (versión de escritorio)
 ========================================================
-Scripts SQL para crear y dejar lista la base de datos del sistema desde cero en Supabase (PostgreSQL).
+Scripts SQL que crean y dejan lista la base de datos del sistema desde cero, usando **Postgres embebido dentro de la propia aplicación de escritorio** (Electron) — ya no depende de Supabase ni de ningún servicio en la nube.
 
 ========================================================
-## Orden de ejecución
+## Cómo se ejecutan (automático, no manual)
 ========================================================
-**Importante:** estos archivos deben correrse en este orden exacto, uno por uno. No es un orden alfabético — cada archivo depende de que el anterior ya se haya ejecutado (por ejemplo, no se pueden crear índices sobre tablas que todavía no existen).
+A diferencia de la versión web anterior (donde estos scripts se corrían a mano en el SQL Editor de Supabase), en la versión de escritorio **no hace falta correr nada manualmente**.
+
+La primera vez que la aplicación arranca en una computadora nueva:
+
+1. Electron detecta que todavía no existe una base de datos (revisa si la carpeta de datos ya existe).
+2. Crea el Postgres embebido desde cero.
+3. Corre los 6 archivos SQL de esta carpeta, en el orden correcto, automáticamente (ver `electron/migrate.js`).
+4. Crea el usuario **DIRECTORIO** con una contraseña por defecto (`cafebar2026` — **cámbiala de inmediato** desde Configuración → Cambiar Contraseña del Directorio, apenas entres por primera vez).
+
+Todo esto pasa en segundo plano, antes de que se abra la ventana del sistema — el dueño del negocio no tiene que hacer nada de esto manualmente.
+
+========================================================
+## Orden de ejecución (para referencia, o si necesitas correrlos a mano)
+========================================================
+Si alguna vez necesitas correr estos archivos manualmente (por ejemplo, para depurar un problema, o para preparar una base de datos aparte durante desarrollo), deben correrse en este orden exacto — no es alfabético, cada archivo depende del anterior:
 
 | Orden | Archivo | Qué hace |
 |---|---|---|
 | 1 | `schema.sql` | Crea todas las tablas del sistema (productos, empleados, ventas, etc.) |
 | 2 | `index.sql` | Crea los índices para que las búsquedas y filtros sean rápidos |
 | 3 | `triggers.sql` | Crea las funciones automáticas (numeración de mesas, conteo de mesas por sección) |
-| 4 | `permits.sql` | Activa la seguridad a nivel de fila (RLS), bloqueando el acceso directo a la base |
+| 4 | `permits.sql` | Deja documentada la seguridad a nivel de fila (RLS) — ver nota más abajo, en esta versión no cumple ninguna función práctica |
 | 5 | `data population.sql` | Carga los datos iniciales necesarios para que el sistema arranque (menú, permisos, formas de pago, categorías base) y datos de prueba |
-| 6 | `functions backups.sql` | Crea las funciones que usa la pantalla de Backup para exportar/importar la base en Excel |
+| 6 | `functions backups.sql` | Crea las funciones que usa la pantalla de Backup para exportar/importar la base en Excel, y la del correlativo diario de ventas |
+
+Para correrlos a mano contra el Postgres embebido (con la app cerrada), puedes usar cualquier cliente de Postgres (como `psql` o DBeaver) conectándote a `localhost:5432`, usuario `postgres`, contraseña `postgres`, base `cafebar`.
 
 ========================================================
-## Cómo correrlos
+## Nota importante sobre `permits.sql` (RLS) en esta versión
 ========================================================
-1. Entra a tu proyecto en [supabase.com](https://supabase.com) → **SQL Editor**.
-2. Abre `schema.sql` en tu editor de código, copia todo el contenido, pégalo en el SQL Editor de Supabase y dale **Run**.
-3. Repite el mismo paso con cada archivo siguiente, **respetando el orden de la tabla de arriba**.
+El backend de la versión de escritorio se conecta a Postgres como **superusuario** (`postgres`), y los superusuarios de Postgres **ignoran RLS por diseño** del propio motor de base de datos — así que activar RLS aquí no tiene ningún efecto práctico en esta versión (no rompe nada, simplemente queda inactivo).
 
-Todos los scripts están escritos para poder correrse más de una vez sin romper nada ni duplicar datos (usan `IF NOT EXISTS`, `ON CONFLICT DO NOTHING`, etc.) — así que si algo falla a la mitad, puedes corregirlo y volver a correr el mismo archivo sin miedo.
+La seguridad real del sistema vive 100% en el backend (autenticación por JWT + permisos por Cargo), igual que en la versión web. Este archivo se deja solo como referencia histórica de la estructura original pensada para Supabase, donde RLS sí cumplía una función real (protegiendo el acceso directo desde `anon`/`authenticated` vía la API de Supabase).
 
 ========================================================
-## Después de correr todo
+## Después de correr todo (solo si lo hiciste manualmente)
 ========================================================
-El usuario administrador (**DIRECTORIO**) no se crea con estos scripts, porque necesita una contraseña encriptada real. Se crea aparte, corriendo una sola vez:
+Si corriste estos scripts a mano en vez de dejar que Electron lo haga solo, el usuario **DIRECTORIO** no se crea con `data population.sql` (necesita una contraseña encriptada real). Créalo aparte, corriendo una sola vez:
 
 ```bash
 cd backend
-node src/scripts/seedDirectorio.js
+node src/scripts/seedDirectorio.js <tu-contraseña>
 ```
-
-Con eso, la base queda lista para que el backend se conecte y el sistema funcione de punta a punta.
 
 ========================================================
 ## Nota sobre los datos de prueba
@@ -44,19 +56,8 @@ Con eso, la base queda lista para que el backend se conecte y el sistema funcion
 `data population.sql` incluye 8 empleados de prueba (cargo "Mesero") con una contraseña de relleno que **no es funcional** — no vas a poder iniciar sesión con ellos tal cual. Si quieres probarlos, entra como DIRECTORIO y usa "Modificar Empleado" para resetearles la contraseña desde ahí (eso sí genera una contraseña real y utilizable).
 
 ========================================================
-## Nota sobre `functions backups.sql` (importante si ya lo corriste antes)
+## Sobre `functions backups.sql`
 ========================================================
-Supabase tiene activada por defecto una extensión de Postgres (`safeupdate`) que bloquea cualquier `DELETE`/`UPDATE` que no lleve una cláusula `WHERE`, incluso dentro de una función con permisos elevados (`SECURITY DEFINER`). La función `admin_truncate_table` fue corregida agregando `WHERE true` al `DELETE` (sigue borrando todas las filas igual, solo cumple el requisito sintáctico).
+La función `admin_truncate_table` usa `DELETE ... WHERE true` (en vez de un `TRUNCATE` simple) — esto viene de un requisito específico de Supabase (una extensión llamada `safeupdate` que bloquea `DELETE`/`UPDATE` sin `WHERE`). El Postgres embebido de esta versión no tiene esa extensión activada, pero la sintaxis `WHERE true` sigue siendo válida y funciona igual de bien, así que no hace falta cambiar nada — se dejó tal cual para no arriesgar nada.
 
-Si ya habías corrido una versión anterior de este archivo en tu proyecto de Supabase, **vuelve a correr `functions backups.sql` completo** para aplicar la corrección — de lo contrario, la importación de backups desde Excel va a fallar con el error `DELETE requires a WHERE clause`.
-
-========================================================
-## Tablas que existen en el código pero están comentadas
-========================================================
-
-Dentro de `schema.sql` hay 4 tablas dejadas intencionalmente comentadas (dentro de bloques `/* */`). No es un error ni algo que falte crear — nunca se conectaron al resto del sistema y quedaron documentadas ahí solo como referencia histórica, por si en el futuro se retoman:
-
-| `cliente`   | Pensada para facturación por NIT en el sistema original, nunca se conectó al flujo real de ventas. |
-| `impresora` | En la versión de escritorio hacía falta configurar la impresora en la base. En la web, el navegador maneja la impresión directamente — ya no hace falta. |
-| `permisos_personal` / `permisos_personal_subpantalla` | El sistema de permisos terminó manejándose solo por Cargo, nunca por empleado individual. |
-| `cuenta`    | Guardaba cuentas Gmail con contraseña de aplicación para enviar backups por correo. Se reemplazó por Brevo (más seguro, sin necesidad de administrar cuentas). |
+La restauración de un backup (`importDatabaseFromExcel` en el backend) corre **dentro de una transacción real** — si cualquier fila falla al reinsertarse, se deshace todo el proceso completo y la base queda exactamente como estaba antes de intentar restaurar, sin perder datos a medio camino.
