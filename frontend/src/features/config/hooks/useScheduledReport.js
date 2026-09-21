@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAutoDismiss } from '../../../hooks/useAutoDismiss';
-import { getScheduledReportConfig, updateScheduledReportConfig } from '../services/configService';
+import { getScheduledReportConfig, updateScheduledReportConfig, sendScheduledReportTest } from '../services/configService';
 
 export const useScheduledReport = () => {
   const [email, setEmail] = useState('');
@@ -8,6 +8,7 @@ export const useScheduledReport = () => {
   const [hora, setHora] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -42,5 +43,22 @@ export const useScheduledReport = () => {
     }
   };
 
-  return { email, setEmail, diaSemana, setDiaSemana, hora, setHora, loading, saving, handleSave, error, success };
+  const handleTest = async () => {
+    setError('');
+    if (!email.trim()) {
+      setError('Primero guarda un correo de destino');
+      return;
+    }
+    setTesting(true);
+    try {
+      await sendScheduledReportTest();
+      setSuccess('Reporte de prueba enviado — revisa la bandeja de entrada');
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudo enviar el reporte de prueba');
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return { email, setEmail, diaSemana, setDiaSemana, hora, setHora, loading, saving, testing, handleSave, handleTest, error, success };
 };

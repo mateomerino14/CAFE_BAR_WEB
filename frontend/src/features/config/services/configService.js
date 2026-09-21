@@ -45,3 +45,8 @@ export const updateScheduledReportConfig = async (email, diaSemana, hora) => {
   const { data } = await api.put('/config/scheduled-report', { email, diaSemana, hora });
   return data;
 };
+
+export const sendScheduledReportTest = async () => {
+  const { data } = await api.post('/config/scheduled-report/test');
+  return data;
+};

@@ -7,7 +7,7 @@ import {
   getDailySaleDetails,
   listCajeroNames
 } from '../services/configService.js';
-import { getScheduledReportConfig, updateScheduledReportConfig } from '../services/scheduledReportService.js';
+import { getScheduledReportConfig, updateScheduledReportConfig, sendScheduledReportTest } from '../services/scheduledReportService.js';
 
 /* Controlador para obtener el enlace de impuestos */
 export const getTaxLinkHandler = async (req, res) => {
@@ -115,5 +115,19 @@ export const updateScheduledReportConfigHandler = async (req, res) => {
     return res.json({ message: 'Configuración guardada correctamente' });
   } catch (error) {
     return res.status(500).json({ message: 'No se pudo guardar la configuración' });
+  }
+};
+
+/* Envía el reporte semanal de inmediato, para probar que el correo y el formato funcionan bien,
+   sin tener que esperar al día/hora programados ni modificarlos. */
+export const sendScheduledReportTestHandler = async (req, res) => {
+  try {
+    await sendScheduledReportTest();
+    return res.json({ message: 'Reporte de prueba enviado correctamente' });
+  } catch (error) {
+    if (error.message === 'NO_EMAIL_CONFIGURED') {
+      return res.status(400).json({ message: 'Primero configura y guarda un correo de destino' });
+    }
+    return res.status(500).json({ message: 'No se pudo enviar el reporte de prueba. Revisa que el correo esté bien configurado en Configurar Envío de Correos.' });
   }
 };

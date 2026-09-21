@@ -24,13 +24,13 @@ const styles = {
 };
 
 export const ScheduledReportModal = ({ onClose }) => {
-  const { email, setEmail, diaSemana, setDiaSemana, hora, setHora, loading, saving, handleSave, error, success } = useScheduledReport();
+  const { email, setEmail, diaSemana, setDiaSemana, hora, setHora, loading, saving, testing, handleSave, handleTest, error, success } = useScheduledReport();
 
   return (
     <Modal onClose={onClose} size="sm">
       <h2 className={styles.title}>Reporte Automático Semanal</h2>
       <p className={styles.hint}>
-        Cada semana, en el día y hora que elijas, se envía automáticamente el reporte de "Productos y Promociones" del día al correo indicado. Si el sistema está apagado a esa hora, se envía apenas vuelva a encenderse.
+        Cada semana, en el día y hora que elijas, se envía automáticamente el reporte de "Productos y Promociones" de los últimos 7 días al correo indicado. Si el sistema está apagado a esa hora, se envía apenas vuelva a encenderse.
       </p>
 
       {loading ? (
@@ -49,6 +49,12 @@ export const ScheduledReportModal = ({ onClose }) => {
           <Button type="button" onClick={handleSave} disabled={saving}>
             {saving ? 'GUARDANDO...' : 'GUARDAR'}
           </Button>
+          <Button type="button" variant="warning" onClick={handleTest} disabled={testing}>
+            {testing ? 'ENVIANDO...' : 'ENVIAR DE PRUEBA AHORA'}
+          </Button>
+          <p className={styles.hint}>
+            El botón de prueba envía el reporte de inmediato, sin esperar al día/hora programados, y sin afectar el envío automático real.
+          </p>
         </div>
       )}
 

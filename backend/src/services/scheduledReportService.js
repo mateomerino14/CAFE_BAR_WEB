@@ -153,3 +153,19 @@ export const runScheduledReportCheck = async () => {
     console.error('Error enviando reporte automático:', error.message);
   }
 };
+
+/* Envía el reporte semanal de inmediato, sin esperar al día/hora programados — para probar que
+   todo funciona (correo, formato) sin tener que ajustar la configuración y esperar. No modifica
+   "ultimo_envio", así que no interfiere con el envío automático real programado. */
+export const sendScheduledReportTest = async () => {
+  const config = await getScheduledReportConfig();
+  if (!config.email) throw new Error('NO_EMAIL_CONFIGURED');
+
+  const bolivianNow = getBoliviaNow();
+  const fechaFin = bolivianNow.toISOString().slice(0, 10);
+  const fechaInicio = getSevenDaysBefore(fechaFin);
+  const rows = await getTopProductsReport(fechaInicio, fechaFin);
+  const html = buildScheduledReportHtml(rows, fechaInicio, fechaFin);
+
+  await sendReportPdfEmail(config.email, 'Reporte Semanal Automático (prueba)', html);
+};

@@ -4,7 +4,7 @@ import { authorize } from '../middlewares/authorize.js';
 import {
   getTaxLinkHandler, updateTaxLinkHandler, changeDirectorioPasswordHandler,
   getDailySalesSummaryHandler, listDailySalesHandler, getDailySaleDetailsHandler,
-  listCajeroNamesHandler, getScheduledReportConfigHandler, updateScheduledReportConfigHandler
+  listCajeroNamesHandler, getScheduledReportConfigHandler, updateScheduledReportConfigHandler, sendScheduledReportTestHandler
 } from '../controllers/configController.js';
 
 const router = Router();
@@ -19,5 +19,6 @@ router.get('/daily-sales/:idVenta/details', authenticate, authorize('CONFIGURACI
 router.get('/daily-sales/cajeros', authenticate, authorize('CONFIGURACION'), listCajeroNamesHandler);
 router.get('/scheduled-report', authenticate, authorize('CONFIGURACION'), getScheduledReportConfigHandler);
 router.put('/scheduled-report', authenticate, authorize('CONFIGURACION'), updateScheduledReportConfigHandler);
+router.post('/scheduled-report/test', authenticate, authorize('CONFIGURACION'), sendScheduledReportTestHandler);
 
 export default router;
