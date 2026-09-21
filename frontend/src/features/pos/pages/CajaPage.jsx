@@ -124,7 +124,7 @@ export const CajaPage = () => {
     <>
       <MainLayout title="REGISTRAR PEDIDO">
         <div className={styles.wrapper}>
-          <PosOrderHeader seccion={seccion} mesa={mesa} mesero={mesero} numVenta={lastNumVenta || previewNumVenta} />
+          <PosOrderHeader seccion={seccion} mesa={mesa} mesero={mesero} numVenta={seccion && mesa ? (lastNumVenta || previewNumVenta) : null} />
           <div className={styles.layout}>
             <div className={styles.left}>
               <div className={styles.printButtons}>
