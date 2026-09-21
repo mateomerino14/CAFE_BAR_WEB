@@ -10,6 +10,24 @@ import {usePagination} from '../../hooks/usePagination';
 
 const PAGE_SIZE = 5;
 
+/* Convierte una fecha en formato AAAA-MM-DD (o un ISO completo) a DD/MM/AAAA para mostrarla. */
+const formatFecha = (fecha) => {
+  if (!fecha) return '';
+  const soloFecha = fecha.slice(0, 10);
+  const [anio, mes, dia] = soloFecha.split('-');
+  return `${dia}/${mes}/${anio}`;
+};
+
+/* Convierte una hora en formato HH:MM:SS(.ffffff) de 24 horas a HH:MM AM/PM, sin segundos ni microsegundos. */
+const formatHora = (hora) => {
+  if (!hora) return '';
+  const [horaStr, minutoStr] = hora.split(':');
+  const horaNum = Number(horaStr);
+  const periodo = horaNum >= 12 ? 'PM' : 'AM';
+  const hora12 = horaNum % 12 === 0 ? 12 : horaNum % 12;
+  return `${hora12}:${minutoStr} ${periodo}`;
+};
+
 const styles = {
   title: 'text-lg font-bold text-slate-800',
   tabsRow: 'mt-4 flex flex-wrap gap-2',
@@ -67,8 +85,8 @@ export const PhysicalDeletionModal = ({onClose}) => {
 
   const ventasColumns = [
     {key: 'numVenta', label: 'N° Venta'},
-    {key: 'fecha', label: 'Fecha', render: (r) => (r.fecha ? r.fecha.slice(0, 10) : '')},
-    {key: 'hora', label: 'Hora'},
+    {key: 'fecha', label: 'Fecha', render: (r) => formatFecha(r.fecha)},
+    {key: 'hora', label: 'Hora', render: (r) => formatHora(r.hora)},
     {key: 'total', label: 'Total', render: (r) => `Bs ${Number(r.total).toFixed(2)}`},
     {key: 'mesa', label: 'Mesa'},
     {key: 'seccion', label: 'Sección'},

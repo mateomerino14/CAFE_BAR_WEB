@@ -26,7 +26,17 @@ export const updateScheduledReportConfig = async (email, diaSemana, hora) => {
   }
 };
 
-const buildScheduledReportHtml = (rows, fechaTexto) => {
+/* Convierte una fecha AAAA-MM-DD a DD/MM/AAAA para mostrarla, igual que en el resto del sistema. */
+const formatFecha = (fecha) => {
+  const [anio, mes, dia] = fecha.split('-');
+  return `${dia}/${mes}/${anio}`;
+};
+
+/* Arma el mismo reporte "Productos y Promociones (Ganancia)" que se genera manualmente desde
+   Reportes, incluyendo el detalle de qué productos consumió cada promoción — idéntico al que
+   ve el usuario si lo genera él mismo, solo que enviado automáticamente por correo. */
+const buildScheduledReportHtml = (rows, fechaInicio, fechaFin) => {
+  const periodo = fechaInicio === fechaFin ? formatFecha(fechaInicio) : `${formatFecha(fechaInicio)} al ${formatFecha(fechaFin)}`;
   const headers = ['Tipo', 'Nombre', 'Cantidad', 'Ingreso', 'Costo', 'Ganancia'];
   const body = rows.map((r) => `
     <tr>
@@ -39,6 +49,28 @@ const buildScheduledReportHtml = (rows, fechaTexto) => {
     </tr>
   `).join('');
 
+  const totalIngreso = rows.reduce((sum, r) => sum + r.ingreso, 0);
+  const totalCosto = rows.reduce((sum, r) => sum + r.costo, 0);
+  const totalGanancia = rows.reduce((sum, r) => sum + r.ganancia, 0);
+
+  const promoDetailBlocks = rows
+    .filter((r) => r.tipo === 'promocion' && r.productosConsumidos?.length > 0)
+    .map((r) => {
+      const itemsHtml = r.productosConsumidos
+        .map((pc) => `<tr><td>${escapeHtml(pc.nombre)}</td><td>${escapeHtml(pc.cantidad)}</td></tr>`)
+        .join('');
+      return `
+        <div style="margin-top:16px;">
+          <h3 style="margin-bottom:4px;">${escapeHtml(r.nombre)}</h3>
+          <table>
+            <thead><tr><th>Producto</th><th>Cantidad consumida</th></tr></thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
+        </div>
+      `;
+    })
+    .join('');
+
   return `
     <!DOCTYPE html>
     <html>
@@ -47,17 +79,23 @@ const buildScheduledReportHtml = (rows, fechaTexto) => {
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; color: #1e293b; }
           h1 { font-size: 18px; }
+          h2 { font-size: 15px; margin-top: 24px; }
+          h3 { font-size: 13px; }
           table { width: 100%; border-collapse: collapse; font-size: 12px; }
           th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; }
           th { background: #f1f5f9; }
+          .periodo { color: #64748b; font-size: 13px; }
         </style>
       </head>
       <body>
-        <h1>Productos y Promociones (Ganancia) — ${escapeHtml(fechaTexto)}</h1>
+        <h1>Productos y Promociones (Ganancia)</h1>
+        <p class="periodo">Período: ${escapeHtml(periodo)}</p>
         <table>
           <thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
           <tbody>${body || '<tr><td colspan="6">Sin ventas registradas</td></tr>'}</tbody>
         </table>
+        <p><strong>Total general — Ingreso: Bs ${totalIngreso.toFixed(2)} | Costo: Bs ${totalCosto.toFixed(2)} | Ganancia: Bs ${totalGanancia.toFixed(2)}</strong></p>
+        ${promoDetailBlocks ? `<h2>Productos consumidos por promoción</h2>${promoDetailBlocks}` : ''}
       </body>
     </html>
   `;
@@ -82,6 +120,15 @@ const getLastScheduledDate = (bolivianNow, diaSemana, configuredHHMM) => {
   return target.toISOString().slice(0, 10);
 };
 
+/* Calcula la fecha de 6 días antes de la indicada, para armar una ventana de 7 días (semanal) que
+   termina justo en el día programado — ejemplo: si se programó para el domingo, el reporte cubre
+   del lunes anterior al domingo, inclusive ambos extremos. */
+const getSevenDaysBefore = (fechaFin) => {
+  const date = new Date(`${fechaFin}T12:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - 6);
+  return date.toISOString().slice(0, 10);
+};
+
 export const runScheduledReportCheck = async () => {
   const config = await getScheduledReportConfig();
   if (!config.email || config.dia_semana === null || !config.hora) return;
@@ -93,14 +140,15 @@ export const runScheduledReportCheck = async () => {
   const ultimoEnvioStr = config.ultimo_envio instanceof Date ? config.ultimo_envio.toISOString().slice(0, 10) : config.ultimo_envio;
   if (ultimoEnvioStr === lastScheduledDate) return;
 
-  const rows = await getTopProductsReport(lastScheduledDate, lastScheduledDate);
-  const html = buildScheduledReportHtml(rows, lastScheduledDate);
+  const fechaInicio = getSevenDaysBefore(lastScheduledDate);
+  const rows = await getTopProductsReport(fechaInicio, lastScheduledDate);
+  const html = buildScheduledReportHtml(rows, fechaInicio, lastScheduledDate);
 
   try {
     await sendReportPdfEmail(config.email, 'Reporte Semanal Automático', html);
     const existingResult = await query(`SELECT id FROM scheduled_report_config LIMIT 1`);
     await query(`UPDATE scheduled_report_config SET ultimo_envio = $1 WHERE id = $2`, [lastScheduledDate, existingResult.rows[0].id]);
-    console.log(`Reporte automático enviado a ${config.email} (correspondiente al ${lastScheduledDate})`);
+    console.log(`Reporte automático enviado a ${config.email} (semana del ${fechaInicio} al ${lastScheduledDate})`);
   } catch (error) {
     console.error('Error enviando reporte automático:', error.message);
   }

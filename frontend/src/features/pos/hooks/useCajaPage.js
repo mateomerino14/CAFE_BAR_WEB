@@ -23,6 +23,14 @@ export const useCajaPage = () => {
 
   useEffect(() => {
     getNextSaleNumber().then(setPreviewNumVenta).catch(() => {});
+    /* La vista previa del número de venta es solo un estimado (cuenta cuántas ventas hay hasta
+       ahora) — si otro dispositivo registra una venta mientras esta mesa sigue abierta sin cobrar,
+       el número mostrado queda desactualizado. Se refresca cada 15 segundos para reducir ese
+       desfase, aunque el número real y definitivo solo se asigna al momento de cobrar. */
+    const interval = setInterval(() => {
+      getNextSaleNumber().then(setPreviewNumVenta).catch(() => {});
+    }, 15000);
+    return () => clearInterval(interval);
   }, [lastNumVenta]);
 
   const resetForNextOrder = () => {

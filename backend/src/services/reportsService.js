@@ -232,6 +232,7 @@ export const getDetailedSalesReport = async (fechaInicio, fechaFin, empleadoId) 
       meseroApertura: aliasById.get(v.cod_emp) || '—',
       cajero: v.cod_emp2 ? (aliasById.get(v.cod_emp2) || '—') : 'DIRECTORIO',
       salon: v.nomb_seccion || 'N/A',
+      seccion: v.nomb_seccion || 'N/A',
       mesa: v.id_mesa || 'N/A',
       total: Number(v.total_venta),
       efectivo: pago.efectivo,
