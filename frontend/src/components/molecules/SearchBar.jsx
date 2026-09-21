@@ -2,13 +2,15 @@ import {useMemo, useRef, useState} from 'react';
 import {Search} from 'lucide-react';
 import {TextInput} from '../atoms/TextInput';
 import {useClickOutside} from '../../hooks/useClickOutside';
+import {useDropdownDirection} from '../../hooks/useDropdownDirection';
 import {colors} from '../../constants/theme';
 
 const styles = {
   wrapper: 'flex w-full max-w-xs items-center gap-2',
   inputWrapper: 'relative flex-1',
   button: 'flex shrink-0 items-center justify-center rounded-lg bg-blue-500 p-2.5 text-white transition-colors hover:bg-blue-600',
-  menu: `absolute left-0 top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-slate-200 ${colors.navMenuBg} py-1 shadow-xl`,
+  menuDown: `absolute left-0 top-full z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-slate-200 ${colors.navMenuBg} py-1 shadow-xl`,
+  menuUp: `absolute left-0 bottom-full z-20 mb-1 max-h-40 w-full overflow-y-auto rounded-lg border border-slate-200 ${colors.navMenuBg} py-1 shadow-xl`,
   menuItem: `block w-full px-4 py-2 text-left text-sm font-medium ${colors.navMenuText} transition-colors ${colors.navMenuHover}`
 };
 
@@ -17,6 +19,7 @@ export const SearchBar = ({value, onChange, onSubmit, onSelectSuggestion, sugges
   const ref = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   useClickOutside(ref, () => setIsOpen(false));
+  const direction = useDropdownDirection(ref, isOpen);
   const filteredSuggestions = useMemo(() => {
     if (!value) return [];
     return suggestions.filter((option) => option.toLowerCase().startsWith(value.toLowerCase()));
@@ -38,7 +41,7 @@ export const SearchBar = ({value, onChange, onSubmit, onSelectSuggestion, sugges
           placeholder={placeholder}
         />
         {isOpen && filteredSuggestions.length > 0 && (
-          <div className={styles.menu}>
+          <div className={direction === 'up' ? styles.menuUp : styles.menuDown}>
             {filteredSuggestions.map((option) => (
               <button key={option} type="button" className={styles.menuItem} onClick={() => handleSelect(option)}>
                 {option}
