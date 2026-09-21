@@ -70,31 +70,6 @@ CREATE TABLE IF NOT EXISTS mesa (
     PRIMARY KEY (id_mesa, id_seccion)
 );
 
-/*
--- Clientes del local (Ya no se usa)
-CREATE TABLE IF NOT EXISTS cliente (
-    nit            BIGINT PRIMARY KEY,
-    nomb_cli       VARCHAR(20) NOT NULL,
-    apell_pat_cli  VARCHAR(30) NOT NULL,
-    apell_mat_cli  VARCHAR(30) NOT NULL,
-    correo_el_cli  VARCHAR(40) NOT NULL,
-    habilitado     BOOLEAN NOT NULL DEFAULT TRUE
-);
-*/
-
-/*
--- Configuracion de impresoras (Ya no se usa)
-CREATE TABLE IF NOT EXISTS impresora (
-    id_impresora  BIGSERIAL PRIMARY KEY,
-    id_vendor     INTEGER,
-    id_producto   INTEGER,
-    dispositivo   TEXT,
-    descripcion   TEXT,
-    es_barra      BOOLEAN NOT NULL DEFAULT FALSE,
-    es_cocina     BOOLEAN NOT NULL DEFAULT FALSE
-);
-*/
-
 -- =====================================================================
 -- SECCIÓN 3: PERSONAL Y PERMISOS
 -- =====================================================================
@@ -149,20 +124,6 @@ CREATE TABLE IF NOT EXISTS empleado (
     id_cargo        BIGINT NOT NULL REFERENCES cargo(id_cargo) ON DELETE RESTRICT,
     img_emp         TEXT                             -- URL en Supabase Storage
 );
-
-/*
--- Permisos individuales por empleado, sin importar su cargo (Ya no se usa)
-CREATE TABLE IF NOT EXISTS permisos_personal (
-    cod_emp  BIGINT NOT NULL REFERENCES empleado(cod_emp) ON DELETE CASCADE,
-    id_pant  BIGINT NOT NULL REFERENCES pantalla(id_pant) ON DELETE CASCADE,
-    PRIMARY KEY (cod_emp, id_pant)
-);
-CREATE TABLE IF NOT EXISTS permisos_personal_subpantalla (
-    cod_emp      BIGINT NOT NULL REFERENCES empleado(cod_emp) ON DELETE CASCADE,
-    id_sub_pant  BIGINT NOT NULL REFERENCES subpantalla(id_sub_pant) ON DELETE CASCADE,
-    PRIMARY KEY (cod_emp, id_sub_pant)
-);
-*/
 
 -- Directorio o cargo principal del sistema
 CREATE TABLE IF NOT EXISTS directorio (
@@ -301,16 +262,6 @@ CREATE TABLE IF NOT EXISTS detalles_venta_unidades (
 -- =====================================================================
 -- SECCIÓN 6: CONFIGURACIÓN DEL SISTEMA
 -- =====================================================================
-
-/*
--- Cuentas de correo asociadas al sistema (Ya no se usa por Brevo)
-CREATE TABLE IF NOT EXISTS cuenta (
-    id_cuenta      BIGSERIAL PRIMARY KEY,
-    activa_cuenta  BOOLEAN NOT NULL DEFAULT FALSE,
-    correo_cuenta  VARCHAR(100) NOT NULL,
-    cont_cuenta    VARCHAR(255) NOT NULL
-);
-*/
 
 -- Link editable hacia el sitio de impuestos nacionales
 CREATE TABLE IF NOT EXISTS enlace (
