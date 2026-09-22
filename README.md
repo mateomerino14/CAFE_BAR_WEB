@@ -71,6 +71,8 @@ CAFE_BAR_WEB/
 9. **Operaciones concurrentes de forma atómica.** El número de venta diario y la reserva de mesa usan operaciones atómicas de PostgreSQL (`ON CONFLICT DO UPDATE` y `UPDATE ... WHERE disponible = true`) para que dos empleados trabajando al mismo tiempo nunca generen números de venta duplicados ni ocupen la misma mesa dos veces.
 10. **Comentarios en cada método del backend.** Todos los métodos exportados de `controllers/`, `services/`, `routes/` y `utils/` incluyen un comentario breve explicando su propósito.
 11. **Cuidado con lo que devuelve `pg`.** A diferencia de Supabase, `pg` devuelve columnas `BIGINT` como texto (no número) y columnas `TIMESTAMPTZ`/`DATE` como objetos `Date` de JavaScript (no texto) — hay que convertir explícitamente al comparar IDs o usar fechas como clave de agrupación, o se generan bugs silenciosos difíciles de notar.
+12. **`HashRouter`, nunca `BrowserRouter`.** El frontend se carga como archivo local (`file://`) dentro de Electron, no desde un servidor real — `BrowserRouter` no puede resolver las rutas en ese contexto (siempre cae en 404) y `HashRouter` sí, sin necesitar ningún cambio más.
+13. **`base: './'` en `vite.config.js`, siempre.** Sin esto, el build genera rutas absolutas (`/assets/...`) que funcionan en un navegador normal pero se rompen al cargar como archivo local — la app carga en blanco, sin ningún error visible más allá de la consola.
 
 ## Reglas de negocio clave
 
@@ -157,6 +159,15 @@ cd electron
 npm run build
 ```
 
-Esto usa `electron-builder` (configurado en `electron/package.json`) para empaquetar todo (backend, frontend compilado, y los scripts de base de datos) en un instalador `.exe` para Windows, sin que el cliente necesite instalar Node, PostgreSQL, ni nada por separado — todo queda contenido dentro del instalador.
+Esto usa `electron-builder` (configurado en `electron/package.json`) para empaquetar todo (backend con su `node_modules`, frontend compilado, y los scripts de base de datos) en un instalador `.exe` para Windows, sin que el cliente necesite instalar Node, PostgreSQL, ni nada por separado — todo queda contenido dentro del instalador.
 
-Ver `database/README.md` para más detalle sobre cómo se inicializa la base de datos la primera vez.
+**`asar` queda desactivado a propósito** — los binarios reales que trae `embedded-postgres` (Postgres en sí) no pueden ejecutarse correctamente desde dentro de un `.asar` comprimido.
+
+### Problemas conocidos al correr este comando en Windows, y cómo resolverlos
+
+- **`Cannot create symbolic link: A required privilege is not held by the client`** — es un problema conocido de `electron-builder` en Windows (intenta descargar herramientas de firma para macOS que no necesitamos, y extraerlas requiere un permiso que las cuentas normales no tienen). Se resuelve activando el **Modo de Desarrollador de Windows** (`Configuración → Privacidad y seguridad → Para desarrolladores`), o corriendo la terminal como Administrador.
+- El primer build descarga Electron (~115MB) y otras herramientas — puede tardar varios minutos la primera vez, y el proceso de empaquetado final (comprimiendo Postgres + Chromium de Puppeteer + todo el backend) también tarda unos minutos sin mostrar ningún mensaje nuevo — es normal, no está colgado.
+
+El instalador queda en `electron/dist/Cafebar Setup 1.0.0.exe`.
+
+Ver `database/README.md` para más detalle sobre cómo se inicializa la base de datos la primera vez, y qué datos (o no) se crean automáticamente.

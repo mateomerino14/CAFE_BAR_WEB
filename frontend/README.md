@@ -41,3 +41,10 @@ npm run build
 ```
 
 Genera la carpeta `dist/` — **este es el paso que Electron necesita** para mostrar la versión más reciente del sistema. Cada vez que cambies algo en `frontend/`, hay que volver a correr este comando antes de abrir Electron, o va a seguir mostrando la versión vieja compilada.
+
+## Dos configuraciones obligatorias para que funcione dentro de Electron
+
+Electron carga este `dist/index.html` como archivo local (`file://`), no desde un servidor real — eso rompe dos cosas que funcionan bien en cualquier navegador normal, así que están corregidas a propósito en el código y **no deben revertirse**:
+
+1. **`base: './'` en `vite.config.js`** — sin esto, el build genera rutas absolutas (`/assets/...`) que apuntan a la raíz del disco en vez de a la carpeta real de los archivos, y la app carga completamente en blanco (sin ningún error visible, solo en la consola de DevTools).
+2. **`HashRouter`, no `BrowserRouter`, en `src/main.jsx`** — `BrowserRouter` necesita un servidor capaz de resolver cualquier ruta; cargado como archivo local, no puede, y cualquier pantalla cae siempre en la página de "no existe" (404). `HashRouter` (rutas tipo `#/login`) funciona sin ese problema.

@@ -49,3 +49,7 @@ A diferencia de Supabase (que se usaba en la versión web anterior), `pg` tiene 
 ## Correo (Brevo)
 
 Las credenciales de Brevo se guardan en la tabla `system_config`, no en variables de entorno — se configuran desde la propia app (Configuración → Configurar Envío de Correos). `services/emailService.js` las lee de la base en cada envío, así se pueden cambiar sin reiniciar el backend.
+
+## Sobre el empaquetado (`.exe`)
+
+Al generar el instalador (`npm run build` dentro de `electron/`), esta carpeta se copia **completa, incluido su `node_modules`** — si esa carpeta se excluyera, el backend no podría arrancar dentro del `.exe` instalado (`Cannot find module 'express'` y similares). No hay que tocar nada aquí para que esto funcione, solo tener presente que `npm install` en `backend/` debe correrse antes de generar el instalador, para que `node_modules` exista y tenga algo que copiar.

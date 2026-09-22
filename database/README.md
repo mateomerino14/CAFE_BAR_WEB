@@ -28,8 +28,9 @@ Si alguna vez necesitas correr estos archivos manualmente (por ejemplo, para dep
 | 2 | `index.sql` | Crea los índices para que las búsquedas y filtros sean rápidos |
 | 3 | `triggers.sql` | Crea las funciones automáticas (numeración de mesas, conteo de mesas por sección) |
 | 4 | `permits.sql` | Deja documentada la seguridad a nivel de fila (RLS) — ver nota más abajo, en esta versión no cumple ninguna función práctica |
-| 5 | `data population.sql` | Carga los datos iniciales necesarios para que el sistema arranque (menú, permisos, formas de pago, categorías base) |
+| 5 | `data population.sql` | Carga los datos mínimos indispensables para que el sistema arranque (menú, permisos, formas de pago, enlace de impuestos) — sin ningún dato de ejemplo |
 | 6 | `functions backups.sql` | Crea las funciones que usa la pantalla de Backup para exportar/importar la base en Excel, y la del correlativo diario de ventas |
+| 7 (opcional, nunca automático) | `datos de prueba (opcional).sql` | Empleados y categorías de ejemplo, solo para desarrollo — ver la nota más abajo |
 
 Para correrlos a mano contra el Postgres embebido (con la app cerrada), puedes usar cualquier cliente de Postgres (como `psql` o DBeaver) conectándote a `localhost:5432`, usuario `postgres`, contraseña `postgres`, base `cafebar`.
 
@@ -53,9 +54,13 @@ node src/scripts/seedDirectorio.js <tu-contraseña>
 ========================================================
 ## Nota sobre los datos de prueba
 ========================================================
-Los 8 empleados de prueba (cargo "Mesero") **ya no forman parte de la instalación automática** — viven en un archivo aparte, `datos de prueba (opcional).sql`, que `electron/migrate.js` **no** ejecuta. Una instalación real, en la PC de un cliente, nunca va a crear estos empleados falsos.
+Nada de esto forma parte de la instalación automática — vive en un archivo aparte, `datos de prueba (opcional).sql`, que `electron/migrate.js` **no** ejecuta. Una instalación real, en la PC de un cliente, arranca con el sistema completamente vacío (sin empleados falsos, sin categorías de ejemplo): solo el usuario DIRECTORIO y la estructura mínima para que funcione.
 
-Si estás desarrollando y quieres tenerlos para probar, corre ese archivo a mano contra el Postgres embebido (con la app cerrada). La contraseña de esos empleados es de relleno, no funcional — si quieres usarlos de verdad, entra como DIRECTORIO y resetéales la contraseña desde "Modificar Empleado" (eso sí genera una contraseña real y utilizable).
+Ese archivo opcional incluye:
+- 1 cargo de prueba ("Mesero") y 8 empleados falsos con contraseña de relleno.
+- 4 categorías de ejemplo (Cafetería, Bebidas, Cervezas & Licores, Comidas & Snacking).
+
+Si estás desarrollando y quieres tenerlos para probar, corre ese archivo a mano contra el Postgres embebido (con la app cerrada). La contraseña de los empleados de prueba es de relleno, no funcional — si quieres usarlos de verdad, entra como DIRECTORIO y resetéales la contraseña desde "Modificar Empleado" (eso sí genera una contraseña real y utilizable).
 
 ========================================================
 ## Sobre `functions backups.sql`
