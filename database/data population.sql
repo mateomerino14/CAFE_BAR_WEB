@@ -72,17 +72,3 @@ SELECT 'https://siat.impuestos.gob.bo/v2/launcher/'
 WHERE NOT EXISTS (SELECT 1 FROM enlace);
 
 
--- =====================================================================
--- Categorías base de ejemplo 
--- =====================================================================
-INSERT INTO categoria (nombre_categoria)
-SELECT v.nombre FROM (VALUES
-    ('Cafetería'),
-    ('Bebidas'),
-    ('Cervezas & Licores'),
-    ('Comidas & Snacking')
-) AS v(nombre)
-WHERE NOT EXISTS (
-    SELECT 1 FROM categoria c WHERE c.nombre_categoria = v.nombre
-);
-
