@@ -15,7 +15,7 @@ router.get('/detallado', authenticate, authorize('VER_REPORTES'), getDetailedSal
 router.get('/resumen-fechas', authenticate, authorize('VER_REPORTES'), getSummaryByDateReportHandler);
 router.get('/productos-vendidos', authenticate, authorize('VER_REPORTES'), getTopProductsReportHandler);
 router.get('/resumen-empleado', authenticate, authorize('VER_REPORTES'), getEmployeeChartReportHandler);
-// NOTA: sin usar por el frontend todavía, disponible para conectar a futuro
+// Sin usar por el frontend todavía, disponible para conectar a futuro
 router.get('/venta-empleado', authenticate, authorize('VER_REPORTES'), getEmployeeSalesReportHandler);
 router.post('/send-email', authenticate, authorize('VER_REPORTES'), sendReportEmailHandler);
 

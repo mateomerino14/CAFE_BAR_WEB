@@ -5,7 +5,7 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 const BRAND_BLUE = '#2563eb';
 const BRAND_BLUE_DARK = '#1e3a8a';
 
-/* Envía un correo electrónico mediante la API de Brevo, usando las credenciales guardadas en Configuración (no variables de entorno fijas, para poder editarlas sin reiniciar la app). */
+/* Envía correos mediante la API de Brevo usando las credenciales de Configuración */
 const sendViaBrevo = async (payload) => {
   const config = await getSystemConfig();
   if (!config.brevo_api_key) {
@@ -28,7 +28,7 @@ const sendViaBrevo = async (payload) => {
   }
 };
 
-/* Envía al usuario un código de verificación por correo electrónico para permitir la recuperación de su contraseña. */
+/* Envía al usuario un código de verificación por correo electrónico para permitir la recuperación de su contraseña */
 export const sendResetCodeEmail = async (toEmail, toName, code) => {
   await sendViaBrevo({
     to: [{ email: toEmail, name: toName }],
@@ -53,7 +53,7 @@ export const sendResetCodeEmail = async (toEmail, toName, code) => {
   });
 };
 
-/* Envía por correo electrónico un respaldo de la base de datos como archivo Excel adjunto. */
+/* Envía por correo electrónico un respaldo de la base de datos como archivo Excel adjunto */
 export const sendBackupEmailViaBrevo = async (correoDestino, attachmentBuffer) => {
   await sendViaBrevo({
     to: [{ email: correoDestino }],
@@ -75,7 +75,7 @@ export const sendBackupEmailViaBrevo = async (correoDestino, attachmentBuffer) =
   });
 };
 
-/* Genera un archivo PDF a partir de contenido HTML utilizando Puppeteer, con el Chromium normal instalado junto a la app de escritorio. */
+/* Genera un archivo PDF a partir de contenido HTML utilizando Puppeteer, con el Chromium normal instalado junto a la app de escritorio */
 const generatePdfBuffer = async (htmlContent) => {
   const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   try {
@@ -92,7 +92,7 @@ const generatePdfBuffer = async (htmlContent) => {
   }
 };
 
-/* Genera un reporte PDF a partir del contenido HTML y lo envía por correo electrónico como archivo adjunto mediante Brevo. */
+/* Genera un reporte PDF a partir del contenido HTML y lo envía por correo electrónico como archivo adjunto mediante Brevo */
 export const sendReportPdfEmail = async (correoDestino, titulo, htmlContent) => {
   const pdfBuffer = await generatePdfBuffer(htmlContent);
   const nombreArchivo = `${titulo.replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`;

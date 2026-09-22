@@ -5,6 +5,7 @@ import { getSystemConfigHandler, updateSystemConfigHandler } from '../controller
 
 const router = Router();
 
+/* Rutas para la gestión de la configuración del sistema */
 router.get('/', authenticate, authorize('CONFIGURACION'), getSystemConfigHandler);
 router.put('/', authenticate, authorize('CONFIGURACION'), updateSystemConfigHandler);
 

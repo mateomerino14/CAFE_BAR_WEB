@@ -3,7 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-/* Obtiene la lista de impresoras instaladas en esta computadora usando PowerShell. */
+/* Obtiene la lista de impresoras instaladas en esta computadora usando PowerShell */
 export const listPrinters = () => {
   return new Promise((resolve, reject) => {
     exec('powershell -Command "Get-Printer | Select-Object -ExpandProperty Name"', (error, stdout) => {
@@ -14,7 +14,7 @@ export const listPrinters = () => {
   });
 };
 
-/* Envía texto plano directo a una impresora específica de Windows usando PowerShell. */
+/* Envía texto plano directo a una impresora específica de Windows usando PowerShell */
 export const printText = (printerName, text) => {
   return new Promise((resolve, reject) => {
     const tempFile = path.join(os.tmpdir(), `print_${Date.now()}.txt`);

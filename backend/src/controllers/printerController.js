@@ -1,6 +1,6 @@
 import { getAvailablePrinters, getPrinterAssignment, savePrinterAssignment, printOrder } from '../services/printerService.js';
 
-/* Devuelve la lista de impresoras instaladas en esta computadora. */
+/* Controlador para devolver la lista de impresoras instaladas en esta computadora. */
 export const listPrintersHandler = async (req, res) => {
   try {
     const printers = await getAvailablePrinters();
@@ -10,7 +10,7 @@ export const listPrintersHandler = async (req, res) => {
   }
 };
 
-/* Devuelve la asignación actual de impresoras. */
+/* Controlador para devolver la asignación actual de impresoras. */
 export const getPrinterAssignmentHandler = async (req, res) => {
   try {
     const assignment = await getPrinterAssignment();
@@ -20,7 +20,7 @@ export const getPrinterAssignmentHandler = async (req, res) => {
   }
 };
 
-/* Guarda la asignación de impresoras para Ticket y Cocina. */
+/* Controlador para guardar la asignación de impresoras para Ticket y Cocina. */
 export const savePrinterAssignmentHandler = async (req, res) => {
   const { ticketPrinter, cocinaPrinter } = req.body;
   try {
@@ -31,7 +31,7 @@ export const savePrinterAssignmentHandler = async (req, res) => {
   }
 };
 
-/* Recibe un pedido de impresión (ticket o cocina) y lo envía a la impresora correspondiente. */
+/* Controlador para recibir un pedido de impresión (ticket o cocina) y lo envía a la impresora correspondiente. */
 export const printOrderHandler = async (req, res) => {
   const { tipo, text } = req.body;
   if (!tipo || !text) return res.status(400).json({ message: 'Faltan datos para imprimir' });

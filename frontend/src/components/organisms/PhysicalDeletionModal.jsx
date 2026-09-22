@@ -10,7 +10,6 @@ import {usePagination} from '../../hooks/usePagination';
 
 const PAGE_SIZE = 5;
 
-/* Convierte una fecha en formato AAAA-MM-DD (o un ISO completo) a DD/MM/AAAA para mostrarla. */
 const formatFecha = (fecha) => {
   if (!fecha) return '';
   const soloFecha = fecha.slice(0, 10);
@@ -18,7 +17,6 @@ const formatFecha = (fecha) => {
   return `${dia}/${mes}/${anio}`;
 };
 
-/* Convierte una hora en formato HH:MM:SS(.ffffff) de 24 horas a HH:MM AM/PM, sin segundos ni microsegundos. */
 const formatHora = (hora) => {
   if (!hora) return '';
   const [horaStr, minutoStr] = hora.split(':');

@@ -1,6 +1,6 @@
 import { query } from '../config/db.js';
 
-/*Obtiene la estructura de pantallas y sus respectivas subpantallas, organizándolas en forma de árbol.*/
+/*Obtiene la estructura de pantallas y sus respectivas subpantallas, organizándolas en forma de árbol */
 export const getScreensTree = async () => {
   const screensResult = await query(
     `SELECT id_pant, nom_pant FROM pantalla ORDER BY id_pant`

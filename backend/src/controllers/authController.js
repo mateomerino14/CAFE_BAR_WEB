@@ -31,7 +31,7 @@ export const loginHandler = async (req, res) => {
   }
 };
 
-/*Recuperacion de alias de directorio para rellenar en login*/
+/*Controlador para recuperacion de alias de directorio para rellenar en login*/
 export const directorioAliasHandler = async (req, res) => {
   try {
     const alias = await getDirectorioAlias();

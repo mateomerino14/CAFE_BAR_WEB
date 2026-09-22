@@ -97,7 +97,7 @@ export const listCajeroNamesHandler = async (req, res) => {
   }
 };
 
-/* Obtiene la configuración actual del reporte automático semanal (correo, día y hora). */
+/* Controlador para obtener la configuración actual del reporte automático semanal (correo, día y hora). */
 export const getScheduledReportConfigHandler = async (req, res) => {
   try {
     const config = await getScheduledReportConfig();
@@ -107,7 +107,7 @@ export const getScheduledReportConfigHandler = async (req, res) => {
   }
 };
 
-/* Actualiza el correo, día y hora en que se envía el reporte automático semanal. */
+/* Controlador para actualizar el correo, día y hora en que se envía el reporte automático semanal. */
 export const updateScheduledReportConfigHandler = async (req, res) => {
   const { email, diaSemana, hora } = req.body;
   try {
@@ -118,8 +118,7 @@ export const updateScheduledReportConfigHandler = async (req, res) => {
   }
 };
 
-/* Envía el reporte semanal de inmediato, para probar que el correo y el formato funcionan bien,
-   sin tener que esperar al día/hora programados ni modificarlos. */
+/* Controlador para enviar el reporte semanal inmediatamente y verificar su funcionamiento. */
 export const sendScheduledReportTestHandler = async (req, res) => {
   try {
     await sendScheduledReportTest();

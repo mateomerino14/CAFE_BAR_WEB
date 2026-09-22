@@ -1,13 +1,13 @@
-import { query } from '../config/db.js';
-import { hashPassword, verifyPassword } from '../utils/password.js';
+import {query} from '../config/db.js';
+import {hashPassword, verifyPassword} from '../utils/password.js';
 
-/* Obtiene el enlace configurado del sistema tributario o devuelve el enlace predeterminado si no existe. */
+/* Obtiene el enlace configurado del sistema tributario o devuelve el enlace predeterminado si no existe */
 export const getTaxLink = async () => {
   const result = await query(`SELECT enlace FROM enlace LIMIT 1`);
   return result.rows[0]?.enlace || 'https://siat.impuestos.gob.bo/v2/launcher/';
 };
 
-/* Actualiza el enlace del sistema tributario existente o crea uno nuevo si todavía no está registrado. */
+/* Actualiza el enlace del sistema tributario existente o crea uno nuevo si todavía no está registrado */
 export const updateTaxLink = async (enlace) => {
   const existingResult = await query(`SELECT id_enlace FROM enlace LIMIT 1`);
   const existing = existingResult.rows[0];
@@ -18,7 +18,7 @@ export const updateTaxLink = async (enlace) => {
   }
 };
 
-/* Verifica la contraseña actual del usuario DIRECTORIO y actualiza su contraseña por una nueva. */
+/* Verifica la contraseña actual del usuario DIRECTORIO y actualiza su contraseña por una nueva */
 export const changeDirectorioPassword = async (actual, nueva) => {
   const result = await query(`SELECT id_admin, contrasena_admin FROM directorio LIMIT 1`);
   const data = result.rows[0];
@@ -29,7 +29,7 @@ export const changeDirectorioPassword = async (actual, nueva) => {
   await query(`UPDATE directorio SET contrasena_admin = $1 WHERE id_admin = $2`, [hashed, data.id_admin]);
 };
 
-/* Calcula el rango de fechas correspondiente al día actual en Bolivia para realizar consultas sobre las ventas del día. */
+/* Calcula el rango de fechas correspondiente al día actual en Bolivia para realizar consultas sobre las ventas del día */
 const getTodayBoliviaRange = () => {
   const now = new Date();
   const shifted = new Date(now.getTime() - 4 * 60 * 60 * 1000);
@@ -41,7 +41,7 @@ const getTodayBoliviaRange = () => {
   return { start: start.toISOString(), end: end.toISOString() };
 };
 
-/* Obtiene el estado general de cada venta a partir del estado de sus detalles. */
+/* Obtiene el estado general de cada venta a partir del estado de sus detalles */
 const getVentaEstados = async (ventaIds) => {
   if (ventaIds.length === 0) return new Map();
   const result = await query(
@@ -59,7 +59,7 @@ const getVentaEstados = async (ventaIds) => {
   return estadoByVenta;
 };
 
-/* Obtiene un resumen de las ventas del día, clasificándolas entre finalizadas y en preparación. */
+/* Obtiene un resumen de las ventas del día, clasificándolas entre finalizadas y en preparación */
 export const getDailySalesSummary = async () => {
   const { start, end } = getTodayBoliviaRange();
   const result = await query(
@@ -68,7 +68,6 @@ export const getDailySalesSummary = async () => {
   );
   const ventaIds = result.rows.map((v) => v.id_venta);
   const estadoByVenta = await getVentaEstados(ventaIds);
-
   let finalizadas = 0;
   let montoFinalizado = 0;
   let enPreparacion = 0;
@@ -84,7 +83,7 @@ export const getDailySalesSummary = async () => {
   return { finalizadas, montoFinalizado, enPreparacion, total: result.rows.length };
 };
 
-/* Lista las ventas del día con información de empleados, estado, mesa y total, permitiendo filtrar y buscar por cajero. */
+/* Lista las ventas del día con información de empleados, estado, mesa y total, permitiendo filtrar y buscar por cajero */
 export const listDailySales = async (filtro, busqueda) => {
   const { start, end } = getTodayBoliviaRange();
   const ventasResult = await query(
@@ -95,7 +94,6 @@ export const listDailySales = async (filtro, busqueda) => {
     [start, end]
   );
   if (ventasResult.rows.length === 0) return [];
-
   const ventaIds = ventasResult.rows.map((v) => v.id_venta);
   const estadoByVenta = await getVentaEstados(ventaIds);
   const empleadoIds = [...new Set(ventasResult.rows.flatMap((v) => [v.cod_emp, v.cod_emp2]).filter(Boolean))];
@@ -103,7 +101,6 @@ export const listDailySales = async (filtro, busqueda) => {
     ? await query(`SELECT cod_emp, alias_emp FROM empleado WHERE cod_emp = ANY($1::bigint[])`, [empleadoIds])
     : { rows: [] };
   const aliasById = new Map(empleadosResult.rows.map((e) => [e.cod_emp, e.alias_emp]));
-
   let result = ventasResult.rows.map((v) => ({
     idVenta: v.id_venta,
     numVenta: v.num_venta,
@@ -115,7 +112,6 @@ export const listDailySales = async (filtro, busqueda) => {
     seccion: v.nomb_seccion || 'N/A',
     estado: estadoByVenta.get(v.id_venta) || 'Finalizada'
   }));
-
   if (filtro === 'Finalizadas') result = result.filter((r) => r.estado === 'Finalizada');
   if (filtro === 'En preparación') result = result.filter((r) => r.estado === 'En Preparación');
   if (busqueda) {
@@ -125,7 +121,7 @@ export const listDailySales = async (filtro, busqueda) => {
   return result;
 };
 
-/* Agrupa las personalizaciones de los productos de una promoción según sus exclusiones y extras. */
+/* Agrupa las personalizaciones de los productos de una promoción según sus exclusiones y extras */
 const buildPromoBreakdown = async (idDetalleVenta, idProd) => {
   const exclusionResult = await query(
     `SELECT nom_ing, num_unidad FROM detalles_venta_exclusiones_promo WHERE id_detalle_venta = $1 AND id_prod = $2`,
@@ -135,7 +131,6 @@ const buildPromoBreakdown = async (idDetalleVenta, idProd) => {
     `SELECT nom_ing, cantidad_extra, num_unidad FROM detalles_venta_extras WHERE id_detalle_venta = $1 AND id_prod = $2`,
     [idDetalleVenta, idProd]
   );
-
   const exclusionsByUnit = new Map();
   for (const row of exclusionResult.rows) {
     if (!exclusionsByUnit.has(row.num_unidad)) exclusionsByUnit.set(row.num_unidad, []);
@@ -147,7 +142,6 @@ const buildPromoBreakdown = async (idDetalleVenta, idProd) => {
     if (!extrasByUnit.has(row.num_unidad)) extrasByUnit.set(row.num_unidad, []);
     extrasByUnit.get(row.num_unidad).push(`+${row.cantidad_extra} ${row.nom_ing}`);
   }
-
   const customizedUnits = new Set([...exclusionsByUnit.keys(), ...extrasByUnit.keys()]);
   const groups = new Map();
   for (const unit of customizedUnits) {
@@ -160,7 +154,7 @@ const buildPromoBreakdown = async (idDetalleVenta, idProd) => {
   return Array.from(groups.values()).filter((g) => g.exclusiones.length || g.extras.length);
 };
 
-/* Obtiene las personalizaciones, exclusiones y extras asociados a un detalle de venta o a los productos de una promoción. */
+/* Obtiene las personalizaciones, exclusiones y extras asociados a un detalle de venta o a los productos de una promoción */
 const buildPersonalizacionDetalle = async (det) => {
   if (det.id_prod) {
     const exclusionsResult = await query(`SELECT nom_ing FROM detalles_venta_exclusiones WHERE id_detalle_venta = $1`, [det.id_detalle_venta]);
@@ -190,7 +184,7 @@ const buildPersonalizacionDetalle = async (det) => {
   return [];
 };
 
-/* Obtiene los detalles de una venta junto con sus productos, promociones, estados, meseros y personalizaciones. */
+/* Obtiene los detalles de una venta junto con sus productos, promociones, estados, meseros y personalizaciones */
 export const getDailySaleDetails = async (idVenta) => {
   const detallesResult = await query(
     `SELECT dv.id_detalle_venta, dv.id_prod, dv.id_prom, dv.cantidad_prod_det, dv.tipo_consumo, dv.subtotal,
@@ -203,13 +197,11 @@ export const getDailySaleDetails = async (idVenta) => {
      ORDER BY dv.fecha_reg_detalle_venta`,
     [idVenta]
   );
-
   const meseroIds = [...new Set(detallesResult.rows.map((d) => d.id_mesero_actual).filter(Boolean))];
   const empleadosResult = meseroIds.length
     ? await query(`SELECT cod_emp, alias_emp FROM empleado WHERE cod_emp = ANY($1::bigint[])`, [meseroIds])
     : { rows: [] };
   const aliasById = new Map(empleadosResult.rows.map((e) => [e.cod_emp, e.alias_emp]));
-
   const grouped = new Map();
   for (const d of detallesResult.rows) {
     const producto = d.nom_prod || d.nom_prom;
@@ -217,7 +209,6 @@ export const getDailySaleDetails = async (idVenta) => {
     const mesero = aliasById.get(d.id_mesero_actual) || '—';
     const personalizacionKey = JSON.stringify(personalizacionGrupos);
     const key = `${producto}|${d.tipo_consumo}|${mesero}|${d.estado_detalle_venta}|${personalizacionKey}`;
-
     if (!grouped.has(key)) {
       grouped.set(key, {
         producto,
@@ -235,11 +226,10 @@ export const getDailySaleDetails = async (idVenta) => {
     entry.cantidad += d.cantidad_prod_det;
     entry.subtotal += Number(d.subtotal);
   }
-
   return Array.from(grouped.values());
 };
 
-/* Obtiene los nombres de los cajeros que realizaron ventas durante el día, incluyendo DIRECTORIO cuando corresponda. */
+/* Obtiene los nombres de los cajeros que realizaron ventas durante el día, incluyendo DIRECTORIO cuando corresponda */
 export const listCajeroNames = async () => {
   const { start, end } = getTodayBoliviaRange();
   const ventasResult = await query(

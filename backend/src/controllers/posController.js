@@ -1,7 +1,5 @@
-import { getTaxLink } from '../services/configService.js';
-import {
-  listSectionsWithTables,
-  createOrGetVenta,
+import {getTaxLink} from '../services/configService.js';
+import {listSectionsWithTables, createOrGetVenta,
   addOrderItems,
   computeStockRequirements,
   deductStock,
@@ -18,7 +16,7 @@ import {
   checkoutOrder,
   getNextSaleNumberPreview
 } from '../services/posService.js';
-import { isValidDecimal } from '../utils/validators.js';
+import {isValidDecimal} from '../utils/validators.js';
 
 /* Controlador para listar las secciones con sus mesas */
 export const listSectionsWithTablesHandler = async (req, res) => {

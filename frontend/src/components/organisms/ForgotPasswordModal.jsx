@@ -57,7 +57,6 @@ export const ForgotPasswordModal = ({onClose}) => {
           </div>
         </form>
       )}
-
       {step === 'not-found' && (
         <div>
           <h2 className={styles.title}>Correo no encontrado</h2>
@@ -67,7 +66,6 @@ export const ForgotPasswordModal = ({onClose}) => {
           </div>
         </div>
       )}
-
       {step === 'code' && (
         <form onSubmit={handleVerifyCode}>
           <h2 className={styles.title}>Verifica tu correo</h2>

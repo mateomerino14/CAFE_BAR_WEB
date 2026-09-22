@@ -1,6 +1,6 @@
 import { getSystemConfig, updateSystemConfig } from '../services/systemConfigService.js';
 
-/* Devuelve las credenciales de Brevo guardadas (sin exponer la API key completa por seguridad, solo si está configurada o no). */
+/* Controlador para devolver las credenciales de Brevo guardadas*/
 export const getSystemConfigHandler = async (req, res) => {
   try {
     const config = await getSystemConfig();
@@ -14,7 +14,7 @@ export const getSystemConfigHandler = async (req, res) => {
   }
 };
 
-/* Guarda las credenciales de Brevo para el envío de correos. */
+/* Controlador para guardar las credenciales de Brevo para el envío de correos. */
 export const updateSystemConfigHandler = async (req, res) => {
   const { brevoApiKey, brevoSenderEmail, brevoSenderName } = req.body;
   if (!brevoApiKey || !brevoSenderEmail) {

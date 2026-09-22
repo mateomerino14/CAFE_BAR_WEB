@@ -1,5 +1,5 @@
 -- =====================================================================
--- SECCION 1: CATALOGO
+-- CREACION DE TABLAS DE LA BASE DE DATOS
 -- =====================================================================
 
 -- Categorías de productos
@@ -50,10 +50,6 @@ CREATE TABLE IF NOT EXISTS productos_ingredientes (
     PRIMARY KEY (id_prod, id_ing)
 );
 
--- =====================================================================
--- SECCIÓN 2: EL LOCAL (salones y mesas)
--- =====================================================================
-
 -- Secciones del restaurante 
 CREATE TABLE IF NOT EXISTS seccion (
     id_seccion    BIGSERIAL PRIMARY KEY,
@@ -69,10 +65,6 @@ CREATE TABLE IF NOT EXISTS mesa (
     id_seccion  BIGINT NOT NULL REFERENCES seccion(id_seccion) ON DELETE RESTRICT,
     PRIMARY KEY (id_mesa, id_seccion)
 );
-
--- =====================================================================
--- SECCIÓN 3: PERSONAL Y PERMISOS
--- =====================================================================
 
 -- Pantallas grandes del menu
 CREATE TABLE IF NOT EXISTS pantalla (
@@ -112,7 +104,7 @@ CREATE TABLE IF NOT EXISTS permisos_cargo_subpantalla (
 CREATE TABLE IF NOT EXISTS empleado (
     cod_emp         BIGSERIAL PRIMARY KEY,
     alias_emp       VARCHAR(30) NOT NULL UNIQUE,    -- el usuario con el que inicia sesión
-    cont_emp        VARCHAR(255) NOT NULL,          -- contraseña ya encriptada (nunca texto plano)
+    cont_emp        VARCHAR(255) NOT NULL,          -- contraseña ya encriptada 
     ci_emp          BIGINT NOT NULL,
     nom_emp         VARCHAR(30) NOT NULL,
     apell_pat_emp   VARCHAR(30) NOT NULL,
@@ -131,11 +123,6 @@ CREATE TABLE IF NOT EXISTS directorio (
     nom_admin          VARCHAR(30) NOT NULL,
     contrasena_admin   VARCHAR(255) NOT NULL
 );
-
-
--- =====================================================================
--- SECCIÓN 4: PROMOCIONES
--- =====================================================================
 
 -- Promociones de productos
 CREATE TABLE IF NOT EXISTS promocion (
@@ -166,11 +153,6 @@ CREATE TABLE IF NOT EXISTS promocion_prod (
     PRIMARY KEY (id_prom, id_prod)
 );
 
-
--- =====================================================================
--- SECCIÓN 5: VENTAS Y PEDIDOS (el corazón de Caja)
--- =====================================================================
-
 -- Formas de pago disponibles (Efectivo, QR)
 CREATE TABLE IF NOT EXISTS metodo_pago (
     id_metodo  BIGSERIAL PRIMARY KEY,
@@ -179,17 +161,17 @@ CREATE TABLE IF NOT EXISTS metodo_pago (
 
 -- Informacion de venta desde su apertura (cajero, mesero, etc)
 CREATE TABLE IF NOT EXISTS venta (
-    id_venta            BIGSERIAL PRIMARY KEY,         -- identificador único real (nunca se repite)
-    num_venta           BIGINT NOT NULL,                -- el número que ve el cliente en el ticket (se reinicia cada día)
+    id_venta            BIGSERIAL PRIMARY KEY,        
+    num_venta           BIGINT NOT NULL,                
     fecha_reg           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     hora_reg            TIME NOT NULL DEFAULT CURRENT_TIME,
-    hora_cierre         TIMESTAMPTZ,                     -- se llena cuando se cobra
-    cod_emp             BIGINT NOT NULL REFERENCES empleado(cod_emp) ON DELETE RESTRICT,   -- quién abrió la mesa (mesero)
-    cod_emp2            BIGINT REFERENCES empleado(cod_emp) ON DELETE RESTRICT,             -- quién cobró (cajero). Puede quedar vacío si cobró el usuario DIRECTORIO
+    hora_cierre         TIMESTAMPTZ,                     
+    cod_emp             BIGINT NOT NULL REFERENCES empleado(cod_emp) ON DELETE RESTRICT,  
+    cod_emp2            BIGINT REFERENCES empleado(cod_emp) ON DELETE RESTRICT,             
     total_venta         NUMERIC(10,2) NOT NULL,
     id_mesa             INTEGER,
     id_seccion          BIGINT REFERENCES seccion(id_seccion) ON DELETE SET NULL,
-    nit                 BIGINT DEFAULT -1,               -- sin uso real por ahora (ver tabla cliente)
+    nit                 BIGINT DEFAULT -1,              
     impresiones_ticket  INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (id_mesa, id_seccion) REFERENCES mesa(id_mesa, id_seccion)
 );
@@ -207,13 +189,13 @@ CREATE TABLE IF NOT EXISTS pago (
 CREATE TABLE IF NOT EXISTS detalles_venta (
     id_detalle_venta         BIGSERIAL PRIMARY KEY,
     id_venta                 BIGINT NOT NULL REFERENCES venta(id_venta) ON DELETE CASCADE,
-    fecha_reg_detalle_venta  TIMESTAMPTZ NOT NULL DEFAULT NOW(),   -- sirve para agrupar "lo que se pidió junto" (una tanda)
+    fecha_reg_detalle_venta  TIMESTAMPTZ NOT NULL DEFAULT NOW(),   
     id_prod                  BIGINT REFERENCES producto(id_prod) ON DELETE SET NULL,
     id_prom                  BIGINT REFERENCES promocion(id_prom) ON DELETE SET NULL,
     subtotal                 NUMERIC(10,2) NOT NULL,
     cantidad_prod_det        INTEGER NOT NULL,
-    tipo_consumo             VARCHAR(20) NOT NULL,        -- "Local" o "Para llevar"
-    estado_detalle_venta     VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',  -- PENDIENTE o Finalizado
+    tipo_consumo             VARCHAR(20) NOT NULL,        
+    estado_detalle_venta     VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',  
     marcado                  BOOLEAN NOT NULL DEFAULT FALSE,
     cantidad_marcado         INTEGER NOT NULL DEFAULT 0,
     id_mesero_actual         BIGINT NOT NULL REFERENCES empleado(cod_emp) ON DELETE RESTRICT
@@ -245,8 +227,8 @@ CREATE TABLE IF NOT EXISTS detalles_venta_extras (
     nom_ing            VARCHAR(30) NOT NULL,
     cantidad_extra     NUMERIC(10,2) NOT NULL,
     precio_extra       NUMERIC(10,2) NOT NULL,
-    id_prod            BIGINT REFERENCES producto(id_prod) ON DELETE SET NULL,   -- solo se llena si es de una promoción
-    num_unidad         INTEGER                                                   -- solo se llena si es de una promoción
+    id_prod            BIGINT REFERENCES producto(id_prod) ON DELETE SET NULL,   
+    num_unidad         INTEGER                                                   
 );
 
 -- Unidades físicas de un pedido para marcar en pendientes de un pedido
@@ -254,14 +236,9 @@ CREATE TABLE IF NOT EXISTS detalles_venta_unidades (
     id_unidad          BIGSERIAL PRIMARY KEY,
     id_detalle_venta   BIGINT NOT NULL REFERENCES detalles_venta(id_detalle_venta) ON DELETE CASCADE,
     num_unidad         INTEGER NOT NULL,
-    marcado            BOOLEAN NOT NULL DEFAULT FALSE,   -- true = ya está lista/preparada
+    marcado            BOOLEAN NOT NULL DEFAULT FALSE,   
     id_prod            BIGINT REFERENCES producto(id_prod) ON DELETE SET NULL
 );
-
-
--- =====================================================================
--- SECCIÓN 6: CONFIGURACIÓN DEL SISTEMA
--- =====================================================================
 
 -- Link editable hacia el sitio de impuestos nacionales
 CREATE TABLE IF NOT EXISTS enlace (
@@ -295,31 +272,17 @@ CREATE TABLE IF NOT EXISTS scheduled_report_config (
 );
 
 
--- =====================================================================
--- AJUSTES 
--- =====================================================================
-
--- cod_emp2 (cajero) puede quedar vacío
--- Esto pasa cuando quien cobra es el usuario DIRECTORIO, que no es un empleado normal y por lo tanto no tiene un cod_emp que guardar aquí.
+-- Permite que cod_emp2 quede vacío cuando cobra DIRECTORIO
 ALTER TABLE venta ALTER COLUMN cod_emp2 DROP NOT NULL;
 
--- =====================================================================
--- Tabla de configuración de impresoras (versión de escritorio)
--- La impresión ahora vive directo en el backend, sin necesitar ninguna
--- dirección de red — solo se guarda qué impresora usar para cada cosa.
--- =====================================================================
+-- Guarda las impresoras utilizadas para tickets y cocina
 CREATE TABLE IF NOT EXISTS printer_config (
     id              BIGSERIAL PRIMARY KEY,
     ticket_printer  VARCHAR(200),
     cocina_printer  VARCHAR(200)
 );
 
-
--- =====================================================================
--- Configuración del sistema (credenciales de Brevo para envío de correos)
--- Se guarda en la base en vez de una variable de entorno fija, para que
--- se pueda editar desde Configuración sin reiniciar la aplicación.
--- =====================================================================
+-- Guarda las credenciales de Brevo para el envío de correos
 CREATE TABLE IF NOT EXISTS system_config (
     id                  BIGSERIAL PRIMARY KEY,
     brevo_api_key       VARCHAR(300),

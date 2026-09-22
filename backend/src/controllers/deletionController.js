@@ -1,5 +1,4 @@
-import {
-  listEmployeesForDeletion, 
+import {listEmployeesForDeletion, 
   listCargosForDeletion, 
   listSeccionesForDeletion, 
   listVentasForDeletion,

@@ -1,7 +1,7 @@
 import { query } from '../config/db.js';
 import { uploadPhoto } from '../utils/storage.js';
 
-/*Verifica si ya existe una promoción con el mismo nombre, permitiendo excluir una promoción específica al editar.*/
+/*Verifica si ya existe una promoción con el mismo nombre, permitiendo excluir una promoción específica al editar */
 const isPromotionNameTaken = async (name, excludeId = null) => {
   const result = excludeId
     ? await query(`SELECT id_prom FROM promocion WHERE nom_prom ILIKE $1 AND id_prom != $2 LIMIT 1`, [name, excludeId])
@@ -9,7 +9,7 @@ const isPromotionNameTaken = async (name, excludeId = null) => {
   return Boolean(result.rows[0]);
 };
 
-/*Construye las columnas de programación de una promoción según el tipo de horario seleccionado.*/
+/*Construye las columnas de programación de una promoción según el tipo de horario seleccionado */
 const buildScheduleColumns = (schedule) => {
   const { scheduleType, fechaEspecifica, fechaInicio, fechaFin, horaInicio, horaFin } = schedule;
   if (scheduleType === 'specific') {
@@ -24,7 +24,7 @@ const buildScheduleColumns = (schedule) => {
   return { fecha_especifica: null, fecha_inicio: null, fecha_fin: null, hora_inicio: '00:00:00', hora_fin: '23:59:59' };
 };
 
-/*Inserta los productos asociados a una promoción junto con la cantidad de cada producto.*/
+/*Inserta los productos asociados a una promoción junto con la cantidad de cada producto */
 const insertPromotionProducts = async (idProm, products) => {
   for (const item of products) {
     await query(
@@ -34,7 +34,7 @@ const insertPromotionProducts = async (idProm, products) => {
   }
 };
 
-/*Inserta los días de la semana asociados a una promoción.*/
+/*Inserta los días de la semana asociados a una promoción */
 const insertPromotionDays = async (idProm, days) => {
   if (!days || days.length === 0) return;
   for (const dia of days) {
@@ -42,13 +42,12 @@ const insertPromotionDays = async (idProm, days) => {
   }
 };
 
-/*Crea una nueva promoción, incluyendo su imagen, programación, productos y días configurados.*/
+/*Crea una nueva promoción, incluyendo su imagen, programación, productos y días configurados */
 export const createPromotion = async (fields, imageFile, products, schedule, days) => {
   const nameTaken = await isPromotionNameTaken(fields.nombre);
   if (nameTaken) throw new Error('DUPLICATE_PROMOTION');
   const imageUrl = imageFile ? await uploadPhoto('promotions', imageFile) : null;
   const s = buildScheduleColumns(schedule);
-
   let promotion;
   try {
     const result = await query(
@@ -61,7 +60,6 @@ export const createPromotion = async (fields, imageFile, products, schedule, day
     if (error.code === '23505') throw new Error('DUPLICATE_PROMOTION');
     throw error;
   }
-
   await insertPromotionProducts(promotion.id_prom, products);
   if (schedule.scheduleType === 'recurring' || (schedule.scheduleType === 'range' && schedule.daysEnabled)) {
     await insertPromotionDays(promotion.id_prom, days);
@@ -69,19 +67,19 @@ export const createPromotion = async (fields, imageFile, products, schedule, day
   return promotion.id_prom;
 };
 
-/*Obtiene los nombres de las promociones activas ordenados alfabéticamente.*/
+/*Obtiene los nombres de las promociones activas ordenados alfabéticamente */
 export const listPromotionNames = async () => {
   const result = await query(`SELECT nom_prom FROM promocion WHERE activo = true ORDER BY nom_prom`);
   return result.rows.map((row) => row.nom_prom);
 };
 
-/*Obtiene los nombres de todas las promociones, independientemente de su estado de disponibilidad.*/
+/*Obtiene los nombres de todas las promociones, independientemente de su estado de disponibilidad */
 export const listAllPromotionNames = async () => {
   const result = await query(`SELECT nom_prom FROM promocion ORDER BY nom_prom`);
   return result.rows.map((row) => row.nom_prom);
 };
 
-/*Obtiene las promociones activas y sus datos principales, permitiendo filtrar por el inicio del nombre.*/
+/*Obtiene las promociones activas y sus datos principales, permitiendo filtrar por el inicio del nombre */
 export const listPromotions = async (search) => {
   const result = search
     ? await query(`SELECT id_prom, nom_prom, precio_prom, img_prom FROM promocion WHERE activo = true AND nom_prom ILIKE $1 ORDER BY nom_prom`, [`${search}%`])
@@ -89,7 +87,7 @@ export const listPromotions = async (search) => {
   return result.rows;
 };
 
-/*Obtiene todas las promociones junto con su estado de disponibilidad, permitiendo filtrar por el inicio del nombre.*/
+/*Obtiene todas las promociones junto con su estado de disponibilidad, permitiendo filtrar por el inicio del nombre */
 export const listAllPromotionsStatus = async (search) => {
   const result = search
     ? await query(`SELECT id_prom, nom_prom, precio_prom, img_prom, activo FROM promocion WHERE nom_prom ILIKE $1 ORDER BY nom_prom`, [`${search}%`])
@@ -97,7 +95,7 @@ export const listAllPromotionsStatus = async (search) => {
   return result.rows;
 };
 
-/*Obtiene el detalle completo de una promoción, incluyendo su programación, días y productos asociados.*/
+/*Obtiene el detalle completo de una promoción, incluyendo su programación, días y productos asociados */
 export const getPromotionDetail = async (idProm) => {
   const promotionResult = await query(
     `SELECT id_prom, nom_prom, precio_prom, img_prom, fecha_especifica, fecha_inicio, fecha_fin, hora_inicio, hora_fin
@@ -112,7 +110,6 @@ export const getPromotionDetail = async (idProm) => {
      WHERE pp.id_prom = $1`,
     [idProm]
   );
-
   const promotionRow = promotionResult.rows[0];
   const toDateString = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value);
   const promotion = promotionRow ? {
@@ -121,7 +118,6 @@ export const getPromotionDetail = async (idProm) => {
     fecha_inicio: toDateString(promotionRow.fecha_inicio),
     fecha_fin: toDateString(promotionRow.fecha_fin)
   } : null;
-
   return {
     promotion,
     days: daysResult.rows.map((row) => row.dia_semana),
@@ -133,12 +129,11 @@ export const getPromotionDetail = async (idProm) => {
   };
 };
 
-/*Actualiza los datos de una promoción y reemplaza su imagen, productos y días asociados cuando corresponde.*/
+/*Actualiza los datos de una promoción y reemplaza su imagen, productos y días asociados cuando corresponde */
 export const updatePromotion = async (idProm, fields, imageFile, products, schedule, days) => {
   const nameTaken = await isPromotionNameTaken(fields.nombre, idProm);
   if (nameTaken) throw new Error('DUPLICATE_PROMOTION');
   const s = buildScheduleColumns(schedule);
-
   try {
     if (imageFile) {
       const imagenUrl = await uploadPhoto('promotions', imageFile);
@@ -158,7 +153,6 @@ export const updatePromotion = async (idProm, fields, imageFile, products, sched
     if (error.code === '23505') throw new Error('DUPLICATE_PROMOTION');
     throw error;
   }
-
   await query(`DELETE FROM promocion_dias WHERE id_prom = $1`, [idProm]);
   if (schedule.scheduleType === 'recurring' || (schedule.scheduleType === 'range' && schedule.daysEnabled)) {
     await insertPromotionDays(idProm, days);
@@ -167,12 +161,12 @@ export const updatePromotion = async (idProm, fields, imageFile, products, sched
   await insertPromotionProducts(idProm, products);
 };
 
-/*Activa o desactiva la disponibilidad de una promoción.*/
+/*Activa o desactiva la disponibilidad de una promoción */
 export const setPromotionAvailability = async (idProm, available) => {
   await query(`UPDATE promocion SET activo = $1 WHERE id_prom = $2`, [available, idProm]);
 };
 
-/*Obtiene los productos de una promoción junto con sus ingredientes y cantidades necesarias para prepararlos.*/
+/*Obtiene los productos de una promoción junto con sus ingredientes y cantidades necesarias para prepararlos */
 export const getPromotionProductsWithIngredients = async (idProm) => {
   const promProductsResult = await query(
     `SELECT pp.id_prod, pp.cantidad_prod_prom, p.nom_prod
@@ -181,7 +175,6 @@ export const getPromotionProductsWithIngredients = async (idProm) => {
      WHERE pp.id_prom = $1`,
     [idProm]
   );
-
   const result = [];
   for (const pp of promProductsResult.rows) {
     const ingredientsResult = await query(
@@ -207,20 +200,18 @@ export const getPromotionProductsWithIngredients = async (idProm) => {
   return result;
 };
 
-/*Obtiene las promociones activas que se encuentran vigentes según la fecha, día de la semana y horario actual.*/
+/*Obtiene las promociones activas que se encuentran vigentes según la fecha, día de la semana y horario actual */
 export const listActivePromotionsNow = async () => {
   const promotionsResult = await query(
     `SELECT id_prom, nom_prom, precio_prom, img_prom, fecha_especifica, fecha_inicio, fecha_fin, hora_inicio, hora_fin
      FROM promocion WHERE activo = true ORDER BY nom_prom`
   );
-
   const nowUtc = new Date();
   const now = new Date(nowUtc.getTime() - 4 * 60 * 60 * 1000);
   const today = now.toISOString().slice(0, 10);
   const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
   const jsDay = now.getUTCDay();
   const ourDay = (jsDay + 6) % 7;
-
   const result = [];
   for (const promo of promotionsResult.rows) {
     if (promo.fecha_especifica) {
@@ -231,13 +222,11 @@ export const listActivePromotionsNow = async () => {
       const fFin = promo.fecha_fin.toISOString ? promo.fecha_fin.toISOString().slice(0, 10) : promo.fecha_fin;
       if (today < fInicio || today > fFin) continue;
     }
-
     const daysResult = await query(`SELECT dia_semana FROM promocion_dias WHERE id_prom = $1`, [promo.id_prom]);
     if (daysResult.rows.length > 0) {
       const matches = daysResult.rows.some((d) => d.dia_semana === ourDay);
       if (!matches) continue;
     }
-
     if (promo.hora_inicio && promo.hora_fin) {
       const [startH, startM] = promo.hora_inicio.split(':').map(Number);
       const [endH, endM] = promo.hora_fin.split(':').map(Number);
@@ -245,7 +234,6 @@ export const listActivePromotionsNow = async () => {
       const end = endH * 60 + endM;
       if (currentMinutes < start || currentMinutes > end) continue;
     }
-
     result.push({ id_prom: promo.id_prom, nom_prom: promo.nom_prom, precio_prom: promo.precio_prom, img_prom: promo.img_prom });
   }
   return result;

@@ -1,6 +1,5 @@
 
-/* Middleware para validar los permisos de acceso del usuario a una funcionalidad.
-   Acepta un solo permiso (string) o una lista de permisos donde basta con tener uno de ellos. */
+/* Middleware para validar los permisos de acceso del usuario. */
 export const authorize = (requiredPermission) => (req, res, next) => {
   if (req.user?.isDirectorio) {
     return next();

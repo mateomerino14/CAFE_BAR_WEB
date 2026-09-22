@@ -1,19 +1,5 @@
 -- =====================================================================
--- DATOS DE PRUEBA — NO SE EJECUTA AUTOMÁTICAMENTE
--- =====================================================================
--- Este archivo NO forma parte de la instalación automática de la app
--- (no está en la lista de electron/migrate.js) — así que una instalación
--- real, en la PC de un cliente, nunca va a crear estos empleados falsos.
---
--- Solo sirve si estás desarrollando/probando el sistema y quieres tener
--- algunos empleados de ejemplo para trabajar. Si lo necesitas, corre
--- este archivo a mano contra el Postgres embebido (con la app cerrada),
--- usando cualquier cliente de Postgres (psql, DBeaver, etc.).
---
--- IMPORTANTE: la contraseña de estos empleados es de relleno, no sirve
--- para iniciar sesión tal cual. Si quieres probarlos de verdad, entra
--- como DIRECTORIO y usa "Modificar Empleado" para resetearles la
--- contraseña desde ahí (eso sí genera una contraseña real y utilizable).
+-- DATOS DE PRUEBA 
 -- =====================================================================
 
 -- Cargo de prueba

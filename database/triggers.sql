@@ -1,7 +1,8 @@
 -- =====================================================================
--- Numeración automática de mesas
+-- TRIGGERS DEL SISTEMA
 -- =====================================================================
 
+-- Asigna automáticamente el número de mesa dentro de su sección
 CREATE OR REPLACE FUNCTION fn_asignar_mesa()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -14,19 +15,14 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS trg_asignar_mesa ON mesa;
-
 CREATE TRIGGER trg_asignar_mesa
 BEFORE INSERT ON mesa
 FOR EACH ROW
 EXECUTE FUNCTION fn_asignar_mesa();
 
 
--- =====================================================================
--- Conteo de mesas por sección
--- =====================================================================
-
+-- Obtiene la cantidad de mesas activas por sección
 CREATE OR REPLACE FUNCTION get_section_table_counts()
 RETURNS TABLE(id_seccion BIGINT, mesas_count BIGINT)
 LANGUAGE sql

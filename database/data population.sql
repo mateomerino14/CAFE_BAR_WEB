@@ -2,9 +2,7 @@
 -- INFORMACION BASICA PARA QUE EL SISTEMA SE EJECUTE
 -- =====================================================================
 
--- =====================================================================
 -- Pantallas principales del menú
--- =====================================================================
 INSERT INTO pantalla (nom_pant) VALUES
     ('Familia'),
     ('Caja'),
@@ -17,11 +15,7 @@ INSERT INTO pantalla (nom_pant) VALUES
     ('Reportes')
 ON CONFLICT DO NOTHING;
 
-
--- =====================================================================
 -- Acciones o subpantalla de cada pantalla principal
--- =====================================================================
-
 --('Administracion',   'Impresoras',               'IMPRESORAS'),
 INSERT INTO subpantalla (id_pant, nom_sub_pant, accion)
 SELECT p.id_pant, s.nom_sub_pant, s.accion
@@ -53,10 +47,7 @@ WHERE NOT EXISTS (
     SELECT 1 FROM subpantalla sp WHERE sp.accion = s.accion
 );
 
-
--- =====================================================================
 -- Formas de pago
--- =====================================================================
 INSERT INTO metodo_pago (nombre)
 SELECT v.nombre FROM (VALUES ('Efectivo'), ('Qr')) AS v(nombre)
 WHERE NOT EXISTS (
@@ -64,9 +55,7 @@ WHERE NOT EXISTS (
 );
 
 
--- =====================================================================
--- Enlace por defecto al portal de impuestos (editable luego desde Configuración)
--- =====================================================================
+-- Enlace por defecto al portal de impuestos (editable)
 INSERT INTO enlace (enlace)
 SELECT 'https://siat.impuestos.gob.bo/v2/launcher/'
 WHERE NOT EXISTS (SELECT 1 FROM enlace);

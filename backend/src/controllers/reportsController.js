@@ -1,7 +1,7 @@
 import {
   listEmployeesForReports, getDetailedSalesReport, getSummaryByDateReport,getTopProductsReport, getEmployeeChartReport, getEmployeeSalesReport
 } from '../services/reportsService.js';
-import { sendReportPdfEmail } from '../services/emailService.js';
+import {sendReportPdfEmail} from '../services/emailService.js';
 
 /* Controlador para listar los empleados disponibles para reportes */
 export const listReportEmployeesHandler = async (req, res) => {

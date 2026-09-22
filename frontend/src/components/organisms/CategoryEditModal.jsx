@@ -1,7 +1,7 @@
 import {Modal} from '../atoms/Modal';
 import {Button} from '../atoms/Button';
 import {TextInput} from '../atoms/TextInput';
-import {Toast } from '../atoms/Toast';
+import {Toast} from '../atoms/Toast';
 import {FormField} from '../molecules/FormField';
 import {ImagePicker} from '../molecules/ImagePicker';
 import {useEditCategory} from '../../features/categories/hooks/useEditCategory';
@@ -15,7 +15,7 @@ const styles = {
 };
 
 export const CategoryEditModal = ({category, onClose, onSaved}) => {
-  const { name, setName, preview, handleFileChange, error, loading, handleSave } = useEditCategory(category, onSaved);
+  const {name, setName, preview, handleFileChange, error, loading, handleSave} = useEditCategory(category, onSaved);
 
   return (
     <Modal onClose={onClose}>

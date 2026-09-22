@@ -2,7 +2,7 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-/* Conexión a la base de datos Postgres (local, embebida por Electron o instalada aparte). */
+/*Conexión a la base de datos Postgres*/
 export const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 5432,
@@ -11,5 +11,5 @@ export const pool = new Pool({
   database: process.env.DB_NAME || 'cafebar'
 });
 
-/* Ejecuta una consulta SQL parametrizada contra la base de datos. */
+/*Ejecuta una consulta SQL parametrizada*/
 export const query = (text, params) => pool.query(text, params);

@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 import { getTopProductsReport } from './reportsService.js';
 import { sendReportPdfEmail } from './emailService.js';
 
+/* Escapa caracteres HTML para evitar contenido no seguro */
 const escapeHtml = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 export const getScheduledReportConfig = async () => {
@@ -12,7 +13,6 @@ export const getScheduledReportConfig = async () => {
 export const updateScheduledReportConfig = async (email, diaSemana, hora) => {
   const existingResult = await query(`SELECT id FROM scheduled_report_config LIMIT 1`);
   const existing = existingResult.rows[0];
-
   if (existing) {
     await query(
       `UPDATE scheduled_report_config SET email = $1, dia_semana = $2, hora = $3 WHERE id = $4`,
@@ -26,15 +26,13 @@ export const updateScheduledReportConfig = async (email, diaSemana, hora) => {
   }
 };
 
-/* Convierte una fecha AAAA-MM-DD a DD/MM/AAAA para mostrarla, igual que en el resto del sistema. */
+/* Obtiene la configuración del reporte programado */
 const formatFecha = (fecha) => {
   const [anio, mes, dia] = fecha.split('-');
   return `${dia}/${mes}/${anio}`;
 };
 
-/* Arma el mismo reporte "Productos y Promociones (Ganancia)" que se genera manualmente desde
-   Reportes, incluyendo el detalle de qué productos consumió cada promoción — idéntico al que
-   ve el usuario si lo genera él mismo, solo que enviado automáticamente por correo. */
+/* Actualiza o crea la configuración del reporte programado */
 const buildScheduledReportHtml = (rows, fechaInicio, fechaFin) => {
   const periodo = fechaInicio === fechaFin ? formatFecha(fechaInicio) : `${formatFecha(fechaInicio)} al ${formatFecha(fechaFin)}`;
   const headers = ['Tipo', 'Nombre', 'Cantidad', 'Ingreso', 'Costo', 'Ganancia'];

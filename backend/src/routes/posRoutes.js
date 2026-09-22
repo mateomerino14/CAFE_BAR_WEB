@@ -1,9 +1,7 @@
 import {Router} from 'express';
 import {authenticate} from '../middlewares/authenticate.js';
 import {authorize} from '../middlewares/authorize.js';
-import {
-  listSectionsWithTablesHandler,
-  createOrderHandler,
+import {listSectionsWithTablesHandler, createOrderHandler,
   listPendingBatchesHandler,
   getMarkCardsHandler,
   markUnitsHandler,
@@ -33,7 +31,7 @@ router.get('/tables/:idSeccion/:idMesa/latest-order', authenticate, authorize('R
 router.get('/tables/:idSeccion/:idMesa/open-venta-summary', authenticate, authorize('REGISTRAR_PEDIDO'), getOpenVentaSummaryHandler);
 router.get('/tables/:idSeccion/:idMesa/unmarked-count', authenticate, authorize('REGISTRAR_PEDIDO'), getUnmarkedCountHandler);
 router.get('/mark-cards', authenticate, authorize('REGISTRAR_PEDIDO'), getMarkCardsHandler);
-// NOTA: sin usar por el frontend todavía, reemplazada en la practica por /units/mark-batch
+// Sin usar por el frontend todavía, reemplazada en la practica por /units/mark-batch
 router.put('/units/mark', authenticate, authorize('REGISTRAR_PEDIDO'), markUnitsHandler);
 router.put('/units/mark-batch', authenticate, authorize('REGISTRAR_PEDIDO'), applyMarkChangesHandler);
 router.get('/tax-link', authenticate, authorize('REGISTRAR_PEDIDO'), getTaxLinkForCajaHandler);

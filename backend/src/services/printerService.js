@@ -1,16 +1,16 @@
 import { query } from '../config/db.js';
 import { listPrinters as listWindowsPrinters, printText } from '../utils/printers.js';
 
-/* Obtiene la lista de impresoras instaladas en esta computadora. */
+/* Obtiene la lista de impresoras instaladas en esta computadora */
 export const getAvailablePrinters = async () => listWindowsPrinters();
 
-/* Obtiene la asignación actual de impresoras (cuál va para Ticket y cuál para Cocina). */
+/* Obtiene la asignación actual de impresoras (cuál va para Ticket y cuál para Cocina) */
 export const getPrinterAssignment = async () => {
   const result = await query(`SELECT ticket_printer, cocina_printer FROM printer_config LIMIT 1`);
   return result.rows[0] || { ticket_printer: '', cocina_printer: '' };
 };
 
-/* Guarda la asignación de impresoras para Ticket y Cocina. */
+/* Guarda la asignación de impresoras para Ticket y Cocina */
 export const savePrinterAssignment = async (ticketPrinter, cocinaPrinter) => {
   const existingResult = await query(`SELECT id FROM printer_config LIMIT 1`);
   const existing = existingResult.rows[0];
@@ -21,7 +21,7 @@ export const savePrinterAssignment = async (ticketPrinter, cocinaPrinter) => {
   }
 };
 
-/* Envía un ticket o comanda a la impresora asignada según el tipo indicado (ticket o cocina). */
+/* Envía un ticket o comanda a la impresora asignada según el tipo indicado (ticket o cocina) */
 export const printOrder = async (tipo, text) => {
   const assignment = await getPrinterAssignment();
   const printerName = tipo === 'cocina' ? assignment.cocina_printer : assignment.ticket_printer;

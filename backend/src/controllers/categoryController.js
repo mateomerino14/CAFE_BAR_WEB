@@ -1,5 +1,4 @@
-import {
-  createCategoryWithSubcategories,
+import { createCategoryWithSubcategories,
   listCategoryNames,
   listAllCategoryNames,
   listCategories,
@@ -74,7 +73,7 @@ export const listAllCategoryNamesHandler = async (req, res) => {
   }
 };
 
-/* Controlador para listar las categorías según el criterio de búsqueda */
+/* Controlador para listar las categorías según el criterio de busqueda */
 export const listCategoriesHandler = async (req, res) => {
   const { search = '' } = req.query;
   try {

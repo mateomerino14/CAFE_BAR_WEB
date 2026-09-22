@@ -1,18 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { app } from 'electron';
+import {fileURLToPath} from 'url';
+import {app} from 'electron';
 import pg from 'pg';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/* database/ y backend/ viven junto a electron/ mientras se desarrolla, pero una vez empaquetado
-   con electron-builder quedan en un lugar distinto (resources/database, resources/backend) —
-   no son carpetas "hermanas" de electron/ en ese caso. Por eso se calcula distinto según el modo. */
+/* Define las rutas de la base de datos y backend según el modo de ejecución */
 const databaseDir = app.isPackaged ? path.join(process.resourcesPath, 'database') : path.join(__dirname, '..', 'database');
 const backendDir = app.isPackaged ? path.join(process.resourcesPath, 'backend') : path.join(__dirname, '..', 'backend');
 
-/* Orden de ejecución de los scripts SQL, igual al documentado en database/README.md */
+/* Define el orden de ejecución de los scripts SQL */
 const SQL_FILES_IN_ORDER = [
   'schema.sql',
   'index.sql',
@@ -22,12 +20,10 @@ const SQL_FILES_IN_ORDER = [
   'functions backups.sql'
 ];
 
-/* Contraseña por defecto del usuario DIRECTORIO al instalar por primera vez.
-   Se le indica al dueño del negocio que la cambie de inmediato desde Configuración. */
+/* Define la contraseña inicial del usuario DIRECTORIO */
 const DEFAULT_DIRECTORIO_PASSWORD = 'cafebar2026';
 
-/* Corre, en orden, todos los scripts SQL de la base de datos contra el Postgres embebido recién creado,
-   y crea el usuario DIRECTORIO con una contraseña por defecto. Solo debe llamarse la primera vez que arranca la app. */
+/* Ejecuta los scripts SQL y crea el usuario DIRECTORIO en el primer inicio */
 export const runMigrations = async () => {
   const client = new pg.Client({
     host: 'localhost',
@@ -37,7 +33,6 @@ export const runMigrations = async () => {
     database: 'cafebar'
   });
   await client.connect();
-
   try {
     for (const fileName of SQL_FILES_IN_ORDER) {
       const filePath = path.join(databaseDir, fileName);
@@ -49,7 +44,6 @@ export const runMigrations = async () => {
       console.log(`Ejecutando ${fileName}...`);
       await client.query(sql);
     }
-
     const backendUtilsPath = path.join(backendDir, 'src', 'utils', 'password.js');
     const { hashPassword } = await import(`file://${backendUtilsPath}`);
     const passwordHash = await hashPassword(DEFAULT_DIRECTORIO_PASSWORD);
@@ -58,7 +52,6 @@ export const runMigrations = async () => {
       [passwordHash]
     );
     console.log(`Usuario DIRECTORIO creado con contraseña por defecto: "${DEFAULT_DIRECTORIO_PASSWORD}" (cámbiala desde Configuración apenas ingreses).`);
-
     console.log('Migraciones completadas correctamente');
   } finally {
     await client.end();

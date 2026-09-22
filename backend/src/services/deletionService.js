@@ -1,31 +1,26 @@
 import { query } from '../config/db.js';
 
-/* Elimina ventas y todos sus registros dependientes relacionados, incluyendo detalles, pagos, extras, exclusiones y unidades, y libera las mesas que ya no tienen ventas asociadas. */
+/* Elimina ventas y todos sus registros dependientes relacionados, incluyendo detalles, pagos, extras, exclusiones y unidades, y libera las mesas que ya no tienen ventas asociadas */
 const deleteVentasCascade = async (ventaIds) => {
   if (ventaIds.length === 0) return;
-
   const detallesResult = await query(
     `SELECT id_detalle_venta FROM detalles_venta WHERE id_venta = ANY($1::bigint[])`,
     [ventaIds]
   );
   const detalleIds = detallesResult.rows.map((d) => d.id_detalle_venta);
-
   if (detalleIds.length > 0) {
     await query(`DELETE FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds]);
     await query(`DELETE FROM detalles_venta_exclusiones WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds]);
     await query(`DELETE FROM detalles_venta_exclusiones_promo WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds]);
     await query(`DELETE FROM detalles_venta_extras WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds]);
   }
-
   const mesasResult = await query(
     `SELECT id_mesa, id_seccion FROM venta WHERE id_venta = ANY($1::bigint[]) AND id_mesa IS NOT NULL`,
     [ventaIds]
   );
-
   await query(`DELETE FROM pago WHERE id_venta = ANY($1::bigint[])`, [ventaIds]);
   await query(`DELETE FROM detalles_venta WHERE id_venta = ANY($1::bigint[])`, [ventaIds]);
   await query(`DELETE FROM venta WHERE id_venta = ANY($1::bigint[])`, [ventaIds]);
-
   for (const { id_mesa, id_seccion } of mesasResult.rows) {
     const countResult = await query(
       `SELECT COUNT(*) FROM venta WHERE id_mesa = $1 AND id_seccion = $2`,
@@ -37,7 +32,7 @@ const deleteVentasCascade = async (ventaIds) => {
   }
 };
 
-/* Obtiene los identificadores de las ventas asociadas directa o indirectamente a uno o varios empleados mediante el responsable de la venta, cobrador o mesero actual. */
+/* Obtiene los identificadores de las ventas asociadas directa o indirectamente a uno o varios empleados mediante el responsable de la venta, cobrador o mesero actual */
 const getVentaIdsByEmpleados = async (empleadoIds) => {
   if (empleadoIds.length === 0) return [];
   const ventasDirectasResult = await query(
@@ -55,7 +50,7 @@ const getVentaIdsByEmpleados = async (empleadoIds) => {
   return Array.from(ids);
 };
 
-/* Elimina uno o varios empleados junto con las ventas y registros dependientes relacionados con ellos. */
+/* Elimina uno o varios empleados junto con las ventas y registros dependientes relacionados con ellos */
 export const deleteEmpleados = async (empleadoIds) => {
   if (empleadoIds.length === 0) return;
   const ventaIds = await getVentaIdsByEmpleados(empleadoIds);
@@ -63,7 +58,7 @@ export const deleteEmpleados = async (empleadoIds) => {
   await query(`DELETE FROM empleado WHERE cod_emp = ANY($1::bigint[])`, [empleadoIds]);
 };
 
-/* Obtiene los empleados asociados a los cargos indicados, elimina sus ventas y dependencias, y finalmente elimina los cargos seleccionados. */
+/* Obtiene los empleados asociados a los cargos indicados, elimina sus ventas y dependencias, y finalmente elimina los cargos seleccionados */
 export const deleteCargos = async (cargoIds) => {
   if (cargoIds.length === 0) return;
   const empleadosResult = await query(`SELECT cod_emp FROM empleado WHERE id_cargo = ANY($1::bigint[])`, [cargoIds]);
@@ -76,13 +71,11 @@ export const deleteCargos = async (cargoIds) => {
   await query(`DELETE FROM cargo WHERE id_cargo = ANY($1::bigint[])`, [cargoIds]);
 };
 
-/* Obtiene las mesas y ventas pertenecientes a las secciones seleccionadas, elimina sus dependencias y posteriormente elimina las mesas y secciones. */
+/* Obtiene las mesas y ventas pertenecientes a las secciones seleccionadas, elimina sus dependencias y posteriormente elimina las mesas y secciones */
 export const deleteSecciones = async (seccionIds) => {
   if (seccionIds.length === 0) return;
-
   const mesasResult = await query(`SELECT id_mesa, id_seccion FROM mesa WHERE id_seccion = ANY($1::bigint[])`, [seccionIds]);
   const ventasPorSeccionResult = await query(`SELECT id_venta FROM venta WHERE id_seccion = ANY($1::bigint[])`, [seccionIds]);
-
   let ventasPorMesa = [];
   if (mesasResult.rows.length > 0) {
     const idMesaArray = mesasResult.rows.map((m) => m.id_mesa);
@@ -96,23 +89,21 @@ export const deleteSecciones = async (seccionIds) => {
     );
     ventasPorMesa = result.rows;
   }
-
   const ventaIds = Array.from(new Set([
     ...ventasPorSeccionResult.rows.map((v) => v.id_venta),
     ...ventasPorMesa.map((v) => v.id_venta)
   ]));
-
   await deleteVentasCascade(ventaIds);
   await query(`DELETE FROM mesa WHERE id_seccion = ANY($1::bigint[])`, [seccionIds]);
   await query(`DELETE FROM seccion WHERE id_seccion = ANY($1::bigint[])`, [seccionIds]);
 };
 
-/* Elimina directamente las ventas indicadas junto con todos sus registros dependientes y libera las mesas que correspondan. */
+/* Elimina directamente las ventas indicadas junto con todos sus registros dependientes y libera las mesas que correspondan */
 export const deleteVentasDirect = async (ventaIds) => {
   await deleteVentasCascade(ventaIds);
 };
 
-/* Obtiene la lista de empleados disponible para eliminación, permitiendo filtrar por empleados activos o inactivos y mostrando sus datos y cargo. */
+/* Obtiene la lista de empleados disponible para eliminación, permitiendo filtrar por empleados activos o inactivos y mostrando sus datos y cargo */
 export const listEmployeesForDeletion = async (filtro) => {
   const baseQuery = `
     SELECT e.cod_emp, e.nom_emp, e.apell_pat_emp, e.apell_mat_emp, e.alias_emp, e.ci_emp, e.disponible_emp, c.nom_carg
@@ -127,7 +118,6 @@ export const listEmployeesForDeletion = async (filtro) => {
   } else {
     result = await query(`${baseQuery} ORDER BY e.nom_emp`);
   }
-
   return result.rows.map((e) => ({
     codEmp: e.cod_emp,
     nombreCompleto: `${e.nom_emp} ${e.apell_pat_emp} ${e.apell_mat_emp}`.trim(),
@@ -138,7 +128,7 @@ export const listEmployeesForDeletion = async (filtro) => {
   }));
 };
 
-/* Obtiene todos los cargos y calcula la cantidad de empleados asociados a cada uno para mostrar sus dependencias antes de eliminarlos. */
+/* Obtiene todos los cargos y calcula la cantidad de empleados asociados a cada uno para mostrar sus dependencias antes de eliminarlos */
 export const listCargosForDeletion = async () => {
   const cargosResult = await query(`SELECT id_cargo, nom_carg FROM cargo ORDER BY nom_carg`);
   const empleadosResult = await query(`SELECT id_cargo FROM empleado`);
@@ -153,7 +143,7 @@ export const listCargosForDeletion = async () => {
   }));
 };
 
-/* Obtiene las secciones existentes y calcula la cantidad de mesas y ventas asociadas a cada sección para mostrar sus dependencias antes de eliminarlas. */
+/* Obtiene las secciones existentes y calcula la cantidad de mesas y ventas asociadas a cada sección para mostrar sus dependencias antes de eliminarlas */
 export const listSeccionesForDeletion = async () => {
   const seccionesResult = await query(`SELECT id_seccion, nomb_seccion FROM seccion ORDER BY nomb_seccion`);
   const mesasResult = await query(`SELECT id_seccion FROM mesa WHERE existe = true`);
@@ -172,7 +162,7 @@ export const listSeccionesForDeletion = async () => {
   }));
 };
 
-/* Obtiene las ventas registradas con sus datos principales y determina su estado según los detalles de venta pendientes o finalizados. */
+/* Obtiene las ventas registradas con sus datos principales y determina su estado según los detalles de venta pendientes o finalizados */
 export const listVentasForDeletion = async () => {
   const ventasResult = await query(
     `SELECT v.id_venta, v.num_venta, v.fecha_reg, v.hora_reg, v.total_venta, v.id_mesa, s.nomb_seccion
@@ -182,7 +172,6 @@ export const listVentasForDeletion = async () => {
      LIMIT 500`
   );
   if (ventasResult.rows.length === 0) return [];
-
   const ventaIds = ventasResult.rows.map((v) => v.id_venta);
   const detallesResult = await query(
     `SELECT id_venta, estado_detalle_venta FROM detalles_venta WHERE id_venta = ANY($1::bigint[])`,
@@ -193,7 +182,6 @@ export const listVentasForDeletion = async () => {
     if (d.estado_detalle_venta === 'PENDIENTE') estadoByVenta.set(d.id_venta, 'En Preparación');
     else if (!estadoByVenta.has(d.id_venta)) estadoByVenta.set(d.id_venta, 'Finalizada');
   }
-
   return ventasResult.rows.map((v) => ({
     idVenta: v.id_venta,
     numVenta: v.num_venta,
@@ -206,24 +194,20 @@ export const listVentasForDeletion = async () => {
   }));
 };
 
-/* Construye un árbol de dependencias de los elementos seleccionados, identificando empleados, ventas y mesas que serían afectados por la eliminación. */
+/* Construye un árbol de dependencias de los elementos seleccionados, identificando empleados, ventas y mesas que serían afectados por la eliminación */
 export const buildDependencyTree = async (seleccionados) => {
   const { empleados = [], cargos = [], secciones = [] } = seleccionados;
   const dependientes = { empleados: [], ventas: [], mesas: [] };
-
   if (cargos.length > 0) {
     const result = await query(`SELECT cod_emp, alias_emp FROM empleado WHERE id_cargo = ANY($1::bigint[])`, [cargos]);
     dependientes.empleados = result.rows.map((e) => ({ id: e.cod_emp, nombre: e.alias_emp }));
   }
-
   if (secciones.length > 0) {
     const mesasResult = await query(`SELECT id_mesa FROM mesa WHERE id_seccion = ANY($1::bigint[]) AND existe = true`, [secciones]);
     dependientes.mesas = mesasResult.rows.map((m) => ({ id: m.id_mesa, nombre: `Mesa ${m.id_mesa}` }));
-
     const ventasSecResult = await query(`SELECT id_venta, num_venta FROM venta WHERE id_seccion = ANY($1::bigint[])`, [secciones]);
     dependientes.ventas.push(...ventasSecResult.rows.map((v) => ({ id: v.id_venta, nombre: `Venta N° ${v.num_venta}` })));
   }
-
   const allEmpleadoIds = [...empleados, ...dependientes.empleados.map((e) => e.id)];
   if (allEmpleadoIds.length > 0) {
     const ventaIds = await getVentaIdsByEmpleados(allEmpleadoIds);
@@ -232,6 +216,5 @@ export const buildDependencyTree = async (seleccionados) => {
       dependientes.ventas.push(...ventasEmpResult.rows.map((v) => ({ id: v.id_venta, nombre: `Venta N° ${v.num_venta}` })));
     }
   }
-
   return dependientes;
 };

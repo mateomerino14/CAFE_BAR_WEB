@@ -1,7 +1,7 @@
 import { query } from '../config/db.js';
 import { uploadPhoto } from '../utils/storage.js';
 
-/*Verifica si ya existe un producto con el mismo nombre, permitiendo excluir un producto específico al momento de editar.*/
+/*Verifica si ya existe un producto con el mismo nombre, permitiendo excluir un producto específico al momento de editar */
 const isProductNameTaken = async (name, excludeId = null) => {
   const result = excludeId
     ? await query(`SELECT id_prod FROM producto WHERE nom_prod ILIKE $1 AND id_prod != $2 LIMIT 1`, [name, excludeId])
@@ -9,7 +9,7 @@ const isProductNameTaken = async (name, excludeId = null) => {
   return Boolean(result.rows[0]);
 };
 
-/*Inserta los ingredientes asociados a un producto, verificando previamente que cada ingrediente exista en el stock.*/
+/*Inserta los ingredientes asociados a un producto, verificando previamente que cada ingrediente exista en el stock */
 const insertIngredients = async (idProd, ingredients) => {
   for (const item of ingredients) {
     const stockResult = await query(`SELECT id_ing FROM stock WHERE id_ing = $1`, [item.idIng]);
@@ -21,12 +21,11 @@ const insertIngredients = async (idProd, ingredients) => {
   }
 };
 
-/*Crea un nuevo producto, validando el nombre, cargando su imagen y asociando los ingredientes correspondientes.*/
+/*Crea un nuevo producto, validando el nombre, cargando su imagen y asociando los ingredientes correspondientes */
 export const createProduct = async (fields, photoFile, ingredients) => {
   const nameTaken = await isProductNameTaken(fields.nombre);
   if (nameTaken) throw new Error('DUPLICATE_PRODUCT');
   const photoUrl = photoFile ? await uploadPhoto('products', photoFile) : null;
-
   let product;
   try {
     const result = await query(
@@ -39,24 +38,23 @@ export const createProduct = async (fields, photoFile, ingredients) => {
     if (error.code === '23505') throw new Error('DUPLICATE_PRODUCT');
     throw error;
   }
-
   await insertIngredients(product.id_prod, ingredients);
   return product.id_prod;
 };
 
-/*Obtiene los nombres de los productos que se encuentran actualmente activos, ordenados alfabéticamente.*/
+/*Obtiene los nombres de los productos que se encuentran actualmente activos, ordenados alfabéticamente */
 export const listProductNames = async () => {
   const result = await query(`SELECT nom_prod FROM producto WHERE activo = true ORDER BY nom_prod`);
   return result.rows.map((row) => row.nom_prod);
 };
 
-/*Obtiene los nombres de todos los productos registrados, incluyendo tanto los activos como los inactivos.*/
+/*Obtiene los nombres de todos los productos registrados, incluyendo tanto los activos como los inactivos */
 export const listAllProductNames = async () => {
   const result = await query(`SELECT nom_prod FROM producto ORDER BY nom_prod`);
   return result.rows.map((row) => row.nom_prod);
 };
 
-/*Obtiene la lista de productos activos con sus datos principales y la información de su subcategoría y categoría, permitiendo filtrar por nombre.*/
+/*Obtiene la lista de productos activos con sus datos principales y la información de su subcategoría y categoría, permitiendo filtrar por nombre */
 export const listProducts = async (search) => {
   const baseQuery = `
     SELECT p.id_prod, p.nom_prod, p.precio_venta, p.costo_fabricacion, p.img_prod, p.id_subcategoria,
@@ -69,7 +67,6 @@ export const listProducts = async (search) => {
   const result = search
     ? await query(`${baseQuery} AND p.nom_prod ILIKE $1 ORDER BY p.nom_prod`, [`${search}%`])
     : await query(`${baseQuery} ORDER BY p.nom_prod`);
-
   return result.rows.map((row) => ({
     id_prod: row.id_prod,
     nom_prod: row.nom_prod,
@@ -81,7 +78,7 @@ export const listProducts = async (search) => {
   }));
 };
 
-/*Obtiene todos los productos con su estado de disponibilidad y subcategoría, permitiendo filtrar los resultados por nombre.*/
+/*Obtiene todos los productos con su estado de disponibilidad y subcategoría, permitiendo filtrar los resultados por nombre */
 export const listAllProductsStatus = async (search) => {
   const baseQuery = `
     SELECT p.id_prod, p.nom_prod, p.activo, p.img_prod, s.nombre AS subcategoria_nombre
@@ -91,7 +88,6 @@ export const listAllProductsStatus = async (search) => {
   const result = search
     ? await query(`${baseQuery} WHERE p.nom_prod ILIKE $1 ORDER BY p.nom_prod`, [`${search}%`])
     : await query(`${baseQuery} ORDER BY p.nom_prod`);
-
   return result.rows.map((row) => ({
     id_prod: row.id_prod,
     nom_prod: row.nom_prod,
@@ -101,7 +97,7 @@ export const listAllProductsStatus = async (search) => {
   }));
 };
 
-/*Obtiene la información completa de un producto junto con los ingredientes que requiere y los datos correspondientes de cada ingrediente.*/
+/*Obtiene la información completa de un producto junto con los ingredientes que requiere y los datos correspondientes de cada ingrediente */
 export const getProductWithIngredients = async (idProd) => {
   const productResult = await query(
     `SELECT p.id_prod, p.nom_prod, p.descripcion, p.precio_venta, p.costo_fabricacion, p.img_prod, p.id_subcategoria, s.id_categoria
@@ -121,7 +117,6 @@ export const getProductWithIngredients = async (idProd) => {
     id_subcategoria: productRow.id_subcategoria,
     subcategoria: { id_categoria: productRow.id_categoria }
   } : null;
-
   const ingredientsResult = await query(
     `SELECT pi.id_ing, pi.cantidad_ing_necesitada, s.nom_ing, s.descripcion, s.unidad_medida
      FROM productos_ingredientes pi
@@ -134,15 +129,13 @@ export const getProductWithIngredients = async (idProd) => {
     cantidad_ing_necesitada: row.cantidad_ing_necesitada,
     stock: { nom_ing: row.nom_ing, descripcion: row.descripcion, unidad_medida: row.unidad_medida }
   }));
-
   return { product, ingredients };
 };
 
-/*Actualiza los datos de un producto, reemplaza opcionalmente su imagen y actualiza los ingredientes asociados al producto.*/
+/*Actualiza los datos de un producto, reemplaza opcionalmente su imagen y actualiza los ingredientes asociados al producto */
 export const updateProduct = async (idProd, fields, photoFile, ingredients) => {
   const nameTaken = await isProductNameTaken(fields.nombre, idProd);
   if (nameTaken) throw new Error('DUPLICATE_PRODUCT');
-
   try {
     if (photoFile) {
       const imagenUrl = await uploadPhoto('products', photoFile);
@@ -162,17 +155,16 @@ export const updateProduct = async (idProd, fields, photoFile, ingredients) => {
     if (error.code === '23505') throw new Error('DUPLICATE_PRODUCT');
     throw error;
   }
-
   await query(`DELETE FROM productos_ingredientes WHERE id_prod = $1`, [idProd]);
   await insertIngredients(idProd, ingredients);
 };
 
-/*Actualiza la disponibilidad de un producto cambiando su estado entre activo y no disponible.*/
+/*Actualiza la disponibilidad de un producto cambiando su estado entre activo y no disponible */
 export const setProductAvailability = async (idProd, available) => {
   await query(`UPDATE producto SET activo = $1 WHERE id_prod = $2`, [available, idProd]);
 };
 
-/*Obtiene los productos activos pertenecientes a una subcategoría específica, ordenados alfabéticamente por nombre.*/
+/*Obtiene los productos activos pertenecientes a una subcategoría específica, ordenados alfabéticamente por nombre */
 export const listProductsBySubcategory = async (idSubcategoria) => {
   const result = await query(
     `SELECT id_prod, nom_prod, precio_venta, costo_fabricacion, img_prod
@@ -182,7 +174,7 @@ export const listProductsBySubcategory = async (idSubcategoria) => {
   return result.rows;
 };
 
-/*Obtiene la descripción y los ingredientes disponibles de un producto para mostrar el detalle correspondiente en el catálogo.*/
+/*Obtiene la descripción y los ingredientes disponibles de un producto para mostrar el detalle correspondiente en el catálogo */
 export const getProductCatalogDetail = async (idProd) => {
   const productResult = await query(`SELECT descripcion FROM producto WHERE id_prod = $1`, [idProd]);
   const ingredientsResult = await query(
@@ -199,7 +191,7 @@ export const getProductCatalogDetail = async (idProd) => {
   return { descripcion: productResult.rows[0]?.descripcion || null, ingredients };
 };
 
-/*Obtiene los ingredientes configurados para un producto junto con su precio extra, utilizados para permitir la personalización del producto.*/
+/*Obtiene los ingredientes configurados para un producto junto con su precio extra, utilizados para permitir la personalización del producto */
 export const listProductIngredientsForCustomization = async (idProd) => {
   const result = await query(
     `SELECT pi.id_ing, pi.cantidad_ing_necesitada, s.nom_ing, s.precio_extra

@@ -1,7 +1,7 @@
 import { query } from '../config/db.js';
 import { verifyPassword } from '../utils/password.js';
 
-/* Obtiene las secciones junto con las mesas existentes de cada una y sus estados de disponibilidad. */
+/* Obtiene las secciones junto con las mesas existentes de cada una y sus estados de disponibilidad */
 export const listSectionsWithTables = async () => {
   const sectionsResult = await query(`SELECT id_seccion, nomb_seccion FROM seccion ORDER BY nomb_seccion`);
   const tablesResult = await query(`SELECT id_mesa, id_seccion, disponible FROM mesa WHERE existe = true ORDER BY id_mesa`);
@@ -11,7 +11,7 @@ export const listSectionsWithTables = async () => {
   }));
 };
 
-/*Obtiene la fecha actual correspondiente a Bolivia en formato YYYY-MM-DD.*/
+/*Obtiene la fecha actual correspondiente a Bolivia en formato YYYY-MM-DD */
 const getBoliviaDateString = () => {
   const now = new Date();
   const bolivianShifted = new Date(now.getTime() - 4 * 60 * 60 * 1000);
@@ -21,17 +21,13 @@ const getBoliviaDateString = () => {
   return `${year}-${month}-${day}`;
 };
 
-/*Obtiene de forma segura el siguiente número correlativo de venta para la fecha actual mediante una función de la base de datos.*/
+/*Obtiene de forma segura el siguiente número correlativo de venta para la fecha actual mediante una función de la base de datos */
 const reserveNextSaleNumber = async () => {
   const result = await query(`SELECT get_next_daily_sale_number($1) AS numero`, [getBoliviaDateString()]);
   return result.rows[0].numero;
 };
 
-/*Calcula una vista previa del siguiente número de venta contando las ventas registradas desde el inicio del día actual.*/
-/*Calcula una vista previa del siguiente número de venta leyendo el contador real (venta_daily_counter),
-  el mismo que usa la reserva atómica — así siempre coincide con el número real que se va a asignar,
-  incluso si alguna venta de hoy se llegó a eliminar (el contador real nunca retrocede, a diferencia
-  de simplemente contar cuántas filas de venta existen ahora mismo, que sí puede bajar con un borrado).*/
+/* Calcula una vista previa del siguiente número de venta usando el contador diario real */
 export const getNextSaleNumberPreview = async () => {
   const result = await query(
     `SELECT ultimo_numero FROM venta_daily_counter WHERE fecha = $1`,
@@ -40,11 +36,10 @@ export const getNextSaleNumberPreview = async () => {
   return (Number(result.rows[0]?.ultimo_numero) || 0) + 1;
 };
 
-/* Calcula la cantidad de ingredientes necesarios para los productos y promociones solicitados, considerando exclusiones, extras y personalizaciones. */
+/* Calcula la cantidad de ingredientes necesarios para los productos y promociones solicitados, considerando exclusiones, extras y personalizaciones */
 const buildStockRequirements = async (items) => {
   const neededByIngredient = new Map();
   const addNeed = (idIng, amount) => neededByIngredient.set(idIng, (neededByIngredient.get(idIng) || 0) + amount);
-
   for (const item of items) {
     if (item.type === 'product') {
       const exclusionIds = (item.exclusiones || []).map((e) => e.idIng);
@@ -93,10 +88,10 @@ const buildStockRequirements = async (items) => {
   return neededByIngredient;
 };
 
-/* Calcula los requerimientos de stock necesarios para los productos y promociones de una orden. */
+/* Calcula los requerimientos de stock necesarios para los productos y promociones de una orden */
 export const computeStockRequirements = async (items) => buildStockRequirements(items);
 
-/* Descuenta del stock la cantidad de ingredientes requerida por los productos y promociones procesados. */
+/* Descuenta del stock la cantidad de ingredientes requerida por los productos y promociones procesados */
 export const deductStock = async (neededByIngredient) => {
   for (const [idIng, needed] of neededByIngredient) {
     const stockResult = await query(`SELECT cantidad_stock FROM stock WHERE id_ing = $1`, [idIng]);
@@ -105,13 +100,12 @@ export const deductStock = async (neededByIngredient) => {
   }
 };
 
-/* Obtiene la venta existente de una mesa o crea una nueva cuando la mesa se encuentra disponible, asignando el mesero y cajero correspondientes. */
+/* Obtiene la venta existente de una mesa o crea una nueva cuando la mesa se encuentra disponible, asignando el mesero y cajero correspondientes */
 export const createOrGetVenta = async ({ idMesa, idSeccion, idMesero, idCajero }) => {
   const claimedResult = await query(
     `UPDATE mesa SET disponible = false WHERE id_mesa = $1 AND id_seccion = $2 AND disponible = true RETURNING id_mesa`,
     [idMesa, idSeccion]
   );
-
   if (claimedResult.rows[0]) {
     const numVenta = await reserveNextSaleNumber();
     const ventaResult = await query(
@@ -122,7 +116,6 @@ export const createOrGetVenta = async ({ idMesa, idSeccion, idMesero, idCajero }
     const venta = ventaResult.rows[0];
     return { idVenta: venta.id_venta, numVenta: venta.num_venta };
   }
-
   const ventaResult = await query(
     `SELECT id_venta, num_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
     [idMesa, idSeccion]
@@ -131,7 +124,7 @@ export const createOrGetVenta = async ({ idMesa, idSeccion, idMesero, idCajero }
   return { idVenta: venta.id_venta, numVenta: venta.num_venta };
 };
 
-/* Crea los registros individuales de las unidades correspondientes a un producto dentro de un detalle de venta. */
+/* Crea los registros individuales de las unidades correspondientes a un producto dentro de un detalle de venta */
 const insertUnits = async (idDetalle, idProd, cantidad, startIndex = 0) => {
   for (let index = 0; index < cantidad; index++) {
     await query(
@@ -141,25 +134,21 @@ const insertUnits = async (idDetalle, idProd, cantidad, startIndex = 0) => {
   }
 };
 
-/* Registra un producto individual en una venta, calculando su subtotal y almacenando sus unidades, exclusiones y extras personalizados. */
+/* Registra un producto individual en una venta, calculando su subtotal y almacenando sus unidades, exclusiones y extras personalizados */
 const insertProductItem = async (idVenta, idMesero, item, batchFecha) => {
   const productResult = await query(`SELECT precio_venta FROM producto WHERE id_prod = $1`, [item.idProd]);
   const product = productResult.rows[0];
   if (!product) throw new Error('PRODUCT_NOT_FOUND');
-
   const extraCost = (item.extras || []).reduce((sum, extra) => sum + Number(extra.precioExtra) * Number(extra.cantidadExtra), 0);
   const unitPrice = Number(product.precio_venta) + extraCost;
   const subtotal = unitPrice * item.cantidad;
-
   const detalleResult = await query(
     `INSERT INTO detalles_venta (id_venta, id_prod, subtotal, cantidad_prod_det, tipo_consumo, estado_detalle_venta, id_mesero_actual, fecha_reg_detalle_venta)
      VALUES ($1, $2, $3, $4, $5, 'PENDIENTE', $6, $7) RETURNING id_detalle_venta`,
     [idVenta, item.idProd, subtotal, item.cantidad, item.tipoConsumo || 'Local', idMesero, batchFecha]
   );
   const detalle = detalleResult.rows[0];
-
   await insertUnits(detalle.id_detalle_venta, item.idProd, item.cantidad);
-
   if (item.exclusiones?.length) {
     for (const e of item.exclusiones) {
       await query(
@@ -179,12 +168,11 @@ const insertProductItem = async (idVenta, idMesero, item, batchFecha) => {
   return subtotal;
 };
 
-/* Registra una promoción en una venta, incluyendo sus productos, unidades, exclusiones, extras y personalizaciones individuales. */
+/* Registra una promoción en una venta, incluyendo sus productos, unidades, exclusiones, extras y personalizaciones individuales */
 const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
   const promotionResult = await query(`SELECT precio_prom FROM promocion WHERE id_prom = $1`, [item.idProm]);
   const promotion = promotionResult.rows[0];
   if (!promotion) throw new Error('PROMOTION_NOT_FOUND');
-
   const customizationByProduct = new Map((item.productCustomizations || []).map((pc) => [pc.idProd, pc]));
   const extraCost = (item.productCustomizations || []).reduce((sum, pc) => {
     return sum + (pc.unitGroups || []).reduce((s, g) => {
@@ -193,24 +181,20 @@ const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
     }, 0);
   }, 0);
   const subtotal = Number(promotion.precio_prom) * item.cantidad + extraCost;
-
   const detalleResult = await query(
     `INSERT INTO detalles_venta (id_venta, id_prom, subtotal, cantidad_prod_det, tipo_consumo, estado_detalle_venta, id_mesero_actual, fecha_reg_detalle_venta)
      VALUES ($1, $2, $3, $4, $5, 'PENDIENTE', $6, $7) RETURNING id_detalle_venta`,
     [idVenta, item.idProm, subtotal, item.cantidad, item.tipoConsumo || 'Local', idMesero, batchFecha]
   );
   const detalle = detalleResult.rows[0];
-
   const promProductsResult = await query(
     `SELECT id_prod, cantidad_prod_prom FROM promocion_prod WHERE id_prom = $1`,
     [item.idProm]
   );
-
   let globalUnitIndex = 0;
   for (const pp of promProductsResult.rows) {
     const totalUnits = pp.cantidad_prod_prom * item.cantidad;
     await insertUnits(detalle.id_detalle_venta, pp.id_prod, totalUnits, globalUnitIndex);
-
     const customization = customizationByProduct.get(pp.id_prod);
     if (customization?.unitGroups?.length) {
       let localUnitIndex = globalUnitIndex;
@@ -243,7 +227,7 @@ const insertPromotionItem = async (idVenta, idMesero, item, batchFecha) => {
   return subtotal;
 };
 
-/* Agrega productos y promociones a una venta, actualiza el total acumulado y devuelve el nuevo total de la venta. */
+/* Agrega productos y promociones a una venta, actualiza el total acumulado y devuelve el nuevo total de la venta */
 export const addOrderItems = async (idVenta, idMesero, items, batchFecha) => {
   let totalAdded = 0;
   for (const item of items) {
@@ -259,7 +243,7 @@ export const addOrderItems = async (idVenta, idMesero, items, batchFecha) => {
   return newTotal;
 };
 
-/* Obtiene los detalles pendientes de la venta actual de una mesa y los agrupa por fecha de registro para identificar los pedidos que aún deben prepararse. */
+/* Obtiene los detalles pendientes de la venta actual de una mesa y los agrupa por fecha de registro para identificar los pedidos que aún deben prepararse */
 export const listPendingBatches = async (idMesa, idSeccion) => {
   const ventaResult = await query(
     `SELECT id_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
@@ -267,7 +251,6 @@ export const listPendingBatches = async (idMesa, idSeccion) => {
   );
   const venta = ventaResult.rows[0];
   if (!venta) return [];
-
   const detallesResult = await query(
     `SELECT dv.id_detalle_venta, dv.fecha_reg_detalle_venta, dv.tipo_consumo, dv.id_prod, dv.id_prom, p.nom_prod, pr.nom_prom
      FROM detalles_venta dv
@@ -277,13 +260,11 @@ export const listPendingBatches = async (idMesa, idSeccion) => {
     [venta.id_venta]
   );
   if (detallesResult.rows.length === 0) return [];
-
   const detalleIds = detallesResult.rows.map((d) => d.id_detalle_venta);
   const unitsResult = await query(
     `SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`,
     [detalleIds]
   );
-
   const unitsByDetalle = new Map();
   for (const u of unitsResult.rows) {
     if (!unitsByDetalle.has(u.id_detalle_venta)) unitsByDetalle.set(u.id_detalle_venta, { total: 0, restante: 0 });
@@ -291,7 +272,6 @@ export const listPendingBatches = async (idMesa, idSeccion) => {
     counts.total += 1;
     if (!u.marcado) counts.restante += 1;
   }
-
   const batches = new Map();
   for (const row of detallesResult.rows) {
     const fechaValue = row.fecha_reg_detalle_venta instanceof Date ? row.fecha_reg_detalle_venta.toISOString() : row.fecha_reg_detalle_venta;
@@ -306,27 +286,24 @@ export const listPendingBatches = async (idMesa, idSeccion) => {
       restante: counts.restante
     });
   }
-
   return Array.from(batches.values())
     .filter((batch) => batch.items.length > 0)
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 };
 
-/* Obtiene los detalles de venta de una fecha específica y los agrupa por producto, tipo de consumo y personalización, separando las unidades pendientes de las ya marcadas. */
+/* Obtiene los detalles de venta de una fecha específica y los agrupa por producto, tipo de consumo y personalización, separando las unidades pendientes de las ya marcadas */
 export const getMarkCards = async (fecha) => {
   const detallesResult = await query(
     `SELECT id_detalle_venta, tipo_consumo, id_prod, id_prom FROM detalles_venta WHERE fecha_reg_detalle_venta = $1`,
     [fecha]
   );
   if (detallesResult.rows.length === 0) return [];
-
   const detalles = detallesResult.rows;
   const detalleIds = detalles.map((d) => d.id_detalle_venta);
   const productDetalleIds = detalles.filter((d) => d.id_prod).map((d) => d.id_detalle_venta);
   const promoDetalleIds = detalles.filter((d) => d.id_prom).map((d) => d.id_detalle_venta);
   const productIds = [...new Set(detalles.filter((d) => d.id_prod).map((d) => d.id_prod))];
   const promoIds = [...new Set(detalles.filter((d) => d.id_prom).map((d) => d.id_prom))];
-
   const [unitsResult, exclusionsResult, extrasResult, exclusionsPromoResult, productosResult, promoProductsResult] = await Promise.all([
     query(`SELECT id_unidad, id_detalle_venta, id_prod, num_unidad, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`, [detalleIds]),
     productDetalleIds.length
@@ -345,7 +322,6 @@ export const getMarkCards = async (fecha) => {
       ? query(`SELECT pp.id_prom, pp.id_prod, p.nom_prod FROM promocion_prod pp JOIN producto p ON p.id_prod = pp.id_prod WHERE pp.id_prom = ANY($1::bigint[])`, [promoIds])
       : Promise.resolve({ rows: [] })
   ]);
-
   const productNameById = new Map(productosResult.rows.map((p) => [p.id_prod, p.nom_prod]));
   const unitsByKey = new Map();
   for (const u of unitsResult.rows) {
@@ -382,7 +358,6 @@ export const getMarkCards = async (fecha) => {
     if (!promoProductsByPromo.has(pp.id_prom)) promoProductsByPromo.set(pp.id_prom, []);
     promoProductsByPromo.get(pp.id_prom).push(pp);
   }
-
   const grupos = new Map();
   for (const det of detalles) {
     if (det.id_prod) {
@@ -425,10 +400,7 @@ export const getMarkCards = async (fecha) => {
   return Array.from(grupos.values()).map((g) => ({ ...g, total: g.pendientes.length + g.listos.length })).filter((g) => g.pendientes.length > 0);
 };
 
-/* NOTA: sin usar por ningún componente del frontend todavía — reemplazada en la práctica por
-   applyMarkChanges (marca/desmarca varias unidades de una vez, usada por Marcar Pendientes).
-   Se deja disponible por si se necesita marcar una sola unidad puntual a futuro. */
-/* Actualiza el estado marcado de las unidades indicadas y sincroniza la cantidad de unidades marcadas en cada detalle de venta afectado. */
+/* Actualiza el estado marcado de las unidades y sincroniza los detalles de venta */
 export const markUnits = async (unitIds, marcado) => {
   await query(`UPDATE detalles_venta_unidades SET marcado = $1 WHERE id_unidad = ANY($2::bigint[])`, [marcado, unitIds]);
 
@@ -452,7 +424,7 @@ export const markUnits = async (unitIds, marcado) => {
   );
 };
 
-/* Obtiene y agrupa las exclusiones y extras aplicados a las unidades de un producto perteneciente a una promoción. */
+/* Obtiene y agrupa las exclusiones y extras aplicados a las unidades de un producto perteneciente a una promoción */
 const getPromoProductBreakdown = async (idDetalleVenta, idProd, totalUnits) => {
   const exclusionResult = await query(
     `SELECT nom_ing, num_unidad FROM detalles_venta_exclusiones_promo WHERE id_detalle_venta = $1 AND id_prod = $2`,
@@ -462,7 +434,6 @@ const getPromoProductBreakdown = async (idDetalleVenta, idProd, totalUnits) => {
     `SELECT nom_ing, cantidad_extra, num_unidad FROM detalles_venta_extras WHERE id_detalle_venta = $1 AND id_prod = $2`,
     [idDetalleVenta, idProd]
   );
-
   const exclusionsByUnit = new Map();
   for (const row of exclusionResult.rows) {
     if (!exclusionsByUnit.has(row.num_unidad)) exclusionsByUnit.set(row.num_unidad, []);
@@ -474,7 +445,6 @@ const getPromoProductBreakdown = async (idDetalleVenta, idProd, totalUnits) => {
     if (!extrasByUnit.has(row.num_unidad)) extrasByUnit.set(row.num_unidad, []);
     extrasByUnit.get(row.num_unidad).push(`+${row.cantidad_extra} ${row.nom_ing}`);
   }
-
   const customizedUnits = new Set([...exclusionsByUnit.keys(), ...extrasByUnit.keys()]);
   const groups = new Map();
   for (const unit of customizedUnits) {
@@ -491,7 +461,7 @@ const getPromoProductBreakdown = async (idDetalleVenta, idProd, totalUnits) => {
   return Array.from(groups.values());
 };
 
-/* Construye una descripción de las personalizaciones de un detalle de venta, considerando exclusiones y extras de productos individuales o promociones. */
+/* Construye una descripción de las personalizaciones de un detalle de venta, considerando exclusiones y extras de productos individuales o promociones */
 export const buildPersonalizacion = async (det) => {
   if (det.id_prod) {
     const exclusionsResult = await query(`SELECT nom_ing FROM detalles_venta_exclusiones WHERE id_detalle_venta = $1`, [det.id_detalle_venta]);
@@ -524,7 +494,7 @@ export const buildPersonalizacion = async (det) => {
   return '';
 };
 
-/* Obtiene la información de una venta y construye los datos necesarios para generar el ticket del pedido, agrupando productos con la misma configuración. */
+/* Obtiene la información de una venta y construye los datos necesarios para generar el ticket del pedido, agrupando productos con la misma configuración */
 export const getOrderTicket = async (idVenta) => {
   const ventaResult = await query(
     `SELECT num_venta, fecha_reg, hora_reg, total_venta, id_mesa, id_seccion, cod_emp FROM venta WHERE id_venta = $1`,
@@ -532,7 +502,6 @@ export const getOrderTicket = async (idVenta) => {
   );
   const venta = ventaResult.rows[0];
   if (!venta) return null;
-
   const meseroResult = await query(`SELECT alias_emp FROM empleado WHERE cod_emp = $1`, [venta.cod_emp]);
   const seccionResult = await query(`SELECT nomb_seccion FROM seccion WHERE id_seccion = $1`, [venta.id_seccion]);
   const detallesResult = await query(
@@ -544,7 +513,6 @@ export const getOrderTicket = async (idVenta) => {
      WHERE dv.id_venta = $1`,
     [idVenta]
   );
-
   const grouped = new Map();
   for (const det of detallesResult.rows) {
     const nombre = det.nom_prod || det.nom_prom;
@@ -558,7 +526,6 @@ export const getOrderTicket = async (idVenta) => {
     item.cantidad += det.cantidad_prod_det;
     item.subtotal += Number(det.subtotal);
   }
-
   return {
     numVenta: venta.num_venta,
     mesa: venta.id_mesa,
@@ -569,7 +536,7 @@ export const getOrderTicket = async (idVenta) => {
   };
 };
 
-/* Obtiene la información de una venta y construye los datos necesarios para generar el ticket de cocina correspondiente a una fecha específica del pedido. */
+/* Obtiene la información de una venta y construye los datos necesarios para generar el ticket de cocina correspondiente a una fecha específica del pedido */
 export const getKitchenTicket = async (idVenta, fecha) => {
   const ventaResult = await query(
     `SELECT num_venta, id_mesa, id_seccion, cod_emp FROM venta WHERE id_venta = $1`,
@@ -577,7 +544,6 @@ export const getKitchenTicket = async (idVenta, fecha) => {
   );
   const venta = ventaResult.rows[0];
   if (!venta) return null;
-
   const meseroResult = await query(`SELECT alias_emp FROM empleado WHERE cod_emp = $1`, [venta.cod_emp]);
   const seccionResult = await query(`SELECT nomb_seccion FROM seccion WHERE id_seccion = $1`, [venta.id_seccion]);
   const detallesResult = await query(
@@ -587,7 +553,6 @@ export const getKitchenTicket = async (idVenta, fecha) => {
      WHERE dv.id_venta = $1 AND dv.fecha_reg_detalle_venta = $2`,
     [idVenta, fecha]
   );
-
   const grouped = new Map();
   const addLine = (nombre, tipo, cantidad, personalizacion) => {
     const key = `${nombre}_${tipo}_${personalizacion}`;
@@ -596,7 +561,6 @@ export const getKitchenTicket = async (idVenta, fecha) => {
     }
     grouped.get(key).cantidad += cantidad;
   };
-
   for (const det of detallesResult.rows) {
     if (det.id_prod) {
       const personalizacion = await buildPersonalizacion(det);
@@ -620,7 +584,6 @@ export const getKitchenTicket = async (idVenta, fecha) => {
       }
     }
   }
-
   return {
     numVenta: venta.num_venta,
     mesa: venta.id_mesa,
@@ -630,7 +593,7 @@ export const getKitchenTicket = async (idVenta, fecha) => {
   };
 };
 
-/* Verifica la contraseña del usuario actual consultando las credenciales correspondientes según se trate de un usuario directorio o empleado. */
+/* Verifica la contraseña del usuario actual consultando las credenciales correspondientes según se trate de un usuario directorio o empleado */
 export const verifyOwnPassword = async (user, password) => {
   if (user.isDirectorio) {
     const result = await query(`SELECT contrasena_admin FROM directorio LIMIT 1`);
@@ -644,7 +607,7 @@ export const verifyOwnPassword = async (user, password) => {
   return verifyPassword(password, data.cont_emp);
 };
 
-/* Obtiene el identificador de la venta más reciente asociada a una mesa y sección determinadas. */
+/* Obtiene el identificador de la venta más reciente asociada a una mesa y sección determinadas */
 export const getLatestVentaId = async (idMesa, idSeccion) => {
   const result = await query(
     `SELECT id_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
@@ -653,9 +616,7 @@ export const getLatestVentaId = async (idMesa, idSeccion) => {
   return result.rows[0]?.id_venta;
 };
 
-/* Obtiene el resumen (id y número de venta) de la venta actualmente abierta en una mesa, si existe.
-   Se usa para mostrar de inmediato el número real de venta al elegir una mesa ya ocupada, en vez
-   de mostrar la vista previa (pensada solo para mesas disponibles, donde todavía no existe venta). */
+/* Obtiene el resumen de la venta abierta en una mesa ocupada */
 export const getOpenVentaSummary = async (idMesa, idSeccion) => {
   const result = await query(
     `SELECT id_venta, num_venta FROM venta WHERE id_mesa = $1 AND id_seccion = $2 ORDER BY fecha_reg DESC LIMIT 1`,
@@ -665,7 +626,7 @@ export const getOpenVentaSummary = async (idMesa, idSeccion) => {
   return row ? { idVenta: row.id_venta, numVenta: row.num_venta } : null;
 };
 
-/* Cuenta las unidades de la venta más reciente de una mesa que todavía no han sido marcadas como preparadas. */
+/* Cuenta las unidades de la venta más reciente de una mesa que todavía no han sido marcadas como preparadas */
 export const countUnmarkedUnits = async (idMesa, idSeccion) => {
   const idVenta = await getLatestVentaId(idMesa, idSeccion);
   if (!idVenta) return 0;
@@ -681,59 +642,50 @@ export const countUnmarkedUnits = async (idMesa, idSeccion) => {
   return Number(result.rows[0].count) || 0;
 };
 
-/* Obtiene el identificador del método de pago cuyo nombre coincide con el proporcionado. */
+/* Obtiene el identificador del método de pago cuyo nombre coincide con el proporcionado */
 const getMetodoPagoId = async (nombre) => {
   const result = await query(`SELECT id_metodo FROM metodo_pago WHERE nombre ILIKE $1 LIMIT 1`, [nombre]);
   return result.rows[0]?.id_metodo;
 };
 
-/* Valida el estado de la orden y los montos recibidos, registra los pagos, finaliza los detalles, libera la mesa y registra la hora de cierre de la venta. */
+/* Valida el estado de la orden y los montos recibidos, registra los pagos, finaliza los detalles, libera la mesa y registra la hora de cierre de la venta */
 export const checkoutOrder = async (idVenta, payment) => {
   const ventaResult = await query(`SELECT total_venta, id_mesa, id_seccion FROM venta WHERE id_venta = $1`, [idVenta]);
   const venta = ventaResult.rows[0];
   if (!venta) throw new Error('ORDER_NOT_FOUND');
-
   const unmarked = await countUnmarkedUnits(venta.id_mesa, venta.id_seccion);
   if (unmarked > 0) throw new Error(`UNMARKED_UNITS:${unmarked}`);
-
   const total = Number(venta.total_venta);
   const montoEfectivo = Number(payment.montoEfectivo || 0);
   const montoQr = Number(payment.montoQr || 0);
-
   if (payment.metodo === 'efectivo' && Math.abs(montoEfectivo - total) > 0.001) throw new Error('AMOUNT_MISMATCH');
   if (payment.metodo === 'qr' && Math.abs(montoQr - total) > 0.001) throw new Error('AMOUNT_MISMATCH');
   if (payment.metodo === 'mixto' && Math.abs(montoEfectivo + montoQr - total) > 0.001) throw new Error('AMOUNT_MISMATCH');
-
   const efectivoId = await getMetodoPagoId('Efectivo');
   const qrId = await getMetodoPagoId('Qr');
-
   if (payment.metodo === 'efectivo' || payment.metodo === 'mixto') {
     await query(`INSERT INTO pago (id_venta, id_metodo, monto) VALUES ($1, $2, $3)`, [idVenta, efectivoId, montoEfectivo]);
   }
   if (payment.metodo === 'qr' || payment.metodo === 'mixto') {
     await query(`INSERT INTO pago (id_venta, id_metodo, monto) VALUES ($1, $2, $3)`, [idVenta, qrId, montoQr]);
   }
-
   await query(`UPDATE detalles_venta SET estado_detalle_venta = 'Finalizado' WHERE id_venta = $1`, [idVenta]);
   await query(`UPDATE mesa SET disponible = true WHERE id_mesa = $1 AND id_seccion = $2`, [venta.id_mesa, venta.id_seccion]);
   await query(`UPDATE venta SET hora_cierre = $1 WHERE id_venta = $2`, [new Date().toISOString(), idVenta]);
 };
 
-/* Aplica simultáneamente los cambios de unidades marcadas y desmarcadas y actualiza la cantidad total de unidades marcadas en cada detalle afectado. */
+/* Aplica simultáneamente los cambios de unidades marcadas y desmarcadas y actualiza la cantidad total de unidades marcadas en cada detalle afectado */
 export const applyMarkChanges = async (markIds, unmarkIds) => {
   const allIds = [...markIds, ...unmarkIds];
   if (allIds.length === 0) return;
-
   if (markIds.length > 0) {
     await query(`UPDATE detalles_venta_unidades SET marcado = true WHERE id_unidad = ANY($1::bigint[])`, [markIds]);
   }
   if (unmarkIds.length > 0) {
     await query(`UPDATE detalles_venta_unidades SET marcado = false WHERE id_unidad = ANY($1::bigint[])`, [unmarkIds]);
   }
-
   const unitsResult = await query(`SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_unidad = ANY($1::bigint[])`, [allIds]);
   const detalleIds = [...new Set(unitsResult.rows.map((u) => u.id_detalle_venta))];
-
   const allUnitsResult = await query(
     `SELECT id_detalle_venta, marcado FROM detalles_venta_unidades WHERE id_detalle_venta = ANY($1::bigint[])`,
     [detalleIds]
@@ -743,7 +695,6 @@ export const applyMarkChanges = async (markIds, unmarkIds) => {
     if (!unit.marcado) continue;
     countsByDetalle.set(unit.id_detalle_venta, (countsByDetalle.get(unit.id_detalle_venta) || 0) + 1);
   }
-
   await Promise.all(
     detalleIds.map((idDetalle) =>
       query(`UPDATE detalles_venta SET cantidad_marcado = $1 WHERE id_detalle_venta = $2`, [countsByDetalle.get(idDetalle) || 0, idDetalle])

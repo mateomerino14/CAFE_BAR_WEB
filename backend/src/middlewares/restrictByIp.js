@@ -36,7 +36,7 @@ const isDirectorioRequest = (req) => {
   }
 };
 
-/* Restringe el acceso según las IP permitidas, permitiendo el login y las solicitudes de usuarios DIRECTORIO. */
+/* Middleware para restringir el acceso según las IP permitidas, permitiendo el login y las solicitudes de usuarios DIRECTORIO. */
 export const restrictByIp = (req, res, next) => {
   const allowedEntries = getAllowedEntries();
   if (allowedEntries.length === 0) {
